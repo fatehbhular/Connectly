@@ -1,2 +1,8 @@
-import DMListUI from '../components/DMListUI';
-import { getDMList } from '../services/MessageService';
+export default function MessagingPage() {
+  return (
+    <div>
+      <h1>Messages</h1>
+      <p>Your chats will appear here</p>
+    </div>
+  );
+}
