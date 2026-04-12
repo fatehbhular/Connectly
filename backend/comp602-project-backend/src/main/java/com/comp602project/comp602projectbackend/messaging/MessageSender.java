@@ -19,8 +19,8 @@ public class MessageSender {
         this.timestamp = timestamp;
     }
 
-    public void send(String content) {
-        messagingService.sendMessage(sender, participants, content, timestamp);
+    public void send(String content) {                                                           //Method to "send a message", uses the messagingService class.
+        messagingService.sendMessage(sender, participants, content, timestamp); 
     }
 
 }

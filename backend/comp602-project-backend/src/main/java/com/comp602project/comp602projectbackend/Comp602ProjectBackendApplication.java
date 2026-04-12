@@ -15,22 +15,20 @@ import java.util.List;
 public class Comp602ProjectBackendApplication {
 
     public static void main(String[] args) {
-        // This line starts the entire Spring context and reads application.properties
-        SpringApplication.run(Comp602ProjectBackendApplication.class, args);
+        SpringApplication.run(Comp602ProjectBackendApplication.class, args);       // This line starts the entire Spring context and reads application.properties
     }
 
     @Bean
     public CommandLineRunner runTest(MessagingService messagingService) {
         return args -> {
-            // Setup dummy data
-            User sender = new User("Fateh");
+            User sender = new User("Fateh");                                            // Setup the dummy data for the message tests
             sender.setUserId("123");
             User participant = new User("Leo");
             participant.setUserId("456");
             List<User> participants = Arrays.asList(participant);
 
-            // Send the message using the service directly
-            try {
+            
+            try {                                                                                // Send the message using the service directly
                 messagingService.sendMessage(sender, participants, "Test after pulling from main.", Instant.now());
                 System.out.println("Final message test before ending coding session.");
             } catch (Exception e) {
