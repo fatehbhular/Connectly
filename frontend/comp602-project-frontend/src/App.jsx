@@ -1,23 +1,25 @@
-// import NavigationBar from './components/NavigationBar';
-// import LoginPage from './pages/LoginPage';
+import { useState } from "react";
 
-import { useEffect, useState } from 'react'
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
+import ConnectionsPage from "./pages/ConnectionsPage";
+import MessagingPage from "./pages/MessagingPage";
+
+import NavigationBar from "./components/NavigationBar";
 
 function App() {
-  const [message, setMessage] = useState("Waiting for backend...")
-
-  useEffect(() => {
-    fetch("http://localhost:8080/api/test")
-      .then(res => res.text())
-      .then(data => setMessage(data))
-      .catch(err => setMessage("Connection failed: " + err))
-  }, [])
+  const [page, setPage] = useState("profile");
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>{message}</h1>
+    <div>
+      {page === "profile" && <ProfilePage />}
+      {page === "connections" && <ConnectionsPage />}
+      {page === "messages" && <MessagingPage />}
+      {page === "settings" && <SettingsPage />}
+
+      <NavigationBar setPage={setPage} />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
