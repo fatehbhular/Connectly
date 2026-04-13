@@ -21,10 +21,16 @@ public class Comp602ProjectBackendApplication {
     @Bean
     public CommandLineRunner runTest(MessagingService messagingService) {
         return args -> {
-            User sender = new User("Fateh");                                            // Setup the dummy data for the message tests
-            sender.setUserId("123");
-            User participant = new User("Leo");
-            participant.setUserId("456");
+
+            User sender = new User();                                                           // Setup the dummy data for the message tests
+            sender.setUserId(1);
+            sender.setUsername("Fateh");
+
+            User participant = new User();
+            participant.setUserId(2);
+            participant.setUsername("Leo");
+
+
             List<User> participants = Arrays.asList(participant);
 
             

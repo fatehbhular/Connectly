@@ -23,14 +23,14 @@ public class MessagingService {
     public void sendMessage(User sender, List<User> participants, String content, Instant timestamp) {             //Logic for sending a message
         messageValidator.validateMessage(content);                                                                 //Checks to see if message is valid
         String timestampToString = timestamp.toString();
-        String senderId = sender.getUserId();
+        int senderId = sender.getUserId();
 
         String conversationKey = generateConversationKey(senderId, participants);                                  //Creates the conversationKey value for the message object.
         messagingRepository.saveMessageToDatabase(conversationKey, senderId, content, timestampToString);          //Saves the message to the database
     }
 
-    private String generateConversationKey(String senderId, List<User> participants) {                             //Generates a conversation key using the sender's and participants' userIds.
-        List<String> userIds = new ArrayList<>();
+    private String generateConversationKey(int senderId, List<User> participants) {                             //Generates a conversation key using the sender's and participants' userIds.
+        List<Integer> userIds = new ArrayList<>();
         userIds.add(senderId);                                                                                     //Adds sender's userId to the List of strings first
 
         for (User u : participants) {                                                                              //Adds userIds of all participants into a List of strings
@@ -39,8 +39,13 @@ public class MessagingService {
         userIds.removeIf(Objects::isNull);
         Collections.sort(userIds);
 
-        String conversationKey = String.join("", userIds);                                               //Joins all userIds together to create the conversation key
-        return conversationKey;
+        // Join all userIds with "_" to create the conversation key; "1_3_10"
+        StringBuilder conversationKey = new StringBuilder();                                            
+        for (int i = 0; i < userIds.size(); i++) {
+            if (i > 0) conversationKey.append("_");
+            conversationKey.append(userIds.get(i));
+        }
+        return conversationKey.toString();
 
     }
 

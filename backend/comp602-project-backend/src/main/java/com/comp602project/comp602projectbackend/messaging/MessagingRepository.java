@@ -16,7 +16,7 @@ public class MessagingRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void saveMessageToDatabase(String conversationKey, String senderId, String content, String timestamp) {        //Saves the message into supabase (messaging database).
+    public void saveMessageToDatabase(String conversationKey, int senderId, String content, String timestamp) {        //Saves the message into supabase (messaging database).
         String checkConversation = "INSERT INTO conversations (conversation_key) VALUES (?) ON CONFLICT (conversation_key) DO NOTHING";  //Checks if the conversation already exists in the conversation database, if not then creates the new instance with the conversationkey.
         jdbcTemplate.update(checkConversation, conversationKey);
 
@@ -31,9 +31,9 @@ public class MessagingRepository {
 
     private Message mapToMessage(ResultSet rs, int rowNumber) throws SQLException {
         return new Message(
-            rs.getString("id"),
+            rs.getInt("id"),
             rs.getString("conversation_key"),
-            rs.getString("sender_id"),
+            rs.getInt("sender_id"),
             rs.getString("content"),
             rs.getTimestamp("timestamp").toInstant()
         );
