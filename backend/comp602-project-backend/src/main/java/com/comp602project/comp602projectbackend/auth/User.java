@@ -28,7 +28,9 @@ public class User {
     private List<List<User>> dmUsers = new ArrayList<>();
     private List<User> connections = new ArrayList<>();
 
-    public User() {}
+    public User(String username) {
+        this.username = username;
+    }
 
     public User(int userId, String username, String password) {                 // Use this when the user first signs in
         this.userId = userId;
