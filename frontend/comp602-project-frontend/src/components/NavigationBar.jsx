@@ -1,4 +1,4 @@
-export default function NavigationBar({ setPage }) {
+export default function NavigationBar({ setPage, currentUser }) {
   return (
     <div style={{
       position: "fixed",
