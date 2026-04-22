@@ -1,39 +1,56 @@
 package com.comp602project.comp602projectbackend;
 
-import com.comp602project.comp602projectbackend.auth.User;
-import com.comp602project.comp602projectbackend.messaging.*;
-import org.springframework.boot.CommandLineRunner;
+import java.util.ArrayList;
+import java.util.List;
+import java.time.Instant;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.ConfigurableApplicationContext;
 
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
+import com.comp602project.comp602projectbackend.messaging.MessagingService;
+import com.comp602project.comp602projectbackend.messaging.MessagingRepository;
+import com.comp602project.comp602projectbackend.messaging.Message;
+import com.comp602project.comp602projectbackend.messaging.MessageSender;
+import com.comp602project.comp602projectbackend.messaging.MessageValidator;
+import com.comp602project.comp602projectbackend.auth.User;
+import com.comp602project.comp602projectbackend.auth.UserRepository;
+
+/*
+NOTE TO WINDOWS: ".\gradlew.bat bootRun" ALWAYS RUNS THIS FILE
+NOTE TO MAC: "./gradlew bootRun" ALWAYS RUNS THIS FILE
+
+Spring Boot looks for the annotation "@SpringBootApplication" to know where to start
+*/
 
 @SpringBootApplication
 public class Comp602ProjectBackendApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Comp602ProjectBackendApplication.class, args);       // This line starts the entire Spring context and reads application.properties
-    }
 
-    @Bean
-    public CommandLineRunner runTest(MessagingService messagingService) {
-        return args -> {
-            User sender = new User("Fateh");                                            // Setup the dummy data for the message tests
-            sender.setUserId("123");
-            User participant = new User("Leo");
-            participant.setUserId("456");
-            List<User> participants = Arrays.asList(participant);
+        ConfigurableApplicationContext context = SpringApplication.run(
+            Comp602ProjectBackendApplication.class, args
+        );
 
-            
-            try {                                                                                // Send the message using the service directly
-                messagingService.sendMessage(sender, participants, "Test after pulling from main.", Instant.now());
-                System.out.println("Final message test before ending coding session.");
-            } catch (Exception e) {
-                System.err.println("Failed: " + e.getMessage());
-            }
-        };
+        // Get all beans from Spring — never use new for @Component/@Service/@Repository classes
+        UserRepository up = context.getBean(UserRepository.class);
+        MessagingRepository repo = context.getBean(MessagingRepository.class);
+        MessagingService messagingService = context.getBean(MessagingService.class);
+
+        User user = up.getById(10);
+        User user2 = up.getById(11);
+        List<User> participants = new ArrayList<>();
+        participants.add(user2);
+        Instant timeNow = Instant.now();
+
+        MessageValidator messageValidator = new MessageValidator();
+        MessageSender messageSender = new MessageSender(messagingService, user, participants, timeNow);
+        messageSender.send("this is a test");
+
+        List<Message> messageRetrieval = repo.getMessageByConversationKey("10_11");
+        System.out.println("Messages retrieved: " + messageRetrieval.size());
+        for (Message m : messageRetrieval) {
+            System.out.println(m);
+        }
     }
 }
