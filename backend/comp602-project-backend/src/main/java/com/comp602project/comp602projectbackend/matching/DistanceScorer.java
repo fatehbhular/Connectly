@@ -1,42 +1,61 @@
 package com.comp602project.comp602projectbackend.matching;
 
-import org.json.JSONArray;
 import org.springframework.stereotype.Service;
-import com.comp602project.comp602projectbackend.settings.NominatimController;
+
+import com.comp602project.comp602projectbackend.matching.servicies.LocationService;
 
 @Service
-public class DistanceScorer {
+public class DistanceScorer implements IScorer {
 
-    private float maxDIstKm;
-    private NominatimController controller;
+    private final LocationService locationService;
 
-    public DistanceScorer(NominatimController controller){
-        this.controller = controller;
-        maxDIstKm = 0;
+    public DistanceScorer(LocationService locationService) {
+        this.locationService = locationService;
     }
 
-    public float score(float ul, float u2){
-    
-        return 2.00f;
+    // This method calculates the distance between two locations given their names by first getting their longitude and latitude using the LocationService and then applying the Haversine formula
+    public float calculateDistance(String location1, String location2) throws Exception {
+        float[] location1LonLat = locationService.getLongitudeLatitude(location1);
+        float[] location2LonLat = locationService.getLongitudeLatitude(location2);
+
+        return calcDist(
+                location1LonLat[1], location1LonLat[0],
+                location2LonLat[1], location2LonLat[0]);
     }
 
+    //(Haversine formula implementation) This method calculates the distance in km between two points given their latitude and longitude
+    public float calcDist(float lat1, float lon1, float lat2, float lon2) {
 
-    public float[] getLangitude_Logitude(String location) throws Exception{
-        String jsonOutput = controller.search(location);
+        final int R = 6371; // Earth radius in km
 
-        JSONArray array = new JSONArray(jsonOutput);
-        
-        float Longitude = array.getJSONObject(0).getFloat("lon");
-        float Latitude = array.getJSONObject(0).getFloat("lat");
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
 
-        float lon_lat[] = {Longitude, Latitude};
-        System.out.println("Lat: " + Latitude + " Lon: " + Longitude);
-        return lon_lat;
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return (float) (R * c);
     }
 
+    @Override
+    //This method converts the distance in km to a score between 0 and 100 using an exponential decay function
+    public float score(ScoreContext context) {
+        float distance;
 
-    public float calcDist(float user1,float user2){
+        try {
+            distance = calculateDistance(context.user1Location, context.user2Location);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to calculate distance score", e);
+        }
 
-        return 2.00f;
+        float maxScore = 100f;
+        float scale = 50f;
+
+        float score = (float) (maxScore * Math.exp(-distance / scale));
+        return score;
     }
 }
