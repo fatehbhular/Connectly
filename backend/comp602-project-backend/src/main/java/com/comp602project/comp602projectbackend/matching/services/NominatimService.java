@@ -1,4 +1,4 @@
-package com.comp602project.comp602projectbackend.matching.servicies;
+package com.comp602project.comp602projectbackend.matching.services;
 
 import java.net.URI;
 import java.net.URLEncoder;

@@ -1,9 +1,8 @@
 package com.comp602project.comp602projectbackend.matching;
 
-import org.springframework.data.domain.Score;
+import com.comp602project.comp602projectbackend.matching.services.LocationService;
+import com.comp602project.comp602projectbackend.matching.services.NominatimService;
 
-import com.comp602project.comp602projectbackend.matching.servicies.NominatimService;
-import com.comp602project.comp602projectbackend.settings.LocationService;
 
 public class DistanceScorerManualTest {
 

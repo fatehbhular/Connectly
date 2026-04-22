@@ -2,7 +2,7 @@ package com.comp602project.comp602projectbackend.matching;
 
 import org.springframework.stereotype.Service;
 
-import com.comp602project.comp602projectbackend.matching.servicies.LocationService;
+import com.comp602project.comp602projectbackend.matching.services.LocationService;
 
 @Service
 public class DistanceScorer implements IScorer {
@@ -52,10 +52,9 @@ public class DistanceScorer implements IScorer {
             throw new RuntimeException("Failed to calculate distance score", e);
         }
 
-        float maxScore = 100f;
-        float scale = 50f;
+        float maxScore = 1f;
 
-        float score = (float) (maxScore * Math.exp(-distance / scale));
+        float score = (float) (maxScore * Math.exp(-(Math.exp(distance / 12000)))*Math.exp(1));
         return score;
     }
 }

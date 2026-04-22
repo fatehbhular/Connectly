@@ -1,6 +1,6 @@
 package com.comp602project.comp602projectbackend.matching;
 
-import com.comp602project.comp602projectbackend.settings.CategoryMapping;
+import com.comp602project.comp602projectbackend.matching.services.CategoryMapping;
 
 public class FieldScorerManualTest {
         public static void main(String[] args) {
@@ -11,3 +11,4 @@ public class FieldScorerManualTest {
         System.out.println(mapper.mapToCategory("civil construction worker"));
     }
 }
+

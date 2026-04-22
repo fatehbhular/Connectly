@@ -2,7 +2,7 @@ package com.comp602project.comp602projectbackend.matching;
 
 import org.springframework.stereotype.Service;
 
-import com.comp602project.comp602projectbackend.matching.servicies.SuperCategoryMapping;
+import com.comp602project.comp602projectbackend.matching.services.SuperCategoryMapping;
 
 @Service
 public class FieldScorer implements IScorer {

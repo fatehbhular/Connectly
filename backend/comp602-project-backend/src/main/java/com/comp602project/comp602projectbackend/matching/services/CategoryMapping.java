@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
-package com.comp602project.comp602projectbackend.matching.servicies;
+package com.comp602project.comp602projectbackend.matching.services;
 
 import java.util.ArrayList;
 import java.util.HashMap;
