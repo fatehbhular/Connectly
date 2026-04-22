@@ -1,14 +1,11 @@
 package com.comp602project.comp602projectbackend.auth;
 
 import java.util.ArrayList;
-
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class User {
 
-    private int userId;                                                      // Private key of users
+    private int userId;                                                         // Private key of users
     private String username;
     private String password;
     private String email;
@@ -23,18 +20,17 @@ public class User {
     private String portfolioUrl;
  
     // (for easy database storing)
-    private String[] dmKeys;                                                    // "userId" + _ + "userId" + ...
-    private String[] connectionKeys;                                            // "userId" + _ + "userId" + ...
+    private String[] dmKeys;                                                    // "userId_userId_userId..."
+                                                                                // Each Key is one conversation, MAKE SURE THE KEYS ARE ALWAYS SORTED NUMERICALLY
+    private List<Integer> connectionKeys = new ArrayList<>();                   // [12,124,45,325,63]
  
-    // List of users generated at runtime
+    // List of users generated at runtime, not stored in database
     private List<List<User>> dmUsers = new ArrayList<>();
     private List<User> connections = new ArrayList<>();
 
-    public User(String username) {
-        this.username = username;
-    }
+    public User() {}
 
-    public User(int userId, String username, String password) {              // Use this when the user first signs in
+    public User(int userId, String username, String password) {                 // Use this when the user first signs in
         this.userId = userId;
         this.username = username;
         this.password = password;
@@ -42,11 +38,13 @@ public class User {
 
 
 
+    public boolean checkPassword(String plainPassword) {                        // Check if plaintext password matches with the stored password
+        return this.password.equals(plainPassword);
+    }
 
 
-
-
-
+    
+    // SETTERS AND GETTERS
 
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
@@ -84,8 +82,8 @@ public class User {
     public String[] getDmKeys() { return dmKeys; }
     public void setDmKeys(String[] dmKeys) { this.dmKeys = dmKeys; }
 
-    public String[] getConnectionKeys() { return connectionKeys; }
-    public void setConnectionKeys(String[] keys) { this.connectionKeys = keys; }
+    public List<Integer> getConnectionKeys() { return connectionKeys; }
+    public void setConnectionKeys(List<Integer> keys) { this.connectionKeys = keys; }
 
     public List<List<User>> getDmUsers() { return dmUsers; }
     public void setDmUsers(List<List<User>> dmUsers) { this.dmUsers = dmUsers; }
