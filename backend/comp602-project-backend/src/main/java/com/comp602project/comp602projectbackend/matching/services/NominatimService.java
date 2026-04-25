@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class NominatimService {
 
+        //Get request to NominatimService API to recieve a response conressponding to the selected query
     public String search(String q) throws Exception {
             // Convert the query to URL-encoded format
             String query = URLEncoder.encode(q, StandardCharsets.UTF_8);

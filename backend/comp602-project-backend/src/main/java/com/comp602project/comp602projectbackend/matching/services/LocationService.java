@@ -23,6 +23,7 @@ public class LocationService {
         public String lon;
     }
 
+    //Gets the output from the NominatimService and than return longitude and lattidue
     public float[] getLongitudeLatitude(String location) throws Exception {
         String output = service.search(location);
 

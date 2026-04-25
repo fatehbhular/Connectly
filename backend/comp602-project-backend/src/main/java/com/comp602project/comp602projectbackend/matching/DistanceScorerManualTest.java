@@ -24,8 +24,8 @@ public class DistanceScorerManualTest {
                 System.out.println("Distance between " + location + " and " + secondLocation + " = " + distance + " km");
 
                 ScoreContext context = new ScoreContext();
-                context.user1Location = location;
-                context.user2Location = secondLocation;
+                context.setUser1Location(location);
+                context.setUser2Location(secondLocation);
 
                 float score = distanceScorer.score(context);
                 System.out.println("Distance score between " + location + " and " + secondLocation + " = " + score);

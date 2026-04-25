@@ -11,7 +11,7 @@ public class MatchingAlgorithm {
     
         //This method calculates the overall score across all the different score types
         public float calculateMatchScore(ScoreContext context) throws Exception {
-            float distanceScore = distanceScorer.calculateDistance(context.user1Location, context.user2Location);
+            float distanceScore = distanceScorer.calculateDistance(context.getUser1Location(), context.getUser2Location());
             float fieldScore = fieldScorer.score(context);
             
             // Combine the scores with weights (you can adjust these weights as needed)

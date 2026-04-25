@@ -13,7 +13,7 @@ public class DistanceScorer implements IScorer {
         this.locationService = locationService;
     }
 
-    // This method calculates the distance between two locations given their names by first getting their longitude and latitude using the LocationService and then applying the Haversine formula
+    //This method calculates the distance between two locations given their names by first getting their longitude and latitude using the LocationService and then applying the Haversine formula
     public float calculateDistance(String location1, String location2) throws Exception {
         float[] location1LonLat = locationService.getLongitudeLatitude(location1);
         float[] location2LonLat = locationService.getLongitudeLatitude(location2);
@@ -47,7 +47,7 @@ public class DistanceScorer implements IScorer {
         float distance;
 
         try {
-            distance = calculateDistance(context.user1Location, context.user2Location);
+            distance = calculateDistance(context.getUser1Location(), context.getUser2Location());
         } catch (Exception e) {
             throw new RuntimeException("Failed to calculate distance score", e);
         }
