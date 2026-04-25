@@ -1,0 +1,106 @@
+package com.comp602project.comp602projectbackend.messaging;
+
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+
+/**
+ * Controller layer for messaging feature
+ * 
+ * Response for handling all HTTP requests relating to the messaging feature.
+ * - No business logic is allowed here
+ * - Only receiving requests, and returning responses
+ * 
+ * {@code @RestController} tells Spring this class handles HTTP requests and returns JSON automatically.
+ * {@code @RequestMapping} prefixes all routes in this class with /messaging.
+ * {@code @CrossOrigin} whitelists frontend origin so browser can allow requests across ports.
+ */
+
+@RestController
+@RequestMapping("/messaging")
+@CrossOrigin(origins = "http://localhost:5173")
+public class MessagingController {
+    
+    /**
+     * Service layer that contains all business logic for messaging. Controller never handles logic itself.
+     */
+    private final MessagingService messagingService;
+
+    /**
+     * Injects MessagingService into Controller -> Spring wires {@link MessagingService} bean here.
+     */
+    @Autowired
+    public MessagingController(MessagingService messagingService) {
+        this.messagingService = messagingService;
+    }
+
+    /**
+     * Returns a list of conversations belonging to the user.
+     * 
+     * Flow:
+     * 1. Pulls the userId from request header to identify who is asking.
+     * 2. Uses MessagingService to retrieve their conversations.
+     * 3. Returns 200 OK with the list, or 400 Bad Request if something breaks.
+     * 
+     * @param userId -> Id of the user whose conversations list is being requested.
+     * @return {@link ResponseEntity} containing list on success, or error message on failure.
+     */
+    @GetMapping("/dms")
+    public ResponseEntity<?> getDMList(@RequestHeader("userId") Integer userId) {
+        try {
+            // TODO: Implement logic to retrieve user's conversations.
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Returns all messages belonging to a specific conversation.
+     * 
+     * Flow:
+     * 1. Pulls the conversationKey from the URL path to identify which conversation to pull from.
+     * 2. Pulls the userId from request header to identify who is asking.
+     * 3. Uses MessagingService to retrieve the messages.
+     * 4. Returns 200 OK with the list, or 400 Bad Request if something breaks.
+     * 
+     * @param conversationKey -> sorted userId string identifying conversation -> pulled from URL path.
+     * @param userId -> Id of the user requesting the conversation -> pulled from the request header.
+     * @return {@link ResponseEntity} containing the messages on success, or an error message on failure.
+     */
+    @GetMapping("/conversation/{conversationKey}")
+    public ResponseEntity<?> getConversation(@PathVariable String conversationKey, @RequestHeader("userId") Integer userId) {
+        try {
+            // TODO: Implement logic to retrieve conversation messages.
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Sends a message to all participants in the conversation.
+     * 
+     * Flow:
+     * 1. Pulls the senderId from the request header to identify who is sending the message.
+     * 2. Extracts recipientId, content and timestamp from the JSON request body.
+     * 3. Uses MessagingService to save the message.
+     * 4. Returns 200 OK with the list, or 400 Bad Request if something breaks.
+     * 
+     * @param senderId -> Id of the user sending the message -> pulled from HTTP request header.
+     * @param payload -> JSON request body containing recipientId, content, and timestamp.
+     * @return {@link ResponseEntity} confirming success, or an error message on failure.
+     */
+    @PostMapping("/send")
+    public ResponseEntity<?> sendMessage(@RequestHeader("userId") Integer senderId, @RequestBody Map<String, Object> payload) {
+        try {
+            // TODO: Extract receipientId, content, timestamp and call messagingService.sendMessage();
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+}
