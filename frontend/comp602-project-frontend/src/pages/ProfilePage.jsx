@@ -1,8 +1,9 @@
+import { useState } from "react";
+
 export default function ProfilePage() {
   return (
-    <div>
+    <div style={{ padding: "20px", paddingBottom: "80px" }}>
       <h1>Profile Page</h1>
-      <p>View and edit your profile</p>
     </div>
   );
 }
