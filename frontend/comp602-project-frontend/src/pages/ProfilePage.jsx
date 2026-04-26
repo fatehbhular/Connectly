@@ -8,8 +8,26 @@ export default function ProfilePage() {
   const [skills, setSkills] = useState("");
 
   return (
-    <div style={{ padding: "20px", paddingBottom: "80px" }}>
-      <h1>Profile Page</h1>
-    </div>
-  );
-}
+  <div style={{ padding: "20px", paddingBottom: "80px" }}>
+    <h1>Profile Page</h1>
+
+    <input
+      placeholder="Name"
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+    /><br /><br />
+
+    <input
+      placeholder="Bio"
+      value={bio}
+      onChange={(e) => setBio(e.target.value)}
+    /><br /><br />
+
+    <input
+      placeholder="Skills"
+      value={skills}
+      onChange={(e) => setSkills(e.target.value)}
+    /><br /><br />
+
+  </div>
+);
