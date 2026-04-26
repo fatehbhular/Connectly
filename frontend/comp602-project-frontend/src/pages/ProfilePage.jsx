@@ -13,8 +13,15 @@ export default function ProfilePage() {
 
   // Function to save current input values into savedProfile
   const handleSave = () => {
-    setSavedProfile({ name, bio, skills, portfolio });
-  };
+  
+    // Prevent saving if any profile fields are empty
+  if (!name || !bio || !skills || !portfolio) {
+    alert("Please fill in all profile fields.");
+    return;
+  }
+
+  setSavedProfile({ name, bio, skills, portfolio });
+};
 
   return (
     <div style={{ padding: "20px", paddingBottom: "80px" }}>
