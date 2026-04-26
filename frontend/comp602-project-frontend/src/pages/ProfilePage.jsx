@@ -40,8 +40,20 @@ export default function ProfilePage() {
         onChange={(e) => setSkills(e.target.value)}
       /><br /><br />
 
-      {}  // Display saved profile if it exists
+      {} // Save button 
       <button onClick={handleSave}>Save</button>
+
+      {} // Display the saved profile if it exists
+      {savedProfile && (
+        <div style={{ marginTop: "20px" }}>
+          <h3>Saved Profile</h3>
+      
+       {} // Display saved profile details
+          <p><strong>Name:</strong> {savedProfile.name}</p>
+          <p><strong>Bio:</strong> {savedProfile.bio}</p>
+          <p><strong>Skills:</strong> {savedProfile.skills}</p>
+        </div>
+      )}
     </div>
   );
 }
