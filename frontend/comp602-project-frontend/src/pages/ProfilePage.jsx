@@ -6,13 +6,14 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
   const [skills, setSkills] = useState("");
+  const [portfolio, setPortfolio] = useState("");
 
   // Stores the saved profile after clicking save
   const [savedProfile, setSavedProfile] = useState(null);
 
   // Function to save current input values into savedProfile
   const handleSave = () => {
-    setSavedProfile({ name, bio, skills });
+    setSavedProfile({ name, bio, skills, portfolio });
   };
 
   return (
@@ -40,6 +41,13 @@ export default function ProfilePage() {
         onChange={(e) => setSkills(e.target.value)}
       /><br /><br />
 
+      {} // Portfolio details input
+<textarea
+  placeholder="Portfolio details or project links"
+  value={portfolio}
+  onChange={(e) => setPortfolio(e.target.value)}
+></textarea><br /><br />
+
       {} // Save button 
       <button onClick={handleSave}>Save</button>
 
@@ -52,6 +60,7 @@ export default function ProfilePage() {
           <p><strong>Name:</strong> {savedProfile.name}</p>
           <p><strong>Bio:</strong> {savedProfile.bio}</p>
           <p><strong>Skills:</strong> {savedProfile.skills}</p>
+          <p><strong>Portfolio:</strong> {savedProfile.portfolio}</p>
         </div>
       )}
     </div>
