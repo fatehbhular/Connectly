@@ -1,8 +1,10 @@
+import PageWrapper from "../components/PageWrapper";
+
 export default function MessagingPage() {
   return (
-    <div>
+    <PageWrapper>
       <h1>Messages</h1>
       <p>Your chats will appear here</p>
-    </div>
+    </PageWrapper>
   );
 }
