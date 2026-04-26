@@ -28,27 +28,36 @@ export default function ProfilePage() {
       <h1>Profile Page</h1>
 
       {}   // Name input
-      <input
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      /><br /><br />
+      <label>Name</label><br />
+<input
+  placeholder="Name"
+  value={name}
+  onChange={(e) => setName(e.target.value)}
+/><br /><br />
+
 
       {}  // Bio input
-      <input
-        placeholder="Bio"
-        value={bio}
-        onChange={(e) => setBio(e.target.value)}
-      /><br /><br />
+      <label>Bio</label><br />
+<input
+  placeholder="Bio"
+  value={bio}
+  onChange={(e) => setBio(e.target.value)}
+/><br /><br />
 
       {} // Skills input
-      <input
+      <label>Skills</label><br />
+<input
+  placeholder="Skills"
+  value={skills}
+  onChange={(e) => setSkills(e.target.value)}
+/><br /><br /><input
         placeholder="Skills"
         value={skills}
         onChange={(e) => setSkills(e.target.value)}
       /><br /><br />
 
       {} // Portfolio details input
+<label>Portfolio</label><br />
 <textarea
   placeholder="Portfolio details or project links"
   value={portfolio}
