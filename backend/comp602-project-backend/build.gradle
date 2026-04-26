@@ -37,10 +37,3 @@ tasks.register('manualApiTest', JavaExec) {
     dependsOn testClasses
 }
 
-tasks.register('manualFieldTest', JavaExec) {
-    group = 'verification'
-    description = 'Runs the manual category mapping check.'
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'com.comp602project.comp602projectbackend.matching.FieldScorerManualTest'
-    dependsOn testClasses
-}
