@@ -11,7 +11,7 @@ export default function ProfilePage() {
   // Stores the saved profile after clicking save
   const [savedProfile, setSavedProfile] = useState(null);
 
-  // Function to save current input values into savedProfile
+  // Saves the current input values into savedProfile
   const handleSave = () => {
     // Prevent saving if any profile fields are empty
     if (!name || !bio || !skills || !portfolio) {
@@ -26,7 +26,7 @@ export default function ProfilePage() {
     <PageWrapper>
       <h1>Profile Page</h1>
 
-      {}  // Name input
+      {/* Name input */}
       <label>Name</label><br />
       <input
         placeholder="Name"
@@ -34,7 +34,7 @@ export default function ProfilePage() {
         onChange={(e) => setName(e.target.value)}
       /><br /><br />
 
-      {} // Bio input
+      {/* Bio input */}
       <label>Bio</label><br />
       <input
         placeholder="Bio"
@@ -42,7 +42,7 @@ export default function ProfilePage() {
         onChange={(e) => setBio(e.target.value)}
       /><br /><br />
 
-      {} // Skills input
+      {/* Skills input */}
       <label>Skills</label><br />
       <input
         placeholder="Skills"
@@ -50,7 +50,7 @@ export default function ProfilePage() {
         onChange={(e) => setSkills(e.target.value)}
       /><br /><br />
 
-      {} // Portfolio input
+      {/* Portfolio input */}
       <label>Portfolio</label><br />
       <textarea
         placeholder="Portfolio details or project links"
@@ -58,21 +58,20 @@ export default function ProfilePage() {
         onChange={(e) => setPortfolio(e.target.value)}
       ></textarea><br /><br />
 
-      {} // Save button
+      {/* Save button */}
       <button onClick={handleSave}>Save</button>
 
-      {} // Display saved profile details if available
+      {/* Display saved profile details if available */}
       {savedProfile && (
         <div style={{ marginTop: "20px" }}>
           <h3>Saved Profile</h3>
 
-          {} // Display each profile field with a label
           <p><strong>Name:</strong> {savedProfile.name}</p>
           <p><strong>Bio:</strong> {savedProfile.bio}</p>
           <p><strong>Skills:</strong> {savedProfile.skills}</p>
           <p><strong>Portfolio:</strong> {savedProfile.portfolio}</p>
         </div>
       )}
-    </div>
+    </PageWrapper>
   );
 }
