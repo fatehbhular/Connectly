@@ -2,9 +2,12 @@ export default function NavigationBar({ setPage, currentPage }) {
 
   // Function to style active tab
   const getStyle = (pageName) => ({
-    color: currentPage === pageName ? "yellow" : "white",
-    fontWeight: currentPage === pageName ? "bold" : "normal"
-  });
+  color: currentPage === pageName ? "#FFD700" : "#ccc", // yellow active, grey inactive
+  background: "transparent",
+  border: "none",
+  fontWeight: currentPage === pageName ? "bold" : "normal",
+  cursor: "pointer"
+});
 
   return (
     <div style={{
