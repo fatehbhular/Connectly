@@ -1,4 +1,4 @@
-const BASE_URL = 'localhost:5173';
+const BASE_URL = 'localhost:8080';
 
 export const getDMList = (userId) =>
     fetch(`${BASE_URL}/messaging/dms`, {

@@ -14,7 +14,7 @@ export default function MessagingPage() {
     /** The messages in the currently selected conversation */
     const [conversation, setConversation] = useState(null);
     // TODO: Find out how to retrieve current logged in user's ID.
-    const [userId, setUserId] = useState(10);
+    const [userId, setUserId] = useState();
     /** The key of the conversation the user clicked on */
     const [selectedKey, setSelectedKey] = useState(null);
     /** The state of the message the user wants to send */

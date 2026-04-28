@@ -113,7 +113,7 @@ public class MessagingRepository {
      * @return a {@link List} of conversation key strings.
      */
     public List<String> getConversationKeysByUserId(int userId) {
-        String sql = "SELECT DISTINCT conversation_key FROM messages WHERE conversation_key LIKE ? ORDER BY conversation_key";
-        return jdbcTemplate.queryForList(sql, String.class, "%" + userId + "%");
+        String sql = "SELECT jsonb_array_elements_text(conversation_keys) FROM users WHERE user_id = ?";
+        return jdbcTemplate.queryForList(sql, String.class, userId);
     }
 }
