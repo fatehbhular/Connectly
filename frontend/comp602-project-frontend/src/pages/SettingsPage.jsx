@@ -43,8 +43,8 @@ export default function SettingsPage() {
 
         <select value={language} onChange={(e) => setLanguage(e.target.value)}>
           <option>English</option>
+          <option>Chinese</option>
           <option>Spanish</option>
-          <option>French</option>
         </select>
       </section>
     </PageWrapper>
