@@ -30,11 +30,16 @@ export default function SettingsPage() {
       <button>Update Password</button>
       </section>
 
-      {/* Security settings */}
+      {/* Security settings section */}
       <section>
-        <h3>Security</h3>
-        <p>Manage account security preferences.</p>
-      </section>
+      <h3>Security</h3>
+      <p>Manage account security preferences.</p>
+
+      <label>
+      <input type="checkbox" />
+      Enable two-factor authentication
+      </label>
+      /section>
 
       {/* Language settings */}
       <section>
@@ -45,6 +50,8 @@ export default function SettingsPage() {
           <option>English</option>
           <option>Chinese</option>
           <option>Spanish</option>
+          <option>Arabic</option>
+          <option>Hindi</option>
         </select>
       </section>
     </PageWrapper>
