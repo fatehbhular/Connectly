@@ -9,7 +9,7 @@ export default function SettingsPage() {
     <PageWrapper>
       <h1>Settings</h1>
 
-      {/* Theme settings section */}
+      {/* Theme settings */}
       <section>
         <h3>Theme</h3>
         <p>Change the visual appearance of the app.</p>
@@ -20,19 +20,23 @@ export default function SettingsPage() {
         </select>
       </section>
 
-      {/* Password settings section */}
+      {/* Password settings */}
       <section>
-        <h3>Password</h3>
-        <p>Update account password settings.</p>
+      <h3>Password</h3>
+      <p>Update account password settings.</p>
+
+      <input type="password" placeholder="New password" />
+      <br /><br />
+      <button>Update Password</button>
       </section>
 
-      {/* Security settings section */}
+      {/* Security settings */}
       <section>
         <h3>Security</h3>
         <p>Manage account security preferences.</p>
       </section>
 
-      {/* Language settings section */}
+      {/* Language settings */}
       <section>
         <h3>Language</h3>
         <p>Choose preferred app language.</p>
