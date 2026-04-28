@@ -50,7 +50,6 @@ public class MessagingRepository {
     public void saveMessageToDatabase(String conversationKey, int senderId, String content, String timestamp) {
         /*
             Upsert the conversation -> create if it doesn't already exist, otherwise leave it untouched.
-
             ON CONFLICT DO NOTHING prevents duplicate key error for when the conversation already exists
         */
         String checkConversation = "INSERT INTO conversations (conversation_key) VALUES (?) ON CONFLICT (conversation_key) DO NOTHING";
@@ -86,9 +85,9 @@ public class MessagingRepository {
 
     /**
      * Row mapper: converts a single {@link ResultSet} row to a {@link Message} instance.
-     * 
+     *
      * Called automatically by {@link JdbcTemplate#query} for each row returned.
-     * 
+     *
      * @param rs -> current row from SQL result set
      * @param rowNumber -> zero-based index of this row
      * @return a fully construction {@link Message} object
@@ -97,7 +96,7 @@ public class MessagingRepository {
     private Message mapToMessage(ResultSet rs, int rowNumber) throws SQLException {
         String rawTimestamp = rs.getString("timestamp");
         Instant sentAt = Instant.parse(rawTimestamp); // parses ISO 8601 like "2026-04-22T05:54:32.585010Z"
-        
+
         return new Message(
             rs.getInt("id"),
             rs.getString("conversation_key"),
@@ -105,5 +104,16 @@ public class MessagingRepository {
             rs.getString("content"),
             sentAt
         );
+    }
+
+    /**
+     * Retrieves all conversation keys associated with a user.
+     *
+     * @param userId -> the user whose conversation keys to fetch.
+     * @return a {@link List} of conversation key strings.
+     */
+    public List<String> getConversationKeysByUserId(int userId) {
+        String sql = "SELECT DISTINCT conversation_key FROM messages WHERE conversation_key LIKE ? ORDER BY conversation_key";
+        return jdbcTemplate.queryForList(sql, String.class, "%" + userId + "%");
     }
 }

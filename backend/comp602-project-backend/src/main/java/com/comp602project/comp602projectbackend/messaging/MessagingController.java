@@ -2,10 +2,15 @@ package com.comp602project.comp602projectbackend.messaging;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import com.comp602project.comp602projectbackend.auth.User;
+import com.comp602project.comp602projectbackend.auth.UserRepository;
 
 /**
  * Controller layer for messaging feature
@@ -30,6 +35,12 @@ public class MessagingController {
     private final MessagingService messagingService;
 
     /**
+     * UserRepository for accessing user data. Used to fetch User objects by ID.
+     */
+    @Autowired
+    private UserRepository userRepository;
+
+    /**
      * Injects MessagingService into Controller -> Spring wires {@link MessagingService} bean here.
      */
     @Autowired
@@ -51,8 +62,9 @@ public class MessagingController {
     @GetMapping("/dms")
     public ResponseEntity<?> getDMList(@RequestHeader("userId") Integer userId) {
         try {
-            // TODO: Implement logic to retrieve user's conversations.
-            return ResponseEntity.ok(Map.of("status", "ok"));
+            List<?> dms = messagingService.getDMList(userId);
+
+            return ResponseEntity.ok(dms);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -74,8 +86,9 @@ public class MessagingController {
     @GetMapping("/conversation/{conversationKey}")
     public ResponseEntity<?> getConversation(@PathVariable String conversationKey, @RequestHeader("userId") Integer userId) {
         try {
-            // TODO: Implement logic to retrieve conversation messages.
-            return ResponseEntity.ok(Map.of("status", "ok"));
+            List<?> messages = messagingService.getConversation(conversationKey, userId);
+
+            return ResponseEntity.ok(messages);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
@@ -97,7 +110,20 @@ public class MessagingController {
     @PostMapping("/send")
     public ResponseEntity<?> sendMessage(@RequestHeader("userId") Integer senderId, @RequestBody Map<String, Object> payload) {
         try {
-            // TODO: Extract receipientId, content, timestamp and call messagingService.sendMessage();
+            Integer recipientId = (Integer) payload.get("recipientId");
+            String content = (String) payload.get("content");
+            Long timestampMillis = ((Number) payload.get("timestamp")).longValue();
+            Instant timestamp = Instant.ofEpochMilli(timestampMillis);
+            
+            // Create USER objects from senderId, and recipientId.
+            User sender = userRepository.getById(senderId);
+            User recipient = userRepository.getById(recipientId);
+
+            List<User> recipients = new ArrayList<User>();
+            recipients.add(recipient);
+
+            messagingService.sendMessage(sender, recipients, content, timestamp);
+
             return ResponseEntity.ok(Map.of("status", "ok"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

@@ -10,11 +10,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * Service layer for messaging feature
+ * Service layer for messaging feature - sits between the Controller and Repository
  * 
  * Responsible for business logic -> validating messages, generating conversationKey, handing over persistence to {@link MessagingRepository}.
- * 
- * Sits between the Controller and Repository
  */
 @Service
 public class MessagingService {
@@ -80,29 +78,21 @@ public class MessagingService {
      * @param participants -> ID of the user/s receiving the message
      * @return a "_"-joined string of all sorted userIDs, e.g. "1_3_10" 
      */
-    private String generateConversationKey(int senderId, List<User> participants) {
+    private String generateConversationKey(Integer senderId, List<User> participants) {
         List<Integer> userIds = new ArrayList<>();
         userIds.add(senderId); // sender is included in conversationKey
 
-        /*
-            Bunch all participant IDs into list
-        */
+        /** Bunch all participant IDs into list */
         for (User u : participants) {
             userIds.add(u.getUserId());
         }
 
-        /*
-            Defensive: remove any null IDs to prevent NullPointerException during sorting
-        */
+        /** Defensive: remove any null IDs to prevent NullPointerException during sorting */
         userIds.removeIf(Objects::isNull);
-        /*
-            Sort in ascending order so key is always same when different user in conversation sends a message.
-        */
+        /** Sort in ascending order so key is always same when different user in conversation sends a message. */
         Collections.sort(userIds);
 
-        /*
-            Builds the concatenated string joined by "_"
-        */
+        /** Builds the concatenated string joined by "_" */
         StringBuilder conversationKey = new StringBuilder();                                            
         for (int i = 0; i < userIds.size(); i++) {
             if (i > 0) conversationKey.append("_");
@@ -110,7 +100,18 @@ public class MessagingService {
         }
 
         return conversationKey.toString();
+    }
 
+    public List<String> getDMList(Integer userId) {
+        return messagingRepository.getConversationKeysByUserId(userId);
+    }
+
+    public List<Message> getConversation(String conversationKey, Integer userId) {
+        boolean isMemberOfConversation = List.of(conversationKey.split("_")).contains(String.valueOf(userId));
+
+        if (!isMemberOfConversation) throw new IllegalArgumentException("User " + userId + " is not part of this conversation.");
+
+        return messagingRepository.getMessageByConversationKey(conversationKey);
     }
 
 }
