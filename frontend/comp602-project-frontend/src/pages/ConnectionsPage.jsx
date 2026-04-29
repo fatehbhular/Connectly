@@ -42,6 +42,7 @@ export default function ConnectionsPage() {
           <UserCardUI
             user={currentUser.displayName} 
             industry={currentUser.industry}
+            bio={currentUser.bio}
             SwipeLeft={SwipeLeft}
             SwipeRight={SwipeRight}
           />

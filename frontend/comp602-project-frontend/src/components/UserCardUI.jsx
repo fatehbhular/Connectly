@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import './UserCardUI.css'
+import picture from './fatehthecutie.jpg';
 
-function UserCardUI({ user, industry, SwipeLeft, SwipeRight}) {
+function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight}) {
   const startX = useRef(null); //This is used to determine the pointer starting position
   const dragXRef =  useRef(0); //This is used to determine the pointer position
   const [isDragging, setIsDragging] = useState(false); //This is a boolean value to determine if the mouse is dragging or not
@@ -32,10 +33,10 @@ function UserCardUI({ user, industry, SwipeLeft, SwipeRight}) {
     function onMouseUp(){
       setIsDragging(false);
       startX.current = null;
-      if(dragXRef.current > 300){ //Move Right so liked profile
+      if(dragXRef.current >150){ //Move Right so liked profile
         SwipeRight?.();
       }
-      else if(dragXRef.current < -300){ //Move Left so next profile
+      else if(dragXRef.current < -150){ //Move Left so next profile
         SwipeLeft?.();
       }
       dragXRef.current = 0;
@@ -62,6 +63,12 @@ function UserCardUI({ user, industry, SwipeLeft, SwipeRight}) {
     }}>
       <h1>{user}</h1>
       <h3>{industry}</h3>
+      <img src={picture} alt="Picture"></img>
+      <div className="cardBio">
+        <p>Read Description</p>
+        <h4>{bio}</h4>
+      <div></div>
+      </div>
     </div>
   );
 }
