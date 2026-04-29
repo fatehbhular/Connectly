@@ -1,4 +1,14 @@
-export default function NavigationBar({ setPage, currentUser }) {
+export default function NavigationBar({ setPage, currentPage }) {
+
+  // Function to style active tab
+  const getStyle = (pageName) => ({
+  color: currentPage === pageName ? "#FFD700" : "#ccc", // yellow active, grey inactive
+  background: "transparent",
+  border: "none",
+  fontWeight: currentPage === pageName ? "bold" : "normal",
+  cursor: "pointer"
+});
+
   return (
     <div style={{
       position: "fixed",
@@ -10,13 +20,12 @@ export default function NavigationBar({ setPage, currentUser }) {
       justifyContent: "space-around",
       padding: "10px",
       background: "#222",
-      color: "white",
       boxSizing: "border-box"
     }}>
-      <button onClick={() => setPage("profile")}>Profile</button>
-      <button onClick={() => setPage("connections")}>Discover</button>
-      <button onClick={() => setPage("messages")}>Messages</button>
-      <button onClick={() => setPage("settings")}>Settings</button>
+      <button style={getStyle("profile")} onClick={() => setPage("profile")}>Profile</button>
+      <button style={getStyle("connections")} onClick={() => setPage("connections")}>Discover</button>
+      <button style={getStyle("messages")} onClick={() => setPage("messages")}>Messages</button>
+      <button style={getStyle("settings")} onClick={() => setPage("settings")}>Settings</button>
     </div>
   );
 }
