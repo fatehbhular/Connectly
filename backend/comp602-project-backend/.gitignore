@@ -35,6 +35,3 @@ out/
 
 ### VS Code ###
 .vscode/
-
-src/main/java/com/comp602project/comp602projectbackend/auth/SeedDatabase.java
-src/main/java/com/comp602project/comp602projectbackend/matching/FieldScorer.java

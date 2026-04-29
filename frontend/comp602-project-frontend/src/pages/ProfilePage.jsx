@@ -1,5 +1,4 @@
 import { useState } from "react";
-import PageWrapper from "../components/PageWrapper";
 
 export default function ProfilePage() {
   // State for user input fields
@@ -23,7 +22,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <PageWrapper>
+    <div>
       <h1>Profile Page</h1>
 
       {/* Name input */}
@@ -72,6 +71,6 @@ export default function ProfilePage() {
           <p><strong>Portfolio:</strong> {savedProfile.portfolio}</p>
         </div>
       )}
-    </PageWrapper>
+    </div>
   );
 }

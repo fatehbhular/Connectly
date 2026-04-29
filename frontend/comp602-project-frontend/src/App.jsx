@@ -21,7 +21,7 @@ function App() {
   return (
     <div>
       {page === "profile" && <ProfilePage />}
-      {page === "connections" && <ConnectionsPage />}
+      {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
       {page === "messages" && <MessagingPage />}
       {page === "settings" && <SettingsPage />}
       <NavigationBar setPage={setPage} currentUser={currentUser} />

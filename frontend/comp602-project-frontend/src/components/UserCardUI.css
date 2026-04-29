@@ -1,0 +1,31 @@
+.card {
+  padding: 2rem;
+  border-radius: 1vw;
+  width: 25vw;
+  height: 65vh;
+  border: solid black;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: black;
+  user-select: none;            /* dont highligth text */
+}
+
+.cardBio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: black;
+}
+
+.card h1, .card h3, .card h4, .card p {
+  color: black;
+}
+
+.CardContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+}

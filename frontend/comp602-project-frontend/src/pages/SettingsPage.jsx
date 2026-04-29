@@ -1,12 +1,11 @@
 import { useState } from "react";
-import PageWrapper from "../components/PageWrapper";
 
 export default function SettingsPage() {
   const [theme, setTheme] = useState("Light");
   const [language, setLanguage] = useState("English");
 
   return (
-    <PageWrapper>
+    <div>
       <h1>Settings</h1>
 
       {/* Theme settings */}
@@ -54,6 +53,6 @@ export default function SettingsPage() {
           <option>Hindi</option>
         </select>
       </section>
-    </PageWrapper>
+    </div>
   );
 }
