@@ -71,12 +71,9 @@ public class MessagingRepository {
      * @return a {@link List} of {@link Message} objects -> empty list if none found.
      */
     public List<Message> getMessageByConversationKey(String conversationKey) {
-        /*
-            NOTE: column name should match actual DB schema. NEEDS TO BE DOUBLE CHECKED - conversationKey/conversation_key? - ISSUE IS NOW RESOLVED - Fateh 22/04, 14:35.
-        */
         String sql = "SELECT * FROM messages WHERE conversation_key = ?";
         /*
-            query() does the following:ß
+            query() does the following:
             1. runs the SQL binds conversationKey as "?" parameter
             2. calls mapToMessage() once per row to build the result list
         */
@@ -113,7 +110,7 @@ public class MessagingRepository {
      * @return a {@link List} of conversation key strings.
      */
     public List<String> getConversationKeysByUserId(int userId) {
-        String sql = "SELECT jsonb_array_elements_text(conversation_keys) FROM users WHERE user_id = ?";
+        String sql = "SELECT unnest(dm_keys) FROM users WHERE user_id = ?";
         return jdbcTemplate.queryForList(sql, String.class, userId);
     }
 }

@@ -102,10 +102,30 @@ public class MessagingService {
         return conversationKey.toString();
     }
 
+    /**
+     * Retrieves all conversation keys for the given user.
+     * 
+     * @param userId -> ID of the user whose DM list is being requested
+     * @return a {@link List} of conversation key strings
+     * @throws IllegalArgumentException if userId is null
+     */
     public List<String> getDMList(Integer userId) {
+        if (userId == null) throw new IllegalArgumentException("userId must not be null");
         return messagingRepository.getConversationKeysByUserId(userId);
     }
 
+    /**
+     * Retrieves all messages in a conversation, after verifying the user 
+     * is a member of the conversaiton.
+     * 
+     * Authorisation check -> Splits the conversation key by "_" and verifies 
+     * whether the userId matches any of the keys.
+     * Throws an exception if the user is not a member, preventing unauthorised access.
+     * 
+     * @param conversationKey -> sorted userId string identifying the conversation
+     * @param userId -> ID of the user requesting the conversation
+     * @return a {@link Li}
+     */
     public List<Message> getConversation(String conversationKey, Integer userId) {
         boolean isMemberOfConversation = List.of(conversationKey.split("_")).contains(String.valueOf(userId));
 

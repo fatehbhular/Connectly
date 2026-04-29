@@ -110,7 +110,7 @@ public class MessagingController {
     @PostMapping("/send")
     public ResponseEntity<?> sendMessage(@RequestHeader("userId") Integer senderId, @RequestBody Map<String, Object> payload) {
         try {
-            Integer recipientId = (Integer) payload.get("recipientId");
+            Integer recipientId = Integer.valueOf(payload.get("recipientId").toString());
             String content = (String) payload.get("content");
             Long timestampMillis = ((Number) payload.get("timestamp")).longValue();
             Instant timestamp = Instant.ofEpochMilli(timestampMillis);

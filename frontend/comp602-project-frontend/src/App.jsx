@@ -22,7 +22,7 @@ function App() {
     <div>
       {page === "profile" && <ProfilePage />}
       {page === "connections" && <ConnectionsPage />}
-      {page === "messages" && <MessagingPage />}
+      {page === "messages" && <MessagingPage currentUser={currentUser} />}
       {page === "settings" && <SettingsPage />}
       <NavigationBar setPage={setPage} currentUser={currentUser} />
     </div>

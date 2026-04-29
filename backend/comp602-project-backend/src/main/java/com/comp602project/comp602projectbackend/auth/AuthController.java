@@ -49,6 +49,8 @@ public class AuthController {
         }
         return ResponseEntity.ok(user);                                                 // 200, send back User object as JSON
     }
+
+    
  
     @PostMapping("/auth/signup")                                                        // Call this method when the user tries to sign up
     public ResponseEntity<User> signup(@RequestBody Map<String, String> body) {
@@ -94,5 +96,13 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/users/selectedUserDisplayName")                                       // runs when React sends a GET request to "/users/selectedUserDisplayName"
+    public ResponseEntity<String> getUserDisplayName(int id) {
+        User user = userRepository.getById(id);                                         // get the user from UserRepository with the inputted ID 
+        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        String displayName = user.getDisplayName();
+        return ResponseEntity.ok(displayName);
     }
 }
