@@ -7,6 +7,7 @@ function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight}) {
   const dragXRef =  useRef(0); //This is used to determine the pointer position
   const [isDragging, setIsDragging] = useState(false); //This is a boolean value to determine if the mouse is dragging or not
   const [dragX, setDragX] = useState(0); //This is used to find out the distance travelled on the pointer
+  const cooldownRef = useRef(false); //Cooldown for the key 
 
   //This function is used to check of the left mouse button is clicked down
   function onMouseDown(e){
@@ -53,6 +54,36 @@ function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight}) {
     };
 
   }, [isDragging]);
+
+  useEffect(() => {
+    //This function is to check if the user pressed any left or right arrow keys which would activate the SwipeLeft / SwipeRight functionality
+    function onKeyPressed(e){
+
+      if(e.repeat) return; //If the key repeats itself
+
+      if(cooldownRef.current) return;//If the cooldownRef is true 
+
+      if(e.key === 'ArrowRight'){ 
+        SwipeRight?.();
+      }
+      else if(e.key === 'ArrowLeft'){
+        SwipeLeft?.();
+      }
+
+      //sets cooldown reference to true so that it runs the setTimeout on the later key presses
+      cooldownRef.current = true;
+      setTimeout(() => {
+        cooldownRef.current = false;
+      }, 200);
+    }
+
+    document.addEventListener('keydown', onKeyPressed);
+
+    return() =>{
+      document.removeEventListener('keydown', onKeyPressed);
+    };
+
+  }, [SwipeLeft, SwipeRight]);
 
   return (
     <div className="card" onMouseDown={onMouseDown} style={{
