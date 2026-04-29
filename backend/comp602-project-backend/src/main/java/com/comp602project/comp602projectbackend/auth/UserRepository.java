@@ -3,6 +3,8 @@ package com.comp602project.comp602projectbackend.auth;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.comp602project.comp602projectbackend.matching.DistanceScorer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ public class UserRepository {
         user.setEmail(row.getEmail());
         user.setLatitude(row.getLatitude());
         user.setLongitude(row.getLongitude());
+        user.setLocation(row.getLocation());
         user.setDisplayName(row.getDisplayName());
         user.setBio(row.getBio());
         user.setSkills(row.getSkills());
@@ -54,6 +57,7 @@ public class UserRepository {
         row.setEmail(user.getEmail());
         row.setLatitude(user.getLatitude());
         row.setLongitude(user.getLongitude());
+        row.setLocation(user.getLocation());
         row.setDisplayName(user.getDisplayName());
         row.setBio(user.getBio());
         row.setSkills(user.getSkills());
@@ -76,6 +80,7 @@ public class UserRepository {
         if (!user.checkPassword(password)) return null;
 
         this.signedInUser = user;
+        signedInUser.setConnections(getConnections());
         return user;
     }
 
@@ -127,6 +132,15 @@ public class UserRepository {
         return result;
     }
   
+    public void updateUserLongitudeLatitude() throws Exception {
+        final  DistanceScorer distanceScorer = new DistanceScorer();
+        float[] LonLat = distanceScorer.getUserLongitudeLatitude(signedInUser.getLocation());
+
+        signedInUser.setLongitude((double)LonLat[0]);
+        signedInUser.setLatitude((double)LonLat[1]);
+
+        toDatabase(signedInUser);
+    }
   
   
 
@@ -146,5 +160,4 @@ public class UserRepository {
     public void update(User user) { db.save(toDatabase(user)); }            // Update an existing user in the database.
     public void delete(int id) { db.deleteById(id); }                       // Delete a user by id
     public void logout() { signedInUser = null; }
-
 }

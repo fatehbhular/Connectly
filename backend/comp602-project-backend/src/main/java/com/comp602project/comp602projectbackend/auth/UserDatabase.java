@@ -36,6 +36,8 @@ public class UserDatabase {
     @Column(columnDefinition = "DOUBLE PRECISION")
     private Double longitude;
 
+    private String location;
+
     private String displayName;
 
     @Column(columnDefinition = "TEXT")
@@ -76,6 +78,9 @@ public class UserDatabase {
 
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }

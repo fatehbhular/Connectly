@@ -12,6 +12,7 @@ public class User {
  
     private Double latitude;
     private Double longitude;
+    private String location;                                                    // CITY OWNLY
  
     private String displayName;
     private String bio;
@@ -63,6 +64,9 @@ public class User {
 
     public Double getLongitude() { return longitude; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }

@@ -1,6 +1,8 @@
 package com.comp602project.comp602projectbackend.matching;
 
+import com.comp602project.comp602projectbackend.auth.User;
+
 public interface IScorer {
 
-    public float score(ScoreContext context);
+    public double score(User signedinUser, User otherUser);
 }
