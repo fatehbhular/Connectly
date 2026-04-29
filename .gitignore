@@ -5,4 +5,3 @@ build/
 .idea/
 target/
 .vscode/
-backend/comp602-project-backend/src/main/java/com/comp602project/comp602projectbackend/matching/FieldScorer.java

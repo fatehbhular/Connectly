@@ -39,7 +39,7 @@ export default function SettingsPage() {
       <input type="checkbox" />
       Enable two-factor authentication
       </label>
-      /section>
+      </section>
 
       {/* Language settings */}
       <section>
