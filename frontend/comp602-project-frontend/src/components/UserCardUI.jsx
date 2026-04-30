@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import './UserCardUI.css'
-import picture from './fatehthecutie.jpg';
 
-function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight}) {
+function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight, picture}) {
   const startX = useRef(null); //This is used to determine the pointer starting position
   const dragXRef =  useRef(0); //This is used to determine the pointer position
   const [isDragging, setIsDragging] = useState(false); //This is a boolean value to determine if the mouse is dragging or not
@@ -64,15 +63,18 @@ function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight}) {
       if(cooldownRef.current) return;//If the cooldownRef is true 
 
       if(e.key === 'ArrowRight'){ 
+        setDragX(50);
         SwipeRight?.();
       }
       else if(e.key === 'ArrowLeft'){
+        setDragX(-50);
         SwipeLeft?.();
       }
 
       //sets cooldown reference to true so that it runs the setTimeout on the later key presses
       cooldownRef.current = true;
       setTimeout(() => {
+        setDragX(0);
         cooldownRef.current = false;
       }, 200);
     }
