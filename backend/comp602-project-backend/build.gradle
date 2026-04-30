@@ -36,3 +36,7 @@ tasks.named('test') {
 springBoot {
     mainClass = 'com.comp602project.comp602projectbackend.Comp602ProjectBackendApplication'
 }
+
+compileJava {
+    options.compilerArgs << '-parameters'
+}

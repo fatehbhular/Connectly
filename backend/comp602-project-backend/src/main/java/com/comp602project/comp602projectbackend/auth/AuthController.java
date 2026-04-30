@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /*
@@ -99,7 +100,7 @@ public class AuthController {
     }
 
     @GetMapping("/users/selectedUserDisplayName")                                       // runs when React sends a GET request to "/users/selectedUserDisplayName"
-    public ResponseEntity<String> getUserDisplayName(int id) {
+    public ResponseEntity<String> getUserDisplayName(@RequestParam("id") int id) {
         User user = userRepository.getById(id);                                         // get the user from UserRepository with the inputted ID 
         if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         String displayName = user.getDisplayName();

@@ -30,7 +30,9 @@ export const loadDMs = async (userId) => {
  */
 export const loadConversation = async (key, userId) => {
     const response = await MessagingService.getConversation(key, userId);
-    return response.json();
+    if (!response.ok) throw new Error('Failed to load conversation');
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];  // always return an array
 };
 
 /**

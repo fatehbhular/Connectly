@@ -2,7 +2,6 @@ package com.comp602project.comp602projectbackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 
 /*
 NOTE TO WINDOWS: ".\gradlew.bat bootRun" ALWAYS RUNS THIS FILE
@@ -16,8 +15,7 @@ public class Comp602ProjectBackendApplication {
 
     public static void main(String[] args) {
 
-        ConfigurableApplicationContext context = SpringApplication.run(
-            Comp602ProjectBackendApplication.class, args
-        );
+        // This line starts the entire Spring context and reads application.properties
+        SpringApplication.run(Comp602ProjectBackendApplication.class, args);       
     }
 }

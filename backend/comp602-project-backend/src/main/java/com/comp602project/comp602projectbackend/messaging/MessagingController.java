@@ -84,7 +84,7 @@ public class MessagingController {
      * @return {@link ResponseEntity} containing the messages on success, or an error message on failure.
      */
     @GetMapping("/conversation/{conversationKey}")
-    public ResponseEntity<?> getConversation(@PathVariable String conversationKey, @RequestHeader("userId") Integer userId) {
+    public ResponseEntity<?> getConversation(@PathVariable("conversationKey") String conversationKey, @RequestHeader("userId") Integer userId) {
         try {
             List<?> messages = messagingService.getConversation(conversationKey, userId);
 

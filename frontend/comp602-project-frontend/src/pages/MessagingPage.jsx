@@ -14,7 +14,7 @@ export default function MessagingPage({currentUser}) {
     /** The List of all DMs for the logged-in user */
     const [dms, setDMs] = useState([]);
     /** The messages in the currently selected conversation */
-    const [conversation, setConversation] = useState(null);
+    const [conversation, setConversation] = useState([]);
     /** The key of the conversation the user clicked on */
     const [selectedKey, setSelectedKey] = useState(null);
     /** The state of the message the user wants to send */
@@ -178,7 +178,7 @@ export default function MessagingPage({currentUser}) {
             <div className="container-2">
                 {/** Header: shows display name of person you're chatting with */}
                 <h2 className="conversation-title">{conversationName}</h2>
-                {conversation ? (
+                {conversation.length > 0 ? (
                     <div className="conversation-display">
                         {/** Scrollable message list */}
                         <div className="messages-list">
