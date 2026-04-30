@@ -124,7 +124,7 @@ export default function MessagingPage({currentUser}) {
             } catch (error) {
                 console.log('Failed to poll conversation: ', error);
             }
-        }, 3000);
+        }, 500);
     
         return () => clearInterval(interval); // cleanup when conversation changes or unmounts
     }, [selectedKey, userId]);
