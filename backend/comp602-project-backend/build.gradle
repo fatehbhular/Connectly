@@ -42,3 +42,7 @@ tasks.register('manualApiTest', JavaExec) {
 springBoot {
     mainClass = 'com.comp602project.comp602projectbackend.Comp602ProjectBackendApplication'
 }
+
+compileJava {
+    options.compilerArgs << '-parameters'
+}
