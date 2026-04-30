@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import './UserCardUI.css'
 
-function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight, picture}) {
+function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight, picture, latitude, longitude}) {
   const startX = useRef(null); //This is used to determine the pointer starting position
   const dragXRef =  useRef(0); //This is used to determine the pointer position
   const [isDragging, setIsDragging] = useState(false); //This is a boolean value to determine if the mouse is dragging or not
@@ -100,6 +100,8 @@ function UserCardUI({ user, industry, bio, SwipeLeft, SwipeRight, picture}) {
       <div className="cardBio">
         <p>Read Description</p>
         <h4>{bio}</h4>
+        <h4>{latitude}</h4>
+        <h4>{longitude}</h4>
       <div></div>
       </div>
     </div>
