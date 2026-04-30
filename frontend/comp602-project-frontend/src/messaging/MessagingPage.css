@@ -130,3 +130,10 @@ html, body, #root {
     background-color: rgb(39, 108, 186);
 }
 
+.messages-list {
+    scrollbar-width: none;
+}
+
+.messages-list::-webkit-scrollbar {
+    display: none;
+}

@@ -30,6 +30,7 @@ export default function MessagingPage({currentUser}) {
 
     const messagesEndRef = useRef(null);
     const shouldScroll = useRef(false);
+    const [scrolled, setScrolled] = useState(false);
     const [namesLoaded, setNamesLoaded] = useState(false);
 
     /**
@@ -99,6 +100,7 @@ export default function MessagingPage({currentUser}) {
      * @param {string} key -> conversation key of the DM clicked.
      */
     const handleSelectDM = async (key) => {
+        setScrolled(false);                             // hide messages until scrolled
         shouldScroll.current = true;
         setSelectedKey(key);
         /** Get recipientId from the conversation key (exclude signed-in user's ID) */
@@ -168,6 +170,7 @@ export default function MessagingPage({currentUser}) {
         setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
             shouldScroll.current = false;   // reset after scrolling
+            setScrolled(true);
         }, 100);
     }, [conversation]);
 
@@ -197,24 +200,28 @@ export default function MessagingPage({currentUser}) {
             <div className="container-2">
                 {/** Header: shows display name of person you're chatting with */}
                 <h2 className="conversation-title">{conversationName}</h2>
-                {conversation.length > 0 ? (
+                {selectedKey ? (
                     <div className="conversation-display">
                         {/** Scrollable message list */}
-                        <div className="messages-list">
-                            {conversation.map((message, index) => (
-                                <div className={`message-bubble ${message.senderId === userId ? 'message-sent' : 'message-received'}`} key={index}>
-                                {/** Show "You" for sent messages, senderId for received */}
-                                <strong>{message.senderId === userId ? 'You' : message.senderId}</strong> : {message.content}
-                            </div>
-                            ))}
-                            <div ref={messagesEndRef} />
-                        </div>
-                        {/** Message insert bar -> fixed at bottom of conversation panel */}
-                        <div className="message-input-bar">
-                            <input className="message-input" type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} placeholder="Type a message.."/>
-                            <button className="send-button" onClick={handleSendMessage}>Send</button>
-                        </div>
+                        <div className="messages-list" style={{ visibility: scrolled ? 'visible' : 'hidden' }}>
+                            {conversation.length === 0 ? (
+                                <p>No messages yet.</p>
+                            ) : (
+                                conversation.map((message, index) => (
+                                    <div className={`message-bubble ${message.senderId === userId ? 'message-sent' : 'message-received'}`} key={index}>
+                                    {/** Show "You" for sent messages, senderId for received */}
+                                    <strong>{message.senderId === parseInt(userId) ? 'You' : dmNames[selectedKey]}</strong>: {message.content}
+                                </div>
+                            ))
+                        )}
+                        <div ref={messagesEndRef} />
                     </div>
+                    {/** Message insert bar -> fixed at bottom of conversation panel */}
+                    <div className="message-input-bar">
+                        <input className="message-input" type="text" value={newMessage} onChange={(e) => setNewMessage(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} placeholder="Type a message.."/>
+                        <button className="send-button" onClick={handleSendMessage}>Send</button>
+                    </div>
+                </div>
                 ) : (
                     /** Shown when no conversation is selected */
                     <p>Select a conversation to start messaging!</p>
