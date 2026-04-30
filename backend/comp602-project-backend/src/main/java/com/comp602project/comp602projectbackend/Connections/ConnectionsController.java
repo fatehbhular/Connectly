@@ -1,4 +1,4 @@
-package com.comp602project.comp602projectbackend.Connections;
+package com.comp602project.comp602projectbackend.connections;
 
 import java.util.List;
 

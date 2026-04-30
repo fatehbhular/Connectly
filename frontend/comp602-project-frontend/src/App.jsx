@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-import LoginPage     from "./pages/LoginPage";
-import ProfilePage from "./pages/ProfilePage";
-import SettingsPage from "./pages/SettingsPage";
-import ConnectionsPage from "./pages/ConnectionsPage";
-import MessagingPage from "./pages/MessagingPage";
+import LoginPage from "./auth/LoginPage";
+import ProfilePage from "./profile/ProfilePage";
+import SettingsPage from "./settings/SettingsPage";
+import ConnectionsPage from "./connections/ConnectionsPage";
+import MessagingPage from "./messaging/MessagingPage";
 
 import NavigationBar from "./components/NavigationBar";
 

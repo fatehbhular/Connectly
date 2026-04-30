@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import UserCardUI from "../components/UserCardUI";
+import UserCardUI from "./UserCardUI";
 
 export default function ConnectionsPage({currentUser}) {
 

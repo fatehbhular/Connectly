@@ -1,6 +1,6 @@
 import {useState, useEffect, useRef} from 'react';
-import * as MessagingController from '../controllers/MessagingController';
-import '../styles/MessagingPage.css'
+import * as MessagingController from './MessagingController';
+import './MessagingPage.css'
 
 
 /**
@@ -30,6 +30,7 @@ export default function MessagingPage({currentUser}) {
 
     const messagesEndRef = useRef(null);
     const shouldScroll = useRef(false);
+    const [namesLoaded, setNamesLoaded] = useState(false);
 
     /**
      * Loads the DM list whenever the signed-in userId is available.
@@ -50,12 +51,15 @@ export default function MessagingPage({currentUser}) {
 
                 /** Builds a lookup map: conversationKey -> recipient displayName */
                 const names = {};
-                for (const key of data) {
-                    const otherUserId = key.split('_').find(id => parseInt(id) !== userId);
-                    const name = await MessagingController.getDisplayName(otherUserId);
-                    names[key] = name;
-                }
+                await Promise.all(
+                    data.map(async (key) => {
+                        const otherUserId = key.split('_').find(id => parseInt(id) !== userId);
+                        const name = await MessagingController.getDisplayName(otherUserId);
+                        names[key] = name;
+                    })
+                );
                 setDmNames(names);
+                setNamesLoaded(true);                                       
 
             } catch (error) {
                 console.log('Failed to load DMs: ', error);
@@ -173,7 +177,9 @@ export default function MessagingPage({currentUser}) {
             <div className="container-1">
                 <h1 className="container-1-title">Messages</h1>
                 <div className="dms-display">
-                    {dms.length === 0 ? (
+                    {!namesLoaded ? (                               // Make it so all usernames loads in before showing labels
+                        <p>Loading...</p>
+                    ) : dms.length === 0 ? (
                         /** Empty state -> when no conversations */
                         <p>No direct messages yet!</p>
                     ) : (
