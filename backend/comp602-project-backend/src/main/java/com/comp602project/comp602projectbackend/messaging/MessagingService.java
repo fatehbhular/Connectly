@@ -116,7 +116,7 @@ public class MessagingService {
 
     /**
      * Retrieves all messages in a conversation, after verifying the user 
-     * is a member of the conversaiton.
+     * is a member of the conversation.
      * 
      * Authorisation check -> Splits the conversation key by "_" and verifies 
      * whether the userId matches any of the keys.

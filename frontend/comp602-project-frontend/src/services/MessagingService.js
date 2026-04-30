@@ -53,3 +53,12 @@ export const sendMessage = (userId, payload) =>
         headers: { 'userId': userId, 'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
     });
+
+/**
+ * Fetches the display name of a user by their ID.
+ * 
+ * @param {number} userId -> ID of the user to look up
+ * @returns {Promise<Response>} raw fetch response
+ */
+export const getDisplayName = (userId) =>
+    fetch(`${BASE_URL}/users/selectedUserDisplayName?id=${userId}`);

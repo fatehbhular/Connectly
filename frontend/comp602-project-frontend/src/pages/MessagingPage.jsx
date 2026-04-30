@@ -49,8 +49,7 @@ export default function MessagingPage({currentUser}) {
                 const names = {};
                 for (const key of data) {
                     const otherUserId = key.split('_').find(id => parseInt(id) !== userId);
-                    const response = await fetch(`http://localhost:8080/users/selectedUserDisplayName?id=${otherUserId}`);
-                    const name = await response.text();
+                    const name = await MessagingController.getDisplayName(otherUserId);
                     names[key] = name;
                 }
                 setDmNames(names);
@@ -100,8 +99,7 @@ export default function MessagingPage({currentUser}) {
 
         /** Fetch display name of other user for the header */
         try {
-            const response = await fetch(`http://localhost:8080/users/selectedUserDisplayName?id=${otherUserId}`);
-            const name = await response.text();
+            const name = await MessagingController.getDisplayName(otherUserId);
             setConversationName(name);
             console.log(conversationName);
         } catch (error) {

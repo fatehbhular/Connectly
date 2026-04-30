@@ -52,3 +52,15 @@ export const sendMessage = async (userId, recipientId, content, timestamp) => {
     if (!response.ok) throw new Error('Error: Failed to send message.');
     return;
 };
+
+/**
+ * Fetches the display name of a user by their ID.
+ * 
+ * @param {number} userId -> ID of the user to look up
+ * @returns {Promise<string>} the user's display name
+ */
+export const getDisplayName = async (userId) => {
+    const response = await MessagingService.getDisplayName(userId);
+    if (!response.ok) throw new Error(`Failed to fetch display name for user ${userId}`);
+    return response.text(); // backend returns plain string, not JSON
+};
