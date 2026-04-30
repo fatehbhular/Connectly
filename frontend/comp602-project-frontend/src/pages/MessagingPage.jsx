@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useRef} from 'react';
 import * as MessagingController from '../controllers/MessagingController';
 import '../styles/MessagingPage.css'
 
@@ -27,6 +27,9 @@ export default function MessagingPage({currentUser}) {
     const [conversationName, setConversationName] = useState(null);
     /** The name that will display on each of the user's DMs */
     const [dmNames, setDmNames] = useState({});
+
+    const messagesEndRef = useRef(null);
+    const shouldScroll = useRef(false);
 
     /**
      * Loads the DM list whenever the signed-in userId is available.
@@ -92,6 +95,7 @@ export default function MessagingPage({currentUser}) {
      * @param {string} key -> conversation key of the DM clicked.
      */
     const handleSelectDM = async (key) => {
+        shouldScroll.current = true;
         setSelectedKey(key);
         /** Get recipientId from the conversation key (exclude signed-in user's ID) */
         const otherUserId = key.split('_').find(id => parseInt(id) !== userId);
@@ -140,6 +144,7 @@ export default function MessagingPage({currentUser}) {
      */
     const handleSendMessage = async () => {
         if (newMessage.trim() && recipientId) {
+            shouldScroll.current = true;
             try {
                 await MessagingController.sendMessage(userId, recipientId, newMessage, Date.now());
                 setNewMessage(''); /** Clears the input after successful send. */
@@ -153,6 +158,14 @@ export default function MessagingPage({currentUser}) {
             }
         }
     };
+
+     useEffect(() => {
+        if (!shouldScroll.current) return;
+        setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+            shouldScroll.current = false;   // reset after scrolling
+        }, 100);
+    }, [conversation]);
 
     return (
         <div className="main-container">
@@ -188,6 +201,7 @@ export default function MessagingPage({currentUser}) {
                                 <strong>{message.senderId === userId ? 'You' : message.senderId}</strong> : {message.content}
                             </div>
                             ))}
+                            <div ref={messagesEndRef} />
                         </div>
                         {/** Message insert bar -> fixed at bottom of conversation panel */}
                         <div className="message-input-bar">
