@@ -12,7 +12,7 @@ function calcDistance(lat1, lng1, lat2, lng2) {
   return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(0);
 }
 
-function UserCardUI({ user, industry, bio, skills, latitude, longitude, currentUser, SwipeLeft, SwipeRight }) {
+function UserCardUI({ user, industry, bio, skills, latitude, longitude, location, currentUser, SwipeLeft, SwipeRight }) {
   const startX = useRef(null);       // stores where the mouse was when the drag started
   const dragXRef = useRef(0);        // stores how far the mouse has moved — useRef so it doesn't cause re-renders
   const [isDragging, setIsDragging] = useState(false);  // true while the mouse is held down
@@ -92,7 +92,7 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, currentU
     }}>
       <h1>{user}</h1>
       <h3>{industry}</h3>
-      {distance && <p>{distance} km away</p>}   {/* only shown if both users have coordinates */}
+      {distance && <p>{location} ({distance} km away)</p>}
       <div className="cardBio">
         <h4>{bio}</h4>
         {skills && skills.length > 0 && <p>Skills: {skills.join(', ')}</p>}  {/* only shown if user has skills */}

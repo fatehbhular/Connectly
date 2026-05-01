@@ -10,13 +10,15 @@ export default function ConnectionsPage({currentUser}) {
   // Runs once when the page loads; fetches the ranked user queue from Spring Boot (calls matching algorithm get queue)
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/connections/users')
+    fetch('http://localhost:8080/api/connections/users', {
+        headers: { 'userId': currentUser.userId }
+      })
       .then(res => res.json())
       .then(data => {
         setUsers(data);
         setCurrentIndex(0);
       });
-  }, []);
+  }, [currentUser]);
 
   const currentUserCard = users[currentIndex];                // Current displayed user
 
@@ -48,6 +50,7 @@ export default function ConnectionsPage({currentUser}) {
             skills={currentUserCard.skills}
             latitude={currentUserCard.latitude}
             longitude={currentUserCard.longitude}
+            location={currentUserCard.location}
             currentUser={currentUser}
             SwipeLeft={SwipeLeft}                             // Pass the swiping for the css later on
             SwipeRight={SwipeRight}

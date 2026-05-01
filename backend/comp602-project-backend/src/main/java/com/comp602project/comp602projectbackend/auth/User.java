@@ -29,6 +29,8 @@ public class User {
     private List<List<User>> dmUsers = new ArrayList<>();
     private List<User> connections = new ArrayList<>();
 
+    private Boolean profileComplete = false;
+
     public User() {}
 
     public User(int userId, String username, String password) {                 // Use this when the user first signs in
@@ -94,4 +96,7 @@ public class User {
 
     public List<User> getConnections() { return connections; }
     public void setConnections(List<User> c) { this.connections = c; }
+
+    public Boolean isProfileComplete() { return profileComplete; }
+    public void    setProfileComplete(Boolean complete) { this.profileComplete = complete; }
 }

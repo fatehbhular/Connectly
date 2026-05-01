@@ -56,6 +56,8 @@ public class UserDatabase {
     @Column(name = "connection_keys", columnDefinition = "INT[]")           // Each entry is just a userId number
     private List<Integer> connectionKeys = new ArrayList<>();
 
+    @Column(name = "profile_complete")
+    private Boolean profileComplete = false;    
 
 
 
@@ -102,4 +104,7 @@ public class UserDatabase {
 
     public List<Integer> getConnectionKeys() { return connectionKeys; }
     public void setConnectionKeys(List<Integer> keys) { this.connectionKeys = keys; }
+
+    public Boolean isProfileComplete() { return profileComplete; }
+    public void    setProfileComplete(Boolean complete) { this.profileComplete = complete; }
 }

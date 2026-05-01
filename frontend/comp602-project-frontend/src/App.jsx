@@ -20,11 +20,16 @@ function App() {
   // Otherwise show the main app
   return (
     <div>
-      {page === "profile" && <ProfilePage />}
-      {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
-      {page === "messages" && <MessagingPage currentUser={currentUser} />}
-      {page === "settings" && <SettingsPage />}
-      <NavigationBar setPage={setPage} currentUser={currentUser} />
+      {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
+      {page === "connections" && currentUser.profileComplete && <ConnectionsPage currentUser={currentUser} />}
+      {page === "messages"    && currentUser.profileComplete && <MessagingPage currentUser={currentUser} />}
+      {page === "settings"    && currentUser.profileComplete && <SettingsPage />}
+
+      {/* only show the full nav if profile complete, else just show profile tab */}
+      {currentUser.profileComplete
+        ? <NavigationBar setPage={setPage} currentUser={currentUser} />
+        : null
+      }
     </div>
   );
 }

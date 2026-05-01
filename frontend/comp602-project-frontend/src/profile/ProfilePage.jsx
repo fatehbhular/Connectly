@@ -1,76 +1,103 @@
 import { useState } from "react";
+import "./ProfilePage.css";
 
-export default function ProfilePage() {
-  // State for user input fields
-  const [name, setName] = useState("");
-  const [bio, setBio] = useState("");
-  const [skills, setSkills] = useState("");
-  const [portfolio, setPortfolio] = useState("");
+export default function ProfilePage({ currentUser, onProfileUpdate }) {
+  const [displayName, setDisplayName] = useState(currentUser?.displayName ?? "");
+  const [industry, setIndustry] = useState(currentUser?.industry ?? "");
+  const [city, setCity] = useState(currentUser?.location ?? "");
+  const [bio, setBio] = useState(currentUser?.bio ?? "");
+  const [skills, setSkills] = useState(currentUser?.skills?.join(", ") ?? "");
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  // Stores the saved profile after clicking save
-  const [savedProfile, setSavedProfile] = useState(null);
+  const isComplete = currentUser?.profileComplete;
 
-  // Saves the current input values into savedProfile
-  const handleSave = () => {
-    // Prevent saving if any profile fields are empty
-    if (!name || !bio || !skills || !portfolio) {
-      alert("Please fill in all profile fields.");
+  const handleSave = async () => {
+    setError(null);
+    setSuccess(null);
+
+    if (!displayName.trim() || !industry.trim() || !city.trim()) {
+      setError("Display name, industry and city are required");
       return;
     }
 
-    setSavedProfile({ name, bio, skills, portfolio });
+    try {
+      const res = await fetch("http://localhost:8080/users/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "userId": currentUser.userId },
+        body: JSON.stringify({ displayName, industry, city, bio, skills }),
+      });
+
+      if (res.status === 400) {
+        setError("Could not find that city. Please try a different location");
+        return;
+      }
+
+      if (!res.ok) {
+        setError("Failed to save profile");
+        return;
+      }
+
+      const updated = await res.json();
+      onProfileUpdate(updated);
+      setSuccess("Profile saved!");
+
+    } catch (err) {
+      setError("Could not connect to server");
+    }
   };
 
   return (
-    <div>
-      <h1>Profile Page</h1>
+    <div className="profile-wrapper">
+      <div className="profile-form">
 
-      {/* Name input */}
-      <label>Name</label><br />
-      <input
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      /><br /><br />
+        <h1>Profile</h1>
 
-      {/* Bio input */}
-      <label>Bio</label><br />
-      <input
-        placeholder="Bio"
-        value={bio}
-        onChange={(e) => setBio(e.target.value)}
-      /><br /><br />
+        <div className="profile-grid">
 
-      {/* Skills input */}
-      <label>Skills</label><br />
-      <input
-        placeholder="Skills"
-        value={skills}
-        onChange={(e) => setSkills(e.target.value)}
-      /><br /><br />
+          <label>Display Name</label>
+          <input
+            value={displayName}
+            onChange={e => setDisplayName(e.target.value)}
+          />
 
-      {/* Portfolio input */}
-      <label>Portfolio</label><br />
-      <textarea
-        placeholder="Portfolio details or project links"
-        value={portfolio}
-        onChange={(e) => setPortfolio(e.target.value)}
-      ></textarea><br /><br />
+          <label>Industry</label>
+          <input
+            value={industry}
+            onChange={e => setIndustry(e.target.value)}
+          />
 
-      {/* Save button */}
-      <button onClick={handleSave}>Save</button>
+          <label>City</label>
+          <input
+            value={city}
+            onChange={e => setCity(e.target.value)}
+          />
 
-      {/* Display saved profile details if available */}
-      {savedProfile && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Saved Profile</h3>
+          <label>Bio</label>
+          <textarea
+            value={bio}
+            onChange={e => setBio(e.target.value)}
+            rows={3}
+          />
 
-          <p><strong>Name:</strong> {savedProfile.name}</p>
-          <p><strong>Bio:</strong> {savedProfile.bio}</p>
-          <p><strong>Skills:</strong> {savedProfile.skills}</p>
-          <p><strong>Portfolio:</strong> {savedProfile.portfolio}</p>
+          <label>Skills</label>
+          <input
+            value={skills}
+            onChange={e => setSkills(e.target.value)}
+          />
+
+          <div />
+          <button className="profile-save-btn" onClick={handleSave}>Save Profile</button>
+
         </div>
-      )}
+
+        <div className="profile-messages">
+          {!isComplete && <p className="profile-warning">Complete your profile to unlock the app</p>}
+          {error && <p className="profile-error">{error}</p>}
+          {success && <p className="profile-success">{success}</p>}
+        </div>
+
+      </div>
     </div>
   );
 }
