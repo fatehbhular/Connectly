@@ -1,11 +1,12 @@
 package com.comp602project.comp602projectbackend.auth;
 
-import com.comp602project.comp602projectbackend.matching.services.LocationService;
-import com.comp602project.comp602projectbackend.matching.services.NominatimService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.comp602project.comp602projectbackend.matching.services.LocationService;
+import com.comp602project.comp602projectbackend.matching.services.NominatimService;
 
 import java.util.Map;
 

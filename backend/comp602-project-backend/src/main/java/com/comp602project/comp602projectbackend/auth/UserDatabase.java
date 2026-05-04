@@ -51,14 +51,16 @@ public class UserDatabase {
     private String portfolioUrl;
 
     @Column(name = "dm_keys", columnDefinition = "TEXT[]")                  // Each entry is a "1_2_3" key string
-    private String[] dmKeys;
+    private List<String> dmKeys = new ArrayList<>();
 
     @Column(name = "connection_keys", columnDefinition = "INT[]")           // Each entry is just a userId number
     private List<Integer> connectionKeys = new ArrayList<>();
 
     @Column(name = "profile_complete")
     private Boolean profileComplete = false;    
-
+    
+    @Column(name = "requested_user", columnDefinition = "INT[]")            // Each entry is just a userId number
+    private List<Integer> requestedUsers = new ArrayList<>();
 
 
     // SETTERS AND GETTERS
@@ -99,12 +101,15 @@ public class UserDatabase {
     public String getPortfolioUrl() { return portfolioUrl; }
     public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
 
-    public String[] getDmKeys() { return dmKeys; }
-    public void setDmKeys(String[] dmKeys) { this.dmKeys = dmKeys; }
+    public List<String> getDmKeys() { return dmKeys; }
+    public void setDmKeys(List<String> dmKeys) { this.dmKeys = dmKeys; }
 
     public List<Integer> getConnectionKeys() { return connectionKeys; }
     public void setConnectionKeys(List<Integer> keys) { this.connectionKeys = keys; }
 
     public Boolean isProfileComplete() { return profileComplete; }
     public void    setProfileComplete(Boolean complete) { this.profileComplete = complete; }
+
+    public List<Integer> getRequestedUsers() { return requestedUsers; }
+    public void setRequestedUsers(List<Integer> keys) { this.requestedUsers = keys; }
 }

@@ -46,6 +46,7 @@ public class UserRepository {
         user.setDmKeys(row.getDmKeys());
         user.setConnectionKeys(row.getConnectionKeys());
         user.setProfileComplete(row.isProfileComplete());
+        user.setRequestedUsers(row.getRequestedUsers());
         return user;
     }
 
@@ -67,6 +68,7 @@ public class UserRepository {
         row.setDmKeys(user.getDmKeys());
         row.setConnectionKeys(user.getConnectionKeys());
         row.setProfileComplete(user.isProfileComplete());
+        row.setRequestedUsers(user.getRequestedUsers());
         return row;
     }
 

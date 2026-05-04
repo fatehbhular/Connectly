@@ -4,7 +4,7 @@ import UserCardUI from "./UserCardUI";
 export default function ConnectionsPage({currentUser}) {
 
   const [users, setUsers] = useState([]);                     // list of ranked users fetched from Spring Boot
-  const [currentIndex, setCurrentIndex] = useState(0);        // which user in the list we are currently showing
+  const [currentIndex, setCurrentIndex] = useState(0);        // which user in the list we are currently 
 
 
   // Runs once when the page loads; fetches the ranked user queue from Spring Boot (calls matching algorithm get queue)
@@ -22,6 +22,9 @@ export default function ConnectionsPage({currentUser}) {
 
   const currentUserCard = users[currentIndex];                // Current displayed user
 
+  // Check if the user has already requested the signed in user.
+  const wantsToConnect = currentUserCard?.requestedUsers?.includes(currentUser.userId);
+
   function SwipeLeft() {
     if (currentIndex >= users.length - 1) return;
     setCurrentIndex(currentIndex + 1);
@@ -31,9 +34,15 @@ export default function ConnectionsPage({currentUser}) {
 
   function SwipeRight() {
     if (currentIndex >= users.length - 1) return;
-    setCurrentIndex(currentIndex + 1);
 
-    // add the connections methods here
+    fetch('http://localhost:8080/api/connections/connectUser', {
+        method: 'POST',
+        headers: {
+            'signedInUserId': currentUser.userId,
+            'requestedUserId': currentUserCard.userId
+        }
+    });
+    setCurrentIndex(currentIndex + 1);
   }
 
   return (
@@ -52,6 +61,7 @@ export default function ConnectionsPage({currentUser}) {
             longitude={currentUserCard.longitude}
             location={currentUserCard.location}
             currentUser={currentUser}
+            wantsToConnect={wantsToConnect}
             SwipeLeft={SwipeLeft}                             // Pass the swiping for the css later on
             SwipeRight={SwipeRight}
           />

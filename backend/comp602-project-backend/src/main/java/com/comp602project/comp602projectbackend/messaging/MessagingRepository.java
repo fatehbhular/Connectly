@@ -62,6 +62,12 @@ public class MessagingRepository {
         jdbcTemplate.update(insertMessage, conversationKey, senderId, content, timestamp);
     }
 
+    public void createConversation(String conversationKey) {
+
+        String checkConversation = "INSERT INTO conversations (conversation_key) VALUES (?) ON CONFLICT (conversation_key) DO NOTHING";
+        jdbcTemplate.update(checkConversation, conversationKey);
+    }
+
     /**
      * Retrieves all messages belonging to the given conversation, in the order stored in the database.
      * 
