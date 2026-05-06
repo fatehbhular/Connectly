@@ -26,7 +26,7 @@ import com.comp602project.comp602projectbackend.auth.UserRepository;
 
 @RestController
 @RequestMapping("/messaging")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class MessagingController {
     
     /**

@@ -1,3 +1,4 @@
+import BASE_URL from '../config.js';
 import { useState } from "react";
 
 export default function LoginPage({ onLogin }) {
@@ -20,7 +21,7 @@ export default function LoginPage({ onLogin }) {
     }
 
     try {                                                                                               // Pick what method to call based on signing in or signing up
-      const url  = isSignUp ? "http://localhost:8080/auth/signup" : "http://localhost:8080/auth/login";
+      const url  = isSignUp ? `${BASE_URL}/auth/signup` : `${BASE_URL}/auth/login`;
       const body = { username: username.toLowerCase(), password };
 
       const res = await fetch(url, {                                                                    // Send the request to Spring Boot

@@ -1,3 +1,4 @@
+import BASE_URL from '../config.js';
 import { useState, useEffect } from 'react';
 import UserCardUI from "./UserCardUI";
 
@@ -10,7 +11,7 @@ export default function ConnectionsPage({currentUser}) {
   // Runs once when the page loads; fetches the ranked user queue from Spring Boot (calls matching algorithm get queue)
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/connections/users', {
+    fetch(`${BASE_URL}/api/connections/users`, {
         headers: { 'userId': currentUser.userId }
       })
       .then(res => res.json())
@@ -35,7 +36,7 @@ export default function ConnectionsPage({currentUser}) {
   function SwipeRight() {
     if (currentIndex >= users.length - 1) return;
 
-    fetch('http://localhost:8080/api/connections/connectUser', {
+    fetch(`${BASE_URL}/api/connections/connectUser`, {
         method: 'POST',
         headers: {
             'signedInUserId': currentUser.userId,

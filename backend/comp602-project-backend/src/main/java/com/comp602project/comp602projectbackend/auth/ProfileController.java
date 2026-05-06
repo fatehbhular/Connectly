@@ -11,7 +11,7 @@ import com.comp602project.comp602projectbackend.matching.services.NominatimServi
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 public class ProfileController {
 
     @Autowired

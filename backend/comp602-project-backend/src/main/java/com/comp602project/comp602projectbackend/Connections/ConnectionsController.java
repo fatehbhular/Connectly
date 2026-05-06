@@ -17,7 +17,7 @@ import com.comp602project.comp602projectbackend.auth.UserRepository;
 import com.comp602project.comp602projectbackend.matching.MatchingAlgorithm;
 import com.comp602project.comp602projectbackend.messaging.MessagingRepository;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/connections")
 public class ConnectionsController {

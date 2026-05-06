@@ -7,7 +7,7 @@
  * - Returns raw fetch Promises for Controller to handle
  */
 
-const BASE_URL = 'http://localhost:8080';
+import BASE_URL from '../config.js';
 
 /**
  * Fetches all conversation keys for the given user

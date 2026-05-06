@@ -31,7 +31,7 @@ fetch("/api/users/method")  ->  @RestController (AuthController)
  */
 
 @RestController                                                                         // Tells Spring this class handles HTTP requests and sends back JSON
-@CrossOrigin(origins = "http://localhost:5173")                                         // Allows React (on port 5173) to call these endpoints
+@CrossOrigin(origins = "*")                                                             // Allows React (on port 5173) to call these endpoints
 public class AuthController {   
  
     @Autowired                                                                          // Spring automatically plugs in the UserRepository instance here

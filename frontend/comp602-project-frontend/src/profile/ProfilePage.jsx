@@ -1,3 +1,4 @@
+import BASE_URL from '../config.js';
 import { useState } from "react";
 import "./ProfilePage.css";
 
@@ -22,7 +23,7 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/users/profile", {
+      const res = await fetch(`${BASE_URL}/users/profile`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "userId": currentUser.userId },
         body: JSON.stringify({ displayName, industry, city, bio, skills }),
