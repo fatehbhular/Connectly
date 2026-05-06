@@ -1,7 +1,7 @@
 .card {
   padding: 2rem;
-  border-radius: 1vw;
-  width: 25vw;
+  border-radius: 25px;
+  width: clamp(280px, 25vw, 400px);
   height: 65vh;
   border: solid black;
   position: relative;
@@ -9,7 +9,7 @@
   flex-direction: column;
   gap: 0.5rem;
   color: black;
-  user-select: none;            /* dont highligth text */
+  user-select: none;
 }
 
 .cardBio {

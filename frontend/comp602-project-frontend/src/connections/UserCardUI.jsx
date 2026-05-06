@@ -22,7 +22,17 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
   // Fires when the left mouse button is pressed down on the card
   function onMouseDown(e) {
     if (e.button !== 0) return;      // only respond to left click
+    e.stopPropagation();
     startX.current = e.clientX;      // record where the drag started
+    dragXRef.current = 0;
+    setIsDragging(true);
+  }
+
+  // Fires when the user touches the card on mobile
+  function onTouchStart(e) {
+    e.stopPropagation();             // prevent nav bar from receiving the touch
+    startX.current = e.touches[0].clientX;
+    dragXRef.current = 0;
     setIsDragging(true);
   }
 
@@ -30,12 +40,21 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
   // It re-runs whenever isDragging changes
   useEffect(() => {
     function onMouseMove(e) {
-      if (!isDragging) return;
+      if (!isDragging || startX.current === null) return;
       var delta = e.clientX - startX.current;  // how far we've moved from the start
       dragXRef.current = delta;                // store in ref for use in onMouseUp
       setDragX(delta);                         // store in state to visually move the card
     }
+
+    function onTouchMove(e) {
+      if (!isDragging || startX.current === null) return;
+      var delta = e.touches[0].clientX - startX.current;
+      dragXRef.current = delta;
+      setDragX(delta);
+    }
+
     function onMouseUp() {
+      if (!isDragging) return;
       setIsDragging(false);
       startX.current = null;
       if (dragXRef.current > 150) SwipeRight?.();        // dragged far enough right → connect
@@ -43,12 +62,18 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
       dragXRef.current = 0;
       setDragX(0);                             // snap card back to center
     }
+
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('touchmove', onTouchMove, { passive: true });
+    document.addEventListener('touchend', onMouseUp);
+
     // cleanup — remove listeners when this effect re-runs or component unmounts
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onMouseUp);
     };
   }, [isDragging]);
 
@@ -83,7 +108,7 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
                 : 'white';
 
   return (
-    <div className="card" onMouseDown={onMouseDown} style={{
+    <div className="card" onMouseDown={onMouseDown} onTouchStart={onTouchStart} style={{
       transform: `translateX(${dragX}px) rotate(${dragX * 0.005}deg)`,  // moves and slightly rotates the card as you drag
       transition: isDragging ? 'none' : 'transform 0.2s ease',           // smooth snap back when released, no transition while dragging
       cursor: isDragging ? 'grabbing' : 'grab',
