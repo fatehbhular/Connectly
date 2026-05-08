@@ -1,5 +1,5 @@
 import {useState, useEffect, useRef} from 'react';
-import * as MessagingController from './MessagingController';
+import * as MessagingService from '../services/MessagingService';
 import './MessagingPage.css'
 
 
@@ -47,7 +47,7 @@ export default function MessagingPage({currentUser}) {
             if (!userId) return; /** Guard -> Wait for userId to be set */
             console.log('Loading DMs for userId: ' + userId);
             try {
-                const data = await MessagingController.loadDMs(userId);
+                const data = await MessagingService.getDMList(userId);
                 setDMs(data);
 
                 /** Builds a lookup map: conversationKey -> recipient displayName */
@@ -55,7 +55,7 @@ export default function MessagingPage({currentUser}) {
                 await Promise.all(
                     data.map(async (key) => {
                         const otherUserId = key.split('_').find(id => parseInt(id) !== userId);
-                        const name = await MessagingController.getDisplayName(otherUserId);
+                        const name = await MessagingService.getDisplayName(otherUserId);
                         names[key] = name;
                     })
                 );
@@ -79,7 +79,7 @@ export default function MessagingPage({currentUser}) {
         const loadConversation = async () => {
             if (selectedKey) { /** This is a GUARD -> don't fetch if no conversation is selected. */
                 try {
-                    const data = await MessagingController.loadConversation(selectedKey, userId);
+                    const data = await MessagingService.getConversation(selectedKey, userId);
                     setConversation(data);
                 } catch (error) {
                     console.log('Failed to load conversation: ', error);
@@ -109,7 +109,7 @@ export default function MessagingPage({currentUser}) {
 
         /** Fetch display name of other user for the header */
         try {
-            const name = await MessagingController.getDisplayName(otherUserId);
+            const name = await MessagingService.getDisplayName(otherUserId);
             setConversationName(name);
             console.log(conversationName);
         } catch (error) {
@@ -129,7 +129,7 @@ export default function MessagingPage({currentUser}) {
     
         const interval = setInterval(async () => {
             try {
-                const updated = await MessagingController.loadConversation(selectedKey, userId);
+                const updated = await MessagingService.getConversation(selectedKey, userId);
                 setConversation(updated);
             } catch (error) {
                 console.log('Failed to poll conversation: ', error);
@@ -152,11 +152,11 @@ export default function MessagingPage({currentUser}) {
         if (newMessage.trim() && recipientId) {
             shouldScroll.current = true;
             try {
-                await MessagingController.sendMessage(userId, recipientId, newMessage, Date.now());
+                await MessagingService.sendMessage(userId, recipientId, newMessage, Date.now());
                 setNewMessage(''); /** Clears the input after successful send. */
                 if (conversation) {
                     /** Re-fetches immediately so sent message appears without need to poll. */
-                    const updated = await MessagingController.loadConversation(selectedKey, userId);
+                    const updated = await MessagingService.getConversation(selectedKey, userId);
                     setConversation(updated);
                 }
             } catch (error) {
