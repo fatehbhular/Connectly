@@ -93,16 +93,23 @@ public class UserRepository {
     public User getSignedInUser() { return signedInUser; }
 
     public User getById(int id) {                                           // Get a User Object by thier ID
-        return toUser(db.findById(id).orElse(null));
+        return getAll().stream()
+                   .filter(u -> u.getUserId() == id)
+                   .findFirst()
+                   .orElse(null);
     }
 
+    // Cache all users; invalidate when any user updates
+    private List<User> allUsersCache = null;
+    public void invalidateAllUsersCache() { allUsersCache = null; }
 
-    /* OPTIMISE THIS LATER!!!!!!!!!!!!!!!!!! make SQL filtering queries (filter in DB beforehand)*/
-    public List<User> getAll() {                                            // Return all the users in the DB
-        return db.findAll()
-                 .stream()
-                 .map(this::toUser)
-                 .collect(Collectors.toList());
+    public List<User> getAll() {
+        if (allUsersCache != null) return allUsersCache;
+        allUsersCache = db.findAll()
+                        .stream()
+                        .map(this::toUser)
+                        .collect(Collectors.toList());
+        return allUsersCache;
     }
 
 
@@ -159,9 +166,8 @@ public class UserRepository {
         update(other);
     }
 
-
-    public void save(User user) { db.save(toDatabase(user)); }              // Save a brand new user to the database
-    public void update(User user) { db.save(toDatabase(user)); }            // Update an existing user in the database.
+    public void save(User user)   { db.save(toDatabase(user)); invalidateAllUsersCache(); }     // Save a brand new user to the database
+    public void update(User user) { db.save(toDatabase(user)); invalidateAllUsersCache(); }     // Update an existing user in the database.
     public void delete(int id) { db.deleteById(id); }                       // Delete a user by id
     public void logout() { signedInUser = null; }
 }

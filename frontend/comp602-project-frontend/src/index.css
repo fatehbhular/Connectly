@@ -140,3 +140,21 @@ input, textarea {
   touch-action: manipulation;
   font-size: 16px;
 }
+
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  body::before {
+    content: 'Please rotate your device to portrait mode';
+    position: fixed;
+    inset: 0;
+    background: #f5f5f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px;
+    color: #111;
+    z-index: 99999;
+    padding: 40px;
+    text-align: center;
+  }
+}

@@ -17,6 +17,7 @@ public class MutualScorer implements IScorer {
         for (User connection : signedinUser.getConnections()) {
             
             List<Integer> mutualsID = connection.getConnectionKeys();
+            if (mutualsID == null) continue;
             
             for (Integer mutualID : mutualsID) {
                 if (mutualID.intValue() == otherUserId) { return 1.00;}

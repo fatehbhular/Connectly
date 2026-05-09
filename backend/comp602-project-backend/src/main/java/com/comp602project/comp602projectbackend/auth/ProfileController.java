@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.comp602project.comp602projectbackend.matching.MatchingAlgorithm;
 import com.comp602project.comp602projectbackend.matching.services.LocationService;
 import com.comp602project.comp602projectbackend.matching.services.NominatimService;
 
@@ -16,6 +17,9 @@ public class ProfileController {
 
     @Autowired
     private UserRepository userRepository;                                              // Spring automatically plugs in the UserRepository instance here
+
+    @Autowired
+    private MatchingAlgorithm matchingAlgorithm;
 
     // Used to convert city name to long and lat
     private final LocationService locationService = new LocationService(new NominatimService());
@@ -68,6 +72,8 @@ public class ProfileController {
         user.setProfileComplete(complete);
 
         userRepository.update(user);                                                    // save all the changes to Supabase
+
+        matchingAlgorithm.invalidateCache(userId);                                      // invalidate cache so both users get a fresh queue next time
 
         return ResponseEntity.ok(user);
     }
