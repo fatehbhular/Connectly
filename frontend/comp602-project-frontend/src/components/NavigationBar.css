@@ -1,0 +1,26 @@
+.nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 14px 8px 34px;
+  background: #ffffff;
+  border-top: 1px solid #f0f0ee;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.06);
+  box-sizing: border-box;
+  z-index: 100;
+}
+
+.nav-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px 20px;
+  -webkit-tap-highlight-color: transparent;
+}

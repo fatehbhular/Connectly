@@ -1,20 +1,27 @@
 @import "tailwindcss";
 
-html, body {
-  overflow: hidden;                 /* disable scrolling */
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  overscroll-behavior: none;        /* disable pull to refresh */
+/* bro the body is so annoying on mobile. */
+body {
+  background: #f5f5f0;
 }
 
+html, body {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  margin: 0;
+}
+ 
 #root {
   height: 100%;
   overflow: hidden;
-}
-
-html, body, #root {
-  touch-action: manipulation;       /* disables double tap zoom and pinch zoom */
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 :root {
@@ -79,7 +86,6 @@ body {
   max-width: 100%;
   margin: 0 auto;
   text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;

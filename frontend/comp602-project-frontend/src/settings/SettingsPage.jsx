@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function SettingsPage() {
+export default function SettingsPage({ onSignOut }) {
   const [theme, setTheme] = useState("Light");
   const [language, setLanguage] = useState("English");
 
@@ -52,6 +52,13 @@ export default function SettingsPage() {
           <option>Arabic</option>
           <option>Hindi</option>
         </select>
+      </section>
+
+      <section>
+        <button onClick={() => {
+          localStorage.removeItem('currentUser');
+          onSignOut();
+        }}>Sign Out</button>
       </section>
     </div>
   );

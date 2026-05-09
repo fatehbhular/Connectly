@@ -4,19 +4,28 @@
 
     <link rel="manifest" href="/manifest.json" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Connectly" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />    <!-- reminder just incase: viewport-fit=cover-->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#f5f5f0" />
 
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- disable the zooming for the PWA app -->
+    <!--  if it finds any scrollable parent element it allows the scroll, otherwise it blocks it -->
 
     <script>
       document.addEventListener('touchmove', function(e) {
         if (e.scale !== 1) e.preventDefault();
+        var el = e.target;
+        while (el && el !== document.body) {
+          var style = window.getComputedStyle(el);
+          var overflow = style.overflow + style.overflowY;
+          if (overflow.includes('auto') || overflow.includes('scroll')) return;
+          el = el.parentElement;
+        }
+        e.preventDefault();
       }, { passive: false });
     </script>
 
