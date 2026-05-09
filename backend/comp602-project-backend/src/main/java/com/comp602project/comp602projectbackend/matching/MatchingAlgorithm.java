@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +43,13 @@ public class MatchingAlgorithm {
         this.scorers = scorers;
     }
 
+    private static final Map<Class<? extends IScorer>, Double> WEIGHTS = new HashMap<>();
+    static {
+        WEIGHTS.put(FieldScorer.class, 50.0);
+        WEIGHTS.put(DistanceScorer.class, 30.0);
+        WEIGHTS.put(MutualScorer.class, 20.0);
+    }
+
     public void invalidateCache(int userId) {
         cache.remove(userId);
     }
@@ -50,11 +58,10 @@ public class MatchingAlgorithm {
     public double scoreUser(User signedInUser, User candidate) {
         double total = 0;
         for (IScorer scorer : scorers) {
-            total += scorer.score(signedInUser, candidate);                 // each scorer returns 0.0 - 1.0
+            double weight = WEIGHTS.getOrDefault(scorer.getClass(), 1.0);
+            total += scorer.score(signedInUser, candidate) * weight;
         }
         return total;                                                       // total wieght of all scorers
-
-        // REPLACE WITH WEIGHTED SUM IN THE FUTURE
     }
 
     // Fetch every user from Supabase, score them against the signed in user, and return the list sorted from highest score to lowest.
