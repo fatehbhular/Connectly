@@ -78,3 +78,11 @@ export const getDisplayName = async (userId) => {
     if (!response.ok) throw new Error(`Failed to fetch display name for user ${userId}`);
     return response.text();
 };
+
+export const getLastMessage = async (conversationKey, userId) => {
+    const response = await fetch(`${BASE_URL}/messaging/lastMessage/${conversationKey}`, {
+        headers: { 'userId': userId }
+    });
+    if (!response.ok) throw new Error('Failed to fetch last message');
+    return response.json();
+};

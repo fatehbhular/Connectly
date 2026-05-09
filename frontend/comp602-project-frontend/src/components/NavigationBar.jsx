@@ -1,34 +1,67 @@
+import { motion } from 'framer-motion';
+
+/**
+ * Bottom navigation bar.
+ * 
+ * Displays tabs for navigating between main pages.
+ * Active tab is highlighted with an orange indicator.
+ * 
+ * @param {Function} setPage -> handler for changing the current page
+ * @param {string} currentPage -> name of the currently active page
+ */
 export default function NavigationBar({ setPage, currentPage }) {
+    return (
+        <div
+            className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#E8E4DC] flex justify-around items-center px-2"
+            style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', paddingTop: '10px' }}
+        >
+            {/** Profile */}
+            <motion.button
+                onClick={() => setPage('profile')}
+                className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
+                whileTap={{ scale: 0.9 }}
+            >
+                {currentPage === 'profile' && (
+                    <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
+                )}
+                <i className={`bi bi-person text-2xl relative z-10 ${currentPage === 'profile' ? 'text-orange-500' : 'text-orange-400'}`}></i>
+            </motion.button>
 
-  const getStyle = (pageName) => ({
-    color: currentPage === pageName ? "#FFD700" : "#ccc",
-    background: "transparent",
-    border: "none",
-    fontWeight: currentPage === pageName ? "bold" : "normal",
-    cursor: "pointer",
-    fontSize: "15px",
-    padding: "8px 16px",
-  });
+            {/** Discover */}
+            <motion.button
+                onClick={() => setPage('connections')}
+                className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
+                whileTap={{ scale: 0.9 }}
+            >
+                {currentPage === 'connections' && (
+                    <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
+                )}
+                <i className={`bi bi-diagram-3 text-2xl relative z-10 ${currentPage === 'connections' ? 'text-orange-500' : 'text-orange-400'}`}></i>
+            </motion.button>
 
-  return (
-    <div style={{
-      position: "fixed",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      width: "100%",
-      display: "flex",
-      justifyContent: "space-around",
-      alignItems: "center",
-      padding: "10px 10px",
-      paddingBottom: "calc(25px + env(safe-area-inset-bottom))",
-      background: "#222",
-      boxSizing: "border-box",
-    }}>
-      <button style={getStyle("profile")}     onClick={() => setPage("profile")}>Profile</button>
-      <button style={getStyle("connections")} onClick={() => setPage("connections")}>Discover</button>
-      <button style={getStyle("messages")}    onClick={() => setPage("messages")}>Messages</button>
-      <button style={getStyle("settings")}    onClick={() => setPage("settings")}>Settings</button>
-    </div>
-  );
+            {/** Messages */}
+            <motion.button
+                onClick={() => setPage('messages')}
+                className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
+                whileTap={{ scale: 0.9 }}
+            >
+                {currentPage === 'messages' && (
+                    <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
+                )}
+                <i className={`bi bi-envelope text-2xl relative z-10 ${currentPage === 'messages' ? 'text-orange-500' : 'text-orange-400'}`}></i>
+            </motion.button>
+
+            {/** Settings */}
+            <motion.button
+                onClick={() => setPage('settings')}
+                className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
+                whileTap={{ scale: 0.9 }}
+            >
+                {currentPage === 'settings' && (
+                    <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
+                )}
+                <i className={`bi bi-gear text-2xl relative z-10 ${currentPage === 'settings' ? 'text-orange-500' : 'text-orange-400'}`}></i>
+            </motion.button>
+        </div>
+    );
 }

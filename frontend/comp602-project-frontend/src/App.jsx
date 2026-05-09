@@ -11,6 +11,7 @@ import NavigationBar from "./components/NavigationBar";
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [page, setPage] = useState("profile");
+  const [inDM, setInDM] = useState(false);
 
   // If nobody is logged in, show the login page
   if (!currentUser) {
@@ -22,11 +23,11 @@ function App() {
     <div>
       {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
       {page === "connections" && currentUser.profileComplete && <ConnectionsPage currentUser={currentUser} />}
-      {page === "messages"    && currentUser.profileComplete && <MessagingPage currentUser={currentUser} />}
+      {page === "messages"    && currentUser.profileComplete && <MessagingPage currentUser={currentUser} onDMOpen={setInDM} />}
       {page === "settings"    && currentUser.profileComplete && <SettingsPage />}
 
       {/* only show the full nav if profile complete, else just show profile tab */}
-      {currentUser.profileComplete
+      {currentUser.profileComplete && !inDM
         ? <NavigationBar setPage={setPage} currentUser={currentUser} />
         : null
       }
