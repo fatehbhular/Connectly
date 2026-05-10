@@ -33,8 +33,6 @@ public class ConnectionsController {
 
     @GetMapping("/users")
     public List<User> getAllUsers(@RequestHeader("userId") int userId) {
-        userRepository.invalidateAllUsersCache();
-        matchingAlgorithm.invalidateCache(userId);
         User signedInUser = userRepository.getById(userId);                     // Get the signed in user from the database
         if (signedInUser == null) return List.of();
         return matchingAlgorithm.getQueue(signedInUser);

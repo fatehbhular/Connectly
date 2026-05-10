@@ -74,11 +74,20 @@ public class MatchingAlgorithm {
 
         List<User> allUsers = userRepository.getAll();                      // fetch everyone from Supabase
 
-        Set<Integer> connectedIds = new HashSet<>(
-            signedInUser.getConnectionKeys() != null 
-                ? signedInUser.getConnectionKeys() 
-                : new ArrayList<>()
-        );
+        Map<Integer, User> userMap = new HashMap<>();                       // Build a lookup map for O(1) access
+        for (User u : allUsers) userMap.put(u.getUserId(), u);
+        
+        List<User> connections = new ArrayList<>();
+        Set<Integer> connectedIds = new HashSet<>();
+
+        if (signedInUser.getConnectionKeys() != null) {
+            for (Integer id : signedInUser.getConnectionKeys()) {
+                connectedIds.add(id);
+                User u = userMap.get(id);
+                if (u != null) connections.add(u);
+            }
+        }
+        signedInUser.setConnections(connections);
 
         Set<Integer> requestedIds = new HashSet<>(
             signedInUser.getRequestedUsers() != null 

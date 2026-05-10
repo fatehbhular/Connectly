@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 
 import com.comp602project.comp602projectbackend.matching.DistanceScorer;
 
+import jakarta.annotation.PostConstruct;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +29,9 @@ public class UserRepository {
 
     @Autowired
     private UserJpaRepository db;                                           // Spring injects this automatically, this is the actaul repository talking to the database
+
+    @PostConstruct
+    public void warmCache() { getAll(); }                                   // populates allUsersCache on startup
 
     private User toUser(UserDatabase row) {
         if (row == null) return null;                                       // If nothing came back from Supabase, return null
@@ -167,7 +172,12 @@ public class UserRepository {
     }
 
     public void save(User user)   { db.save(toDatabase(user)); invalidateAllUsersCache(); }     // Save a brand new user to the database
-    public void update(User user) { db.save(toDatabase(user)); invalidateAllUsersCache(); }     // Update an existing user in the database.
+    public void update(User user) {                                                             // Update an existing user in the database.
+        db.save(toDatabase(user));
+        if (allUsersCache != null) {
+            allUsersCache.replaceAll(u -> u.getUserId() == user.getUserId() ? user : u);
+        }
+    }
     public void delete(int id) { db.deleteById(id); }                       // Delete a user by id
     public void logout() { signedInUser = null; }
 }
