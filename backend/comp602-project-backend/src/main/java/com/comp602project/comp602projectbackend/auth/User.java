@@ -1,5 +1,7 @@
 package com.comp602project.comp602projectbackend.auth;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +28,11 @@ public class User {
     private List<Integer> connectionKeys = new ArrayList<>();                   // [12,124,45,325,63]
  
     // List of users generated at runtime, not stored in database
+    
+    @JsonIgnore
     private List<List<User>> dmUsers = new ArrayList<>();
+
+    @JsonIgnore
     private List<User> connections = new ArrayList<>();
 
     private Boolean profileComplete = false;
