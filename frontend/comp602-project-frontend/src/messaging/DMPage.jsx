@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import DMPageRenderer from './DMPageRenderer';
 import { useRef, useEffect, useState } from 'react';
 
@@ -40,11 +41,27 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-[#E8E4DC]">
                 <button onClick={onBack} className="text-xl text-[#C4785A] hover:text-[#E05C3A] transition">←</button>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 w-full">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-gradient-to-br from-orange-400 to-orange-600">
                         {conversationName?.[0]?.toUpperCase() || '?'}
                     </div>
                     <h2 className="text-base font-semibold text-gray-900">{conversationName}</h2>
+                    <div className="flex-1 flex justify-end pr-5 gap-4">
+                        <motion.button
+                            className="bg-transparent border-none"
+                            whileTap={{ scale: 0.9 }}
+                            animate={{ scale: 1 }}
+                        >
+                            <i className="bi bi-telephone text-xl text-orange-600"></i>
+                        </motion.button>
+                        <motion.button
+                            className="bg-transparent border-none"
+                            whileTap={{ scale: 0.9 }}
+                            animate={{ scale: 1 }}
+                        >
+                            <i className="bi bi-camera-video text-2xl text-orange-600"></i>
+                        </motion.button>
+                    </div>
                 </div>
             </div>
 

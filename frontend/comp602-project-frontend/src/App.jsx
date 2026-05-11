@@ -28,7 +28,7 @@ function App() {
 
       {/* only show the full nav if profile complete, else just show profile tab */}
       {currentUser.profileComplete && !inDM
-        ? <NavigationBar setPage={setPage} currentUser={currentUser} />
+        ? <NavigationBar setPage={setPage} currentPage={page} currentUser={currentUser} />
         : null
       }
     </div>

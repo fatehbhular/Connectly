@@ -20,6 +20,8 @@ export default function NavigationBar({ setPage, currentPage }) {
                 onClick={() => setPage('profile')}
                 className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
                 whileTap={{ scale: 0.9 }}
+                animate={{ scale: currentPage === 'profile' ? 1.2 : 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
                 {currentPage === 'profile' && (
                     <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
@@ -32,6 +34,8 @@ export default function NavigationBar({ setPage, currentPage }) {
                 onClick={() => setPage('connections')}
                 className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
                 whileTap={{ scale: 0.9 }}
+                animate={{ scale: currentPage === 'connections' ? 1.2 : 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
                 {currentPage === 'connections' && (
                     <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
@@ -44,7 +48,10 @@ export default function NavigationBar({ setPage, currentPage }) {
                 onClick={() => setPage('messages')}
                 className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
                 whileTap={{ scale: 0.9 }}
+                animate={{ scale: currentPage === 'messages' ? 1.2 : 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
+                {console.log(currentPage)}
                 {currentPage === 'messages' && (
                     <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
                 )}
@@ -56,6 +63,8 @@ export default function NavigationBar({ setPage, currentPage }) {
                 onClick={() => setPage('settings')}
                 className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
                 whileTap={{ scale: 0.9 }}
+                animate={{ scale: currentPage === 'settings' ? 1.2 : 0.95 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
                 {currentPage === 'settings' && (
                     <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />

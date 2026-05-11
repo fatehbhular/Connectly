@@ -18,13 +18,11 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
         <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]">
 
             {/* Header */}
-            <div className="px-6 pt-14 pb-5">
+            <div className="flex items-baseline gap-2 px-6 pt-14 pb-5">
+                <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
                 <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#C4785A] mb-1">
-                    Connectly
+                    for you
                 </p>
-                <h1 className="text-3xl font-bold text-gray-900">
-                    Messages
-                </h1>
             </div>
 
             {/* Search Bar */}

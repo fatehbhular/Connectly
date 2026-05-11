@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import './UserCardUI.css'
 
 // Haversine formula — calculates the distance in km between two GPS coordinates
 // Returns null if either coordinate is missing
@@ -101,32 +100,80 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
   // Calculate distance between the signed in user and the card's user
   const distance = calcDistance(currentUser?.latitude, currentUser?.longitude, latitude, longitude);
 
-  // Card background gradually turns green when dragging right, red when dragging left
-  // Math.min clamps the opacity so it never goes above 0.6
-  const bgColor = dragX > 50  ? `rgba(0, 200, 100, ${Math.min(dragX / 150, 0.6)})`
-                : dragX < -50 ? `rgba(220, 50, 50, ${Math.min(-dragX / 150, 0.6)})`
-                : 'white';
+  // Card border glows green when dragging right, red when dragging left
+  // Card background tints subtly — Math.min clamps opacity so it never goes above 0.08
+  const bgColor = dragX > 50
+    ? `rgba(0, 180, 100, ${Math.min(dragX / 150, 0.08)})`
+    : dragX < -50
+      ? `rgba(220, 50, 50, ${Math.min(-dragX / 150, 0.08)})`
+      : 'white';
+
+  // Ring outline intensifies as the drag distance increases, capped at 0.5 opacity
+  const boxShadow = dragX > 50
+    ? `0 0 0 2px rgba(0,180,100,${Math.min(dragX / 150, 0.5)})`
+    : dragX < -50
+      ? `0 0 0 2px rgba(220,50,50,${Math.min(-dragX / 150, 0.5)})`
+      : '0 1px 4px rgba(0,0,0,0.06)';
 
   return (
-    <div className="card" onMouseDown={onMouseDown} onTouchStart={onTouchStart} style={{
-      transform: `translateX(${dragX}px) rotate(${dragX * 0.005}deg)`,  // moves and slightly rotates the card as you drag
-      transition: isDragging ? 'none' : 'transform 0.2s ease',           // smooth snap back when released, no transition while dragging
-      cursor: isDragging ? 'grabbing' : 'grab',
-      opacity: isDragging ? 1 - Math.abs(dragX) / 300 : 1,              // card fades slightly as you drag further
-      backgroundColor: bgColor,
-    }}>
+    <div
+      className="w-80 rounded-2xl bg-white border border-[#E8E4DC] px-8 py-16 select-none min-h-[520px]"
+      onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
+      style={{
+        transform: `translateX(${dragX}px) rotate(${dragX * 0.005}deg)`,  // moves and slightly rotates the card as you drag
+        transition: isDragging ? 'none' : 'transform 0.2s ease',           // smooth snap back when released, no transition while dragging
+        cursor: isDragging ? 'grabbing' : 'grab',
+        opacity: isDragging ? 1 - Math.abs(dragX) / 300 : 1,              // card fades slightly as you drag further
+        backgroundColor: bgColor,
+        boxShadow,
+      }}
+    >
+      {/* "Wants to connect" badge — only shown if the displayed user has already requested the signed-in user */}
       {wantsToConnect && (
-          <div className="wants-to-connect-badge">
-              Wants to connect
-          </div>
+        <div className="inline-flex items-center gap-1.5 mb-4 px-3 py-1 rounded-full bg-[#FDF3EE] border border-[#F0CBB8] text-[#C4785A] text-xs font-semibold tracking-wide">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] inline-block" />
+          Wants to connect
+        </div>
       )}
-      <h1>{user}</h1>
-      <h3>{industry}</h3>
-      {distance && <p>{location} ({distance} km away)</p>}
-      <div className="cardBio">
-        <h4>{bio}</h4>
-        {skills && skills.length > 0 && <p>Skills: {skills.join(', ')}</p>}  {/* only shown if user has skills */}
+
+      {/* Avatar — initials circle matching the DM list style */}
+      <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-sm text-white bg-gradient-to-br from-orange-300 to-orange-400 mb-4">
+        {user?.[0]?.toUpperCase() || '?'}
       </div>
+
+      {/* Name + industry */}
+      <h2 className="text-gray-900 font-bold text-xl leading-tight">{user}</h2>
+      <p className="text-[#C4785A] text-sm font-semibold tracking-wide mt-0.5">{industry}</p>
+
+      {/* Location + distance — only shown if distance can be calculated */}
+      {distance && (
+        <p className="text-[#B0A99F] text-xs mt-2">
+          {location} · {distance} km away
+        </p>
+      )}
+
+      {/* Divider */}
+      <div className="border-t border-[#E8E4DC] my-4" />
+
+      {/* Bio */}
+      {bio && (
+        <p className="text-gray-700 text-sm leading-relaxed">{bio}</p>
+      )}
+
+      {/* Skills — only shown if user has skills */}
+      {skills && skills.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-4">
+          {skills.map((skill, i) => (
+            <span
+              key={i}
+              className="px-2.5 py-1 rounded-full bg-[#F0EDE6] border border-[#E8E4DC] text-[#B0A99F] text-xs font-medium"
+            >
+              {skill}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
