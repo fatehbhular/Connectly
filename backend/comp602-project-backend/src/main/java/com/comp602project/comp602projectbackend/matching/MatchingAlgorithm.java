@@ -96,14 +96,16 @@ public class MatchingAlgorithm {
         );
 
         List<User> result = allUsers.stream()
-            .filter(u -> u.getUserId() != signedInUser.getUserId())         // exclude signed in user from results
-            .filter(u -> !connectedIds.contains(u.getUserId()))             // remove already connected users
-            .filter(u -> !requestedIds.contains(u.getUserId()))             // remove already request users
+            .filter(u -> u.getUserId() != signedInUser.getUserId())                 // exclude signed in user from results
+            .filter(u -> u.isProfileComplete() != null && u.isProfileComplete())    // remove incomplete profiles
+            .filter(u -> !connectedIds.contains(u.getUserId()))                     // remove already connected users
+            .filter(u -> !requestedIds.contains(u.getUserId()))                     // remove already request users
             .sorted(Comparator.comparingDouble(
-                (User u) -> scoreUser(signedInUser, u)).reversed())         // highest score first
+                (User u) -> scoreUser(signedInUser, u)).reversed())                 // highest score first
             .collect(Collectors.toList());
 
         cache.put(signedInUser.getUserId(), result);
+        signedInUser.setConnections(new ArrayList<>());
         return result;
     }
 }

@@ -20,7 +20,7 @@
   background: #fff;
   border-radius: 28px;
   padding: 40px 32px 36px;
-  box-shadow: 0 2px 40px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 40px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0, 0, 0, 0.04);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -169,8 +169,15 @@
 }
 
 @keyframes toast-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-btn {
@@ -184,7 +191,7 @@
   font-weight: 700;
   font-family: 'Nunito', sans-serif;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(249,112,64,0.30);
+  box-shadow: 0 4px 16px rgba(249, 112, 64, 0.30);
   transition: opacity 0.15s, transform 0.1s;
   -webkit-appearance: none;
 }
@@ -233,4 +240,20 @@
   cursor: pointer;
   padding: 0;
   margin-left: 4px;
+}
+
+.login-form-content {
+  animation: loginFadeIn 0.2s ease;
+}
+
+@keyframes loginFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

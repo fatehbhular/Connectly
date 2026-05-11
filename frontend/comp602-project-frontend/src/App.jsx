@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import LoginPage from "./auth/LoginPage";
+import OnboardingPage from "./auth/OnboardingPage";
 import ProfilePage from "./profile/ProfilePage";
 import SettingsPage from "./settings/SettingsPage";
 import ConnectionsPage from "./connections/ConnectionsPage";
@@ -22,19 +23,20 @@ function App() {
     return <LoginPage onLogin={(user) => setCurrentUser(user)} />;
   }
 
+  // New user, run them through onboarding before the main app
+  if (!currentUser.profileComplete) {
+    return <OnboardingPage currentUser={currentUser} onComplete={setCurrentUser} />;
+  }
+
   // Otherwise show the main app
   return (
     <div>
       {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
-      {page === "connections" && currentUser.profileComplete && <ConnectionsPage currentUser={currentUser} />}
-      {page === "messages"    && currentUser.profileComplete && <MessagingPage currentUser={currentUser} />}
-      {page === "settings" && currentUser.profileComplete && <SettingsPage onSignOut={() => { setCurrentUser(null); setPage("profile"); }} />}
+      {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
+      {page === "messages" && <MessagingPage currentUser={currentUser} />}
+      {page === "settings" && <SettingsPage onSignOut={() => { setCurrentUser(null); setPage("profile"); }} />}
 
-      {/* only show the full nav if profile complete, else just show profile tab */}
-      {currentUser.profileComplete
-        ? <NavigationBar setPage={setPage} currentPage={page} />
-        : null
-      }
+      <NavigationBar setPage={setPage} currentPage={page} />
     </div>
   );
 }

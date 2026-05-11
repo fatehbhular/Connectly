@@ -6,15 +6,15 @@ import "./LoginPage.css";
 // Icons inside the entry boxes, profile and password
 const PersonIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="8" r="4"/>
-    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
   </svg>
 );
 
 const LockIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2"/>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    <rect x="3" y="11" width="18" height="11" rx="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
 );
 
@@ -59,7 +59,7 @@ export default function LoginPage({ onLogin }) {
       if (!res.ok) {                                                                // Let the user know the server rejected the input
         showToast(isSignUp ? "Username already taken." : "Incorrect username or password.");
         return;
-      } 
+      }
 
       const user = await res.json();
       if (rememberMe) localStorage.setItem("currentUser", JSON.stringify(user));    // Save the user to the local device
@@ -77,8 +77,10 @@ export default function LoginPage({ onLogin }) {
         {/* Floating toast; used for validity labels */}
         {toast && <div className="login-toast">{toast}</div>}
 
-        <h1 className="login-heading">{isSignUp ? "Create Account" : "Welcome Back"}</h1>
-        <p className="login-subheading">{isSignUp ? "Join Connectly today." : "Enter your credentials to continue."}</p>
+        <div className="login-form-content" key={isSignUp ? "signup" : "signin"}>
+          <h1 className="login-heading">{isSignUp ? "Create Account" : "Welcome Back"}</h1>
+          <p className="login-subheading">{isSignUp ? "Join Connectly today." : "Enter your credentials to continue."}</p>
+        </div>
 
         {/* Username */}
         <div className="login-field">

@@ -9,6 +9,8 @@ public class User {
 
     private int userId;                                                         // Private key of users
     private String username;
+
+    @JsonIgnore
     private String password;
     private String email;
  
