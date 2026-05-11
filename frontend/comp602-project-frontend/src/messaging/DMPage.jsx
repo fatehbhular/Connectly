@@ -20,6 +20,12 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
     const messagesEndRef = useRef(null);
     const hasScrolled = useRef(false);
 
+    useEffect(() => {
+    document.body.style.backgroundColor = 'white';
+    return () => {
+        document.body.style.backgroundColor = '';
+    };
+}, []);
     /** Scroll to the bottom when conversation is loaded */
     useEffect(() => {
         if (!hasScrolled.current && conversation.length > 0) {
