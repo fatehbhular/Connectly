@@ -129,4 +129,21 @@ public class MessagingController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    /**
+     * Returns the last message in a conversation
+     * 
+     * @param conversationKey - conversation key from the URL path
+     * @param userId - ID of the signed-in user from the request header
+     * @return {@link ResponseEntity} containing the last message, or error on failure
+     */
+    @GetMapping("/lastMessage/{conversationKey}")
+    public ResponseEntity<?> getLastMessage(@PathVariable("conversationKey") String conversationKey, @RequestHeader("userId") Integer userId) {
+        try {
+            Message lastMessage = messagingService.getLastMessage(conversationKey, userId);
+            return ResponseEntity.ok(lastMessage);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }

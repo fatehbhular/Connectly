@@ -134,4 +134,21 @@ public class MessagingService {
         return messagingRepository.getMessageByConversationKey(conversationKey);
     }
 
+    /**
+     * Retrieves the last message in a conversation.
+     * 
+     * Authorisation check -> Splits the conversation key by "_" and verifies 
+     * whether the userId matches any of the keys.
+     * Throws an exception if the user is not a member, preventing unauthorised access.
+     * 
+     * @param conversationKey - the conversation to fetch the last message from
+     * @param userId - ID of the user requesting the last message (authorisation check)
+     * @return the most recent {@link Message} object, or null if none found
+     */
+    public Message getLastMessage(String conversationKey, Integer userId) {
+        boolean isMemberOfConversation = List.of(conversationKey.split("_")).contains(String.valueOf(userId));
+        if (!isMemberOfConversation) throw new IllegalArgumentException("User " + userId + " is not part of this conversation.");
+        return messagingRepository.getLastMessage(conversationKey);
+    }
+
 }

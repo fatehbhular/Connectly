@@ -17,6 +17,7 @@ function App() {
     return saved ? JSON.parse(saved) : null;
   });
   const [page, setPage] = useState("profile");
+  const [inDM, setInDM] = useState(false);
 
   // If nobody is logged in, show the login page
   if (!currentUser) {
@@ -33,10 +34,15 @@ function App() {
     <div>
       {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
       {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
-      {page === "messages" && <MessagingPage currentUser={currentUser} />}
+      {page === "messages" && <MessagingPage currentUser={currentUser} onDMOpen={setInDM} />}
       {page === "settings" && <SettingsPage onSignOut={() => { setCurrentUser(null); setPage("profile"); }} />}
 
-      <NavigationBar setPage={setPage} currentPage={page} />
+
+      {/* only show the full nav if not im msg */}
+      {!inDM
+        ? <NavigationBar setPage={setPage} currentPage={page} currentUser={currentUser} />
+        : null
+      }
     </div>
   );
 }

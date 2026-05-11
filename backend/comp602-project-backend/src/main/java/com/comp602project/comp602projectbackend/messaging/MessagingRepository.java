@@ -119,4 +119,16 @@ public class MessagingRepository {
         String sql = "SELECT unnest(dm_keys) FROM users WHERE user_id = ?";
         return jdbcTemplate.queryForList(sql, String.class, userId);
     }
+
+    /**
+     * Retrieves the most recent message in a conversation.
+     * 
+     * @param conversationKey - the conversation to fetch last message from
+     * @return the most recent {@link Message} object, or null if none found
+     */
+    public Message getLastMessage(String conversationKey) {
+        String sql = "SELECT * FROM messages WHERE conversation_key = ? ORDER BY timestamp DESC LIMIT 1";
+        List<Message> results = jdbcTemplate.query(sql, this::mapToMessage, conversationKey);
+        return results.isEmpty() ? null : results.get(0);
+    }
 }
