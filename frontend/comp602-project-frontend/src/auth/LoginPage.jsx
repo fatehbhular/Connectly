@@ -26,6 +26,12 @@ export default function LoginPage({ onLogin }) {
   const [toast, setToast] = useState(null);                                         // floating toast message
   const [usernameErr, setUsernameErr] = useState(false);
   const [passwordErr, setPasswordErr] = useState(false);
+  const [step, setStep] = useState("login");                                        // Show what UI to show otp or login
+  const [otpCode, setOtpCode] = useState("");                                       // Store Otp Code
+  const [otpEmail, setOtpEmail] = useState("");                                     // Store user email
+  const [pendingUser, setPendingUser] = useState(null);                               // holds user while waiting for OTP
+  const [otpErr, setOtpErr] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const showToast = (msg) => {                                                      // display toast notification for 3 sec
     setToast(msg);
@@ -35,7 +41,8 @@ export default function LoginPage({ onLogin }) {
   const handleSubmit = async () => {
     setUsernameErr(false);
     setPasswordErr(false);
-
+    setLoading(true);
+    
     let hasErr = false;                                                             // check if any of the fields are empty
     if (!username.trim()) { setUsernameErr(true); hasErr = true; }
     if (!password.trim()) { setPasswordErr(true); hasErr = true; }
@@ -48,7 +55,7 @@ export default function LoginPage({ onLogin }) {
       return;
     }
 
-    const endpoint = isSignUp ? "/auth/signup" : "/auth/login";                     // chang ethe fetch depending on the current page.
+    const endpoint = isSignUp ? "/auth/signup" : "/auth/login";                     // change the fetch depending on the current page.
     try {
       const res = await fetch(`${BASE_URL}${endpoint}`, {
         method: "POST",
@@ -58,17 +65,99 @@ export default function LoginPage({ onLogin }) {
 
       if (!res.ok) {                                                                // Let the user know the server rejected the input
         showToast(isSignUp ? "Username already taken." : "Incorrect username or password.");
-        return;
+        return; 
       }
 
       const user = await res.json();
+
+      if (!isSignUp && user.otpEnabled) {
+        setPendingUser(user);         // hold the user until OTP is verified
+        setOtpEmail(user.email);      // remember their email for verification
+        setStep("otp");               // show OTP screen
+        return;
+      }
+
       if (rememberMe) localStorage.setItem("currentUser", JSON.stringify(user));    // Save the user to the local device
       onLogin(user);
+
+    } catch { showToast("Could not connect to server."); }
+
+    finally{setLoading(false);}
+  };
+
+  const handleVerifyOtp = async () => {
+    setOtpErr(false);
+
+    if (!otpCode.trim()) { setOtpErr(true); return; }
+
+    try {
+      const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: otpEmail, code: otpCode }),
+      });
+      
+
+      if (!res.ok) {
+        setOtpErr(true);
+        showToast("Invalid or expired code. Try again.");
+        return;
+      }
+
+      // OTP verified — finish logging in
+      if (rememberMe) localStorage.setItem("currentUser", JSON.stringify(pendingUser));
+      onLogin(pendingUser);
 
     } catch { showToast("Could not connect to server."); }
   };
 
   const handleKeyDown = (e) => { if (e.key === "Enter") handleSubmit(); };
+
+  if (step === "otp") {
+    return (
+      <div className="login-page">
+        <div className="login-card">
+          {toast && <div className="login-toast">{toast}</div>}
+
+          <div className="login-form-content">
+            <h1 className="login-heading">Check your email</h1>
+            <p className="login-subheading">Enter the 6 character code sended to <strong>{otpEmail}</strong></p>
+          </div>
+
+          <div className="login-field">
+            <div className="login-input-wrap">
+              <span className="login-input-icon"><LockIcon /></span>
+              <input
+                className={`login-input${otpErr ? ' login-input--error' : ''}`}
+                type="text"
+                placeholder="Enter code"
+                value={otpCode}
+                maxLength={6}
+                onChange={e => { setOtpCode(e.target.value.toUpperCase()); setOtpErr(false); }}
+                onKeyDown={e => { if (e.key === "Enter") handleVerifyOtp(); }}
+                autoCapitalize="characters"
+              />
+            </div>
+          </div>
+
+          <button className="login-btn" onClick={handleVerifyOtp}>
+            Verify Code
+          </button>
+
+          {/* Go back */}
+          <p className="login-toggle">
+            Wrong account?
+            <button onClick={() => { setStep("login"); setOtpCode(""); setOtpErr(false); }}>
+              Go back
+            </button>
+          </p>
+
+        </div>
+      </div>
+    );
+  }
+
+
 
   return (
     <div className="login-page">
@@ -126,6 +215,8 @@ export default function LoginPage({ onLogin }) {
         <button className="login-btn" onClick={handleSubmit}>
           {isSignUp ? "Create Account" : "Sign In"}
         </button>
+
+        <p className="login-toggle" disabled={loading}> {loading ? "Loading....." : ""}</p>
 
         <div className="login-divider"><span>or</span></div>
 

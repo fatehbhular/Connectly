@@ -2,6 +2,7 @@ package com.comp602project.comp602projectbackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /*
 NOTE TO WINDOWS: ".\gradlew.bat bootRun" ALWAYS RUNS THIS FILE
@@ -11,10 +12,10 @@ Spring Boot looks for the annotation "@SpringBootApplication" to know where to s
 */
 
 @SpringBootApplication
+@EnableAsync
 public class Comp602ProjectBackendApplication {
 
     public static void main(String[] args) {
-
         // This line starts the entire Spring context and reads application.properties
         SpringApplication.run(Comp602ProjectBackendApplication.class, args);       
     }

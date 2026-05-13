@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.comp602project.comp602projectbackend.auth.services.OtpService;
 
 /*
 React                           Spring Boot
@@ -37,7 +38,8 @@ public class AuthController {
     @Autowired                                                                          // Spring automatically plugs in the UserRepository instance here
     private UserRepository userRepository;
  
-
+    @Autowired
+    private OtpService otpService;
 
     @PostMapping("/auth/login")                                                         // Call this method when the user tries to login (POST request)
     public ResponseEntity<User> login(@RequestBody Map<String, String> body) {          // @RequestBody reads the JSON React sent and converts it into a Map
@@ -47,6 +49,16 @@ public class AuthController {
         User user = userRepository.login(username, password);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();              // 404, send back nothing
+        }
+
+        if (Boolean.TRUE.equals(user.isOtpEnabled())) { //Only happend if user enables 2 factor authentication
+            String email = user.getEmail();
+            if(email == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();           // 400, malformed request syntax
+            }
+            //Send Otp to user email
+            otpService.sendOtp(email);
+
         }
         return ResponseEntity.ok(user);                                                 // 200, send back User object as JSON
     }
@@ -82,13 +94,38 @@ public class AuthController {
         userRepository.logout();
         return ResponseEntity.ok().build();
     }
- 
 
     @GetMapping("/users")                                                               // runs when React sends a GET request to "/users", returns all the users
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userRepository.getAll());                              // fetch all users from Supabase and send them back as JSON
     }
  
+
+    @PostMapping("/auth/otp/toggle")
+    public ResponseEntity<User> toggleOtp(@RequestBody Map<String, String> body) {      // runs when React sends a Post request to "/auth/otp/toggle"                                                                                     //Returns email and 
+        String email = body.get("email");                                          // fetch users email and otp boolean value
+        boolean enable = Boolean.parseBoolean(body.get("enable"));
+
+        User user = userRepository.toggleOtp(email, enable);
+        return ResponseEntity.ok(user);
+    }
+
+
+    @PostMapping("/auth/verify-otp")
+    public ResponseEntity<Map<String, String>> verifyOtp(@RequestBody Map<String, String> body) { // runs when React sends a Post request to "/auth/verify-otp"    
+        String email = body.get("email");                                                    // fetch users input of their email and code to verify
+        String code = body.get("code");
+
+        boolean valid = otpService.verifyOtp(email, code);
+
+        if (!valid) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Invalid or expired code"));
+        }
+
+        return ResponseEntity.ok(Map.of("message", "OTP verified"));
+    }
+
 
     @GetMapping("/users/me")                                                            // runs when React sends a GET request to "/users/me"
     public ResponseEntity<User> getSignedInUser() { 
@@ -106,4 +143,5 @@ public class AuthController {
         String displayName = user.getDisplayName();
         return ResponseEntity.ok(displayName);
     }
+
 }

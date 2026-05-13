@@ -10,7 +10,7 @@ import MessagingPage from "./messaging/MessagingPage";
 import NavigationBar from "./components/NavigationBar";
 
 function App() {
-
+  
   // Save the current user if the user chooses "remmeber me"
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('currentUser');
@@ -35,10 +35,10 @@ function App() {
       {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
       {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
       {page === "messages" && <MessagingPage currentUser={currentUser} onDMOpen={setInDM} />}
-      {page === "settings" && <SettingsPage onSignOut={() => { setCurrentUser(null); setPage("profile"); }} />}
+      {page === "settings" && <SettingsPage onSignOut={() => { setCurrentUser(null); setPage("profile"); }} user={currentUser} onUserUpdate={setCurrentUser}/>}
 
 
-      {/* only show the full nav if not im msg */}
+      {/* only show the full nav if not im msg */}  
       {!inDM
         ? <NavigationBar setPage={setPage} currentPage={page} currentUser={currentUser} />
         : null

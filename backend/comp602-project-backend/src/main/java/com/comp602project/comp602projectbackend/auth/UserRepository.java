@@ -1,15 +1,15 @@
 package com.comp602project.comp602projectbackend.auth;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.comp602project.comp602projectbackend.matching.DistanceScorer;
 
 import jakarta.annotation.PostConstruct;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * THIS IS THE ONLY CLASS THAT TALKS TO THE DATABASE. so nothing outside this class ever sees the UserDatabase
@@ -52,6 +52,7 @@ public class UserRepository {
         user.setConnectionKeys(row.getConnectionKeys());
         user.setProfileComplete(row.isProfileComplete());
         user.setRequestedUsers(row.getRequestedUsers());
+        user.setOtpEnabled(row.isOtpEnabled());
         return user;
     }
 
@@ -74,6 +75,7 @@ public class UserRepository {
         row.setConnectionKeys(user.getConnectionKeys());
         row.setProfileComplete(user.isProfileComplete());
         row.setRequestedUsers(user.getRequestedUsers());
+        row.setOtpEnabled(user.isOtpEnabled());
         return row;
     }
 
@@ -180,4 +182,16 @@ public class UserRepository {
     }
     public void delete(int id) { db.deleteById(id); }                       // Delete a user by id
     public void logout() { signedInUser = null; }
+
+    public User toggleOtp(String email, boolean enable){
+        UserDatabase row = db.findByEmail(email).orElse(null); //Get the email 
+        if (row == null) return null; 
+        row.setOtpEnabled(enable);                                   //Enable Otp if row != null
+        db.save(row);                                                //Save to database
+        User user = toUser(row);
+        if (signedInUser != null && signedInUser.getEmail().equals(email)) {
+            signedInUser.setOtpEnabled(enable);
+        }
+        return user;
+    }
 }

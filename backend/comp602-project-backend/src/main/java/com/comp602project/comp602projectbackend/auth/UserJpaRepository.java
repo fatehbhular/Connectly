@@ -32,4 +32,7 @@ public interface UserJpaRepository extends JpaRepository<UserDatabase, Integer> 
 
     // Spring sees "findByUsername" and automatically generates: SELECT * FROM users WHERE username = ?
     Optional<UserDatabase> findByUsername(String username);
+
+    // Select * from users from email
+    Optional<UserDatabase> findByEmail(String email);
 }

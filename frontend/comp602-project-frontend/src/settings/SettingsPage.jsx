@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import BASE_URL from "../config.js";
 
-export default function SettingsPage({ onSignOut }) {
+export default function SettingsPage({ onSignOut, user, onUserUpdate}) {
   const [theme, setTheme] = useState("Light");
   const [language, setLanguage] = useState("English");
+  const [otpEnabled, setOtpEnabled] = useState(user?.otpEnabled || false);                  //Used to display the tick for otp
+  const [otpToast, setOtpToast] = useState(null); 
 
   // Shared card animation — each card fades and slides up, staggered by index
   const cardVariants = {
@@ -13,6 +16,32 @@ export default function SettingsPage({ onSignOut }) {
       y: 0,
       transition: { delay: i * 0.06, type: "spring", stiffness: 320, damping: 26 },
     }),
+  };
+
+  const handleToggleOtp = async (e) => {
+    const enable = e.target.checked;
+
+    try {
+      const res = await fetch(`${BASE_URL}/auth/otp/toggle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, enable: String(enable) }),
+      });
+
+      if (!res.ok) {
+        setOtpToast("Failed to update 2FA setting.");
+        return;
+      }
+
+      const updatedUser = await res.json(); 
+      onUserUpdate(updatedUser);       
+      setOtpEnabled(enable);
+      setOtpToast(enable ? "2FA enabled" : "2FA disabled");
+      setTimeout(() => setOtpToast(null), 3000);
+
+    } catch {
+      setOtpToast("Could not connect to server.");
+    }
   };
 
   return (
@@ -89,7 +118,7 @@ export default function SettingsPage({ onSignOut }) {
             <p className="text-gray-900 font-semibold text-sm">Two-Factor Authentication</p>
             <p className="text-[#B0A99F] text-xs mt-0.5">Manage account security preferences.</p>
           </div>
-          <input type="checkbox" className="w-4 h-4 accent-orange-400" />
+          <input type="checkbox" className="w-4 h-4 accent-orange-400" checked={otpEnabled} onChange={handleToggleOtp}/>
         </motion.div>
 
         {/* Language */}

@@ -41,6 +41,8 @@ public class User {
 
     private List<Integer> requestedUsers = new ArrayList<>(); 
 
+    private Boolean otpEnabled = false;                                        // Added by Shawn
+
     public User() {}
 
     public User(int userId, String username, String password) {                 // Use this when the user first signs in
@@ -112,4 +114,7 @@ public class User {
 
     public List<Integer> getRequestedUsers() { return requestedUsers; }
     public void setRequestedUsers(List<Integer> keys) { this.requestedUsers = keys; }
+
+    public Boolean isOtpEnabled() { return otpEnabled; }                                        //Added by Shawn
+    public void setOtpEnabled(Boolean otpEnabled) { this.otpEnabled = otpEnabled; }
 }

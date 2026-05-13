@@ -62,6 +62,8 @@ public class UserDatabase {
     @Column(name = "requested_user", columnDefinition = "INT[]")            // Each entry is just a userId number
     private List<Integer> requestedUsers = new ArrayList<>();
 
+    @Column(name = "otp_enabled")
+    private Boolean otpEnabled = false;                                     // Enables the 2 factor authetication for user - Added by Shawn
 
     // SETTERS AND GETTERS
 
@@ -112,4 +114,7 @@ public class UserDatabase {
 
     public List<Integer> getRequestedUsers() { return requestedUsers; }
     public void setRequestedUsers(List<Integer> keys) { this.requestedUsers = keys; }
+
+    public Boolean isOtpEnabled() { return otpEnabled; }
+    public void setOtpEnabled(Boolean otpEnabled) { this.otpEnabled = otpEnabled; }          //Set and Get method for OtpEnabled - Added by Shawn
 }

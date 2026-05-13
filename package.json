@@ -1,5 +1,7 @@
 {
   "dependencies": {
-    "@fontsource/dm-sans": "^5.2.8"
+    "@fontsource/dm-sans": "^5.2.8",
+    "bootstrap-icons": "^1.13.1",
+    "framer-motion": "^12.38.0"
   }
 }
