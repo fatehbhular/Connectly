@@ -216,8 +216,6 @@ export default function LoginPage({ onLogin }) {
           {isSignUp ? "Create Account" : "Sign In"}
         </button>
 
-        <p className="login-toggle" disabled={loading}> {loading ? "Loading....." : ""}</p>
-
         <div className="login-divider"><span>or</span></div>
 
         <p className="login-toggle">
