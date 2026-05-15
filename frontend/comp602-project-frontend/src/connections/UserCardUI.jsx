@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
+import OnlineDot from '../components/OnlineStatusDot.jsx';
+import BASE_URL from '../config.js';
 
 // Haversine formula — calculates the distance in km between two GPS coordinates
 // Returns null if either coordinate is missing
@@ -17,6 +19,21 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
   const [isDragging, setIsDragging] = useState(false);  // true while the mouse is held down
   const [dragX, setDragX] = useState(0);                // how far the card has been dragged — useState so the card visually moves
   const cooldownRef = useRef(false); // prevents arrow keys from firing too fast
+  const [isOnline, setIsOnline] = useState(false);      // fetch presence for this card's user
+
+  useEffect(() => {
+    if (!user.userId) return;
+    const fetchPresence = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/presence/${user.userId}`);
+        const online = await res.json();
+        setIsOnline(online);
+      } catch {
+        setIsOnline(false);
+      }
+    };
+    fetchPresence();
+  }, [user.userId]);
 
   // Fires when the left mouse button is pressed down on the card
   function onMouseDown(e) {
@@ -138,8 +155,14 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
       )}
 
       {/* Avatar — initials circle matching the DM list style */}
-      <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-sm text-white bg-gradient-to-br from-orange-300 to-orange-400 mb-4">
-        {user?.[0]?.toUpperCase() || '?'}
+      <div className="relative w-12 h-12 mb-4">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-sm text-white bg-gradient-to-br from-orange-300 to-orange-400">
+          {user?.[0]?.toUpperCase() || '?'}
+        </div>
+        {/* ADDED: online dot pinned to bottom-right */}
+        <span className="absolute bottom-0 right-0">
+          <OnlineDot isOnline={isOnline} />
+        </span>
       </div>
 
       {/* Name + industry */}

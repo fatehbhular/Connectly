@@ -6,18 +6,21 @@ import ProfilePage from "./profile/ProfilePage";
 import SettingsPage from "./settings/SettingsPage";
 import ConnectionsPage from "./connections/ConnectionsPage";
 import MessagingPage from "./messaging/MessagingPage";
-
 import NavigationBar from "./components/NavigationBar";
+import UserHeatbeat from "./hooks/UserHearbeat";
 
 function App() {
   
-  // Save the current user if the user chooses "remmeber me"
+  // Save the current user if the user chooses "rememeber me"
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('currentUser');
     return saved ? JSON.parse(saved) : null;
   });
   const [page, setPage] = useState("profile");
   const [inDM, setInDM] = useState(false);
+
+  // Runs ffor the whole session once logged in
+  UserHeatbeat(currentUser?.userId);
 
   // If nobody is logged in, show the login page
   if (!currentUser) {
