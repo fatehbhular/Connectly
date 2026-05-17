@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import OnlineDot from '../components/OnlineStatusDot.jsx';
+import BASE_URL from '../config.js';
 
 /**
  * Full screen DM list page.
@@ -14,6 +17,33 @@ import { motion, AnimatePresence } from 'framer-motion';
  * @param {string}   userId         - the signed-in user's id
  */
 export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMessages, userId }) {
+    const [presenceMap, setPresenceMap] = useState({});
+
+    useEffect(() => {
+        if (!namesLoaded || dms.length === 0) return;
+
+        const fetchPresence = async () => {
+            const entries = await Promise.all(
+                dms.map(async (key) => {
+                    const otherUserId = key.split('_').find(id => String(id) !== String(userId));
+                    try {
+                        const res = await fetch(`${BASE_URL}/presence/${otherUserId}`); 
+                        const isOnline = await res.json();
+                        return [otherUserId, isOnline];
+                    } catch {
+                        return [otherUserId, false];
+                    }
+                })
+            );
+            setPresenceMap(Object.fromEntries(entries));
+        };
+
+        fetchPresence();
+        // re-fetch every 30 seconds to keep dots fresh
+        const interval = setInterval(fetchPresence, 30000);
+        return () => clearInterval(interval);
+    }, [namesLoaded, dms, userId]);
+
     return (
         <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]">
 
@@ -76,6 +106,10 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
                             const preview = last
                                 ? `${last.senderId === userId ? 'You' : displayName}: ${last.content}`
                                 : 'No messages yet';
+                            
+                            // Gets the other usersi ID to look up their presence
+                            const otherUserId = dm ? dm.split('_').find(id => String(id) !== String(userId)) : null;
+                            const isOnline = otherUserId ? (presenceMap[otherUserId] ?? false) : false;
 
                             return (
                                 <motion.div
@@ -93,8 +127,14 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
                                     whileTap={{ scale: 0.98 }}
                                 >
                                     {/* Avatar */}
-                                    <div className="w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm shrink-0 text-white bg-gradient-to-br from-orange-300 to-orange-400">
-                                        {initials}
+                                    <div className="relative shrink-0">
+                                        <div className="w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm text-white bg-gradient-to-br from-orange-300 to-orange-400">
+                                            {initials}
+                                        </div>
+                                        {/* ADDED: dot pinned to bottom-right of avatar */}
+                                        <span className="absolute bottom-0 right-0">
+                                            <OnlineDot isOnline={isOnline} />
+                                        </span>
                                     </div>
 
                                     {/* Name + preview */}
