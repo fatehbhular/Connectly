@@ -1,11 +1,14 @@
 import {useEffect, useRef} from 'react';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL;
-const INTERVAL_MS = 30000;
+const BACKEND_URL = import.meta.env.VITE_API_URL;   // Backend url for http requests
+const INTERVAL_MS = 30000;   // Set interval for sending heartbeat every 30 seconds
 
 export default function UserHeatbeat(userId) {
     const timerRef = useRef(null);
 
+    /**
+     * 
+     */
     useEffect(() => {
         if (!userId) return;
 

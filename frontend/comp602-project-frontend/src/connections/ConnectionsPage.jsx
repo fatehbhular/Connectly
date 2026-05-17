@@ -68,6 +68,7 @@ export default function ConnectionsPage({ currentUser }) {
               transition={{ type: 'spring', stiffness: 320, damping: 26 }}
             >
               <UserCardUI
+                userId={currentUserCard.userId}
                 user={currentUserCard.displayName}
                 industry={currentUserCard.industry}
                 bio={currentUserCard.bio}

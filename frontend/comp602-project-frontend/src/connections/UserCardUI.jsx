@@ -13,7 +13,7 @@ function calcDistance(lat1, lng1, lat2, lng2) {
   return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(0);
 }
 
-function UserCardUI({ user, industry, bio, skills, latitude, longitude, location, currentUser, wantsToConnect, SwipeLeft, SwipeRight }) {
+function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, location, currentUser, wantsToConnect, SwipeLeft, SwipeRight }) {
   const startX = useRef(null);       // stores where the mouse was when the drag started
   const dragXRef = useRef(0);        // stores how far the mouse has moved — useRef so it doesn't cause re-renders
   const [isDragging, setIsDragging] = useState(false);  // true while the mouse is held down
@@ -22,10 +22,10 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
   const [isOnline, setIsOnline] = useState(false);      // fetch presence for this card's user
 
   useEffect(() => {
-    if (!user.userId) return;
+    if (!userId) return;
     const fetchPresence = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/presence/${user.userId}`);
+        const res = await fetch(`${BASE_URL}/presence/${userId}`);
         const online = await res.json();
         setIsOnline(online);
       } catch {
@@ -33,7 +33,7 @@ function UserCardUI({ user, industry, bio, skills, latitude, longitude, location
       }
     };
     fetchPresence();
-  }, [user.userId]);
+  }, [userId]);
 
   // Fires when the left mouse button is pressed down on the card
   function onMouseDown(e) {
