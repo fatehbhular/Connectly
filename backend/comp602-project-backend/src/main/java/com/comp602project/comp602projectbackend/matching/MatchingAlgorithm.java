@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * MatchingAlgorithm scores and ranks all users for the signed in user.
@@ -35,9 +34,6 @@ public class MatchingAlgorithm {
     // Spring automatically finds every class that implements IScorer and injects them here
     private final List<IScorer> scorers;
 
-    // Cache: userId -> ranked queue. Call invalidateCache(userId) when profile or connections change.
-    private final Map<Integer, List<User>> cache = new ConcurrentHashMap<>();
-
     @Autowired
     public MatchingAlgorithm(List<IScorer> scorers) {
         this.scorers = scorers;
@@ -48,10 +44,6 @@ public class MatchingAlgorithm {
         WEIGHTS.put(FieldScorer.class, 50.0);
         WEIGHTS.put(DistanceScorer.class, 30.0);
         WEIGHTS.put(MutualScorer.class, 20.0);
-    }
-
-    public void invalidateCache(int userId) {
-        cache.remove(userId);
     }
 
     // Score a single user compared to the signed in user using all the scorers
@@ -66,11 +58,6 @@ public class MatchingAlgorithm {
 
     // Fetch every user from Supabase, score them against the signed in user, and return the list sorted from highest score to lowest.
     public List<User> getQueue(User signedInUser) {
-
-        // return cached result if available
-        if (cache.containsKey(signedInUser.getUserId())) {
-            return cache.get(signedInUser.getUserId());
-        }
 
         List<User> allUsers = userRepository.getAll();                      // fetch everyone from Supabase
 
@@ -104,7 +91,6 @@ public class MatchingAlgorithm {
                 (User u) -> scoreUser(signedInUser, u)).reversed())                 // highest score first
             .collect(Collectors.toList());
 
-        cache.put(signedInUser.getUserId(), result);
         signedInUser.setConnections(new ArrayList<>());
         return result;
     }

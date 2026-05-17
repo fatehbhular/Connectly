@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.comp602project.comp602projectbackend.matching.DistanceScorer;
 
-import jakarta.annotation.PostConstruct;
-
 /**
  * THIS IS THE ONLY CLASS THAT TALKS TO THE DATABASE. so nothing outside this class ever sees the UserDatabase
  * React never calls this class directly, needs controller: React -> Controller -> UserRepository -> Supabase (UserDatabase)
@@ -29,9 +27,6 @@ public class UserRepository {
 
     @Autowired
     private UserJpaRepository db;                                           // Spring injects this automatically, this is the actaul repository talking to the database
-
-    @PostConstruct
-    public void warmCache() { getAll(); }                                   // populates allUsersCache on startup
 
     private User toUser(UserDatabase row) {
         if (row == null) return null;                                       // If nothing came back from Supabase, return null
@@ -106,17 +101,11 @@ public class UserRepository {
                    .orElse(null);
     }
 
-    // Cache all users; invalidate when any user updates
-    private List<User> allUsersCache = null;
-    public void invalidateAllUsersCache() { allUsersCache = null; }
-
     public List<User> getAll() {
-        if (allUsersCache != null) return allUsersCache;
-        allUsersCache = db.findAll()
+        return db.findAll()
                         .stream()
                         .map(this::toUser)
                         .collect(Collectors.toList());
-        return allUsersCache;
     }
 
 
@@ -173,13 +162,8 @@ public class UserRepository {
         update(other);
     }
 
-    public void save(User user)   { db.save(toDatabase(user)); invalidateAllUsersCache(); }     // Save a brand new user to the database
-    public void update(User user) {                                                             // Update an existing user in the database.
-        db.save(toDatabase(user));
-        if (allUsersCache != null) {
-            allUsersCache.replaceAll(u -> u.getUserId() == user.getUserId() ? user : u);
-        }
-    }
+    public void save(User user)   { db.save(toDatabase(user)); }            // Save a brand new user to the database
+    public void update(User user) { db.save(toDatabase(user)); }            // Update an existing user in the database.
     public void delete(int id) { db.deleteById(id); }                       // Delete a user by id
     public void logout() { signedInUser = null; }
 

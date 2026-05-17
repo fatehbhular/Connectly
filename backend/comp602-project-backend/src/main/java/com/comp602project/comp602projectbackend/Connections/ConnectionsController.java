@@ -41,8 +41,6 @@ public class ConnectionsController {
     @PostMapping("/connectUser")
     public ResponseEntity<User> getConnected(@RequestHeader("signedInUserId") int signedInUserId, @RequestHeader("requestedUserId") int requestedUserId) {
 
-        userRepository.invalidateAllUsersCache();
-
         User requestedUser = userRepository.getById(requestedUserId);
         User signedInUser = userRepository.getById(signedInUserId);
         List<Integer> requestedUsersRequests = requestedUser.getRequestedUsers();
@@ -84,10 +82,6 @@ public class ConnectionsController {
             userRepository.update(signedInUser);
             userRepository.update(requestedUser);
 
-            // invalidate cache so both users get a fresh queue next time
-            matchingAlgorithm.invalidateCache(signedInUserId);
-            matchingAlgorithm.invalidateCache(requestedUserId);
-
             return ResponseEntity.ok(requestedUser);
 
         } else {
@@ -98,8 +92,6 @@ public class ConnectionsController {
             signedInUser.setRequestedUsers(signedInUserRequestedUsers);
 
             userRepository.update(signedInUser);
-
-            matchingAlgorithm.invalidateCache(signedInUserId);
             
             return ResponseEntity.ok(requestedUser);
         }
