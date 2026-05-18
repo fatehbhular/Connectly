@@ -190,6 +190,5 @@ public class UserRepository {
         if(row == null) return;
         row.setPassword(newPassword);
         db.save(row);
-        invalidateAllUsersCache();
     }
 }
