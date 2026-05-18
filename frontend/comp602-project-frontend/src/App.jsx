@@ -6,20 +6,21 @@ import ProfilePage from "./profile/ProfilePage";
 import SettingsPage from "./settings/SettingsPage";
 import ConnectionsPage from "./connections/ConnectionsPage";
 import MessagingPage from "./messaging/MessagingPage";
+import AnalyticsPage from "./analytics/AnalyticsPage";
 import NavigationBar from "./components/NavigationBar";
 import UserHeatbeat from "./hooks/UserHearbeat";
 
 function App() {
-  
-  // Save the current user if the user chooses "rememeber me"
+  // Save the current user if the user chooses "remember me"
   const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('currentUser');
+    const saved = localStorage.getItem("currentUser");
     return saved ? JSON.parse(saved) : null;
   });
+
   const [page, setPage] = useState("profile");
   const [inDM, setInDM] = useState(false);
 
-  // Runs ffor the whole session once logged in
+  // Runs for the whole session once logged in
   UserHeatbeat(currentUser?.userId);
 
   // If nobody is logged in, show the login page
@@ -35,17 +36,41 @@ function App() {
   // Otherwise show the main app
   return (
     <div>
-      {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
-      {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
-      {page === "messages" && <MessagingPage currentUser={currentUser} onDMOpen={setInDM} />}
-      {page === "settings" && <SettingsPage onSignOut={() => { setCurrentUser(null); setPage("profile"); }} user={currentUser} onUserUpdate={setCurrentUser}/>}
+      {page === "profile" && (
+        <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />
+      )}
 
+      {page === "connections" && (
+        <ConnectionsPage currentUser={currentUser} />
+      )}
 
-      {/* only show the full nav if not im msg */}  
-      {!inDM
-        ? <NavigationBar setPage={setPage} currentPage={page} currentUser={currentUser} />
-        : null
-      }
+      {page === "messages" && (
+        <MessagingPage currentUser={currentUser} onDMOpen={setInDM} />
+      )}
+
+      {page === "settings" && (
+        <SettingsPage
+          onSignOut={() => {
+            setCurrentUser(null);
+            setPage("profile");
+          }}
+          user={currentUser}
+          onUserUpdate={setCurrentUser}
+        />
+      )}
+
+      {page === "analytics" && (
+        <AnalyticsPage currentUser={currentUser} />
+      )}
+
+      {/* Only show the full nav if not in message view */}
+      {!inDM ? (
+        <NavigationBar
+          setPage={setPage}
+          currentPage={page}
+          currentUser={currentUser}
+        />
+      ) : null}
     </div>
   );
 }
