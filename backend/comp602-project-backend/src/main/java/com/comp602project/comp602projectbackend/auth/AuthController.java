@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.mindrot.jbcrypt.BCrypt;
+
 import com.comp602project.comp602projectbackend.auth.services.OtpService;
 
 /*
@@ -43,21 +45,20 @@ public class AuthController {
 
     @PostMapping("/auth/login")                                                         // Call this method when the user tries to login (POST request)
     public ResponseEntity<User> login(@RequestBody Map<String, String> body) {          // @RequestBody reads the JSON React sent and converts it into a Map
-        String username = body.get("username").toLowerCase().trim();
+        String email = body.get("email").toLowerCase().trim();
         String password = body.get("password");
  
-        User user = userRepository.login(username, password);
+        User user = userRepository.login(email, password);
         if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();              // 404, send back nothing
         }
 
         if (Boolean.TRUE.equals(user.isOtpEnabled())) { //Only happend if user enables 2 factor authentication
-            String email = user.getEmail();
             if(email == null){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();           // 400, malformed request syntax
             }
-            //Send Otp to user email
-            otpService.sendOtp(email);
+
+            otpService.sendOtp(email);                                                  //Send Otp to user email
 
         }
         return ResponseEntity.ok(user);                                                 // 200, send back User object as JSON
@@ -67,16 +68,22 @@ public class AuthController {
  
     @PostMapping("/auth/signup")                                                        // Call this method when the user tries to sign up
     public ResponseEntity<User> signup(@RequestBody Map<String, String> body) {
-        String username = body.get("username").toLowerCase().trim();
+        String email = body.get("email").toLowerCase().trim();
         String password = body.get("password");
  
-        if (username == null || password == null) {
+        if (email == null || password == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
  
         User newUser = new User();
-        newUser.setUsername(username);
-        newUser.setPassword(password);
+        for(int i = 0; i < email.length(); i++){
+            if(email.charAt(i) == '@'){
+                newUser.setUsername(email.substring(0, i));                 // Set username to the part of the email before the @ symbol
+                break;
+            }
+        } 
+        newUser.setEmail(email);
+        newUser.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));                 // Hash password before saving
  
         try {
             userRepository.save(newUser);                                               // save the new user to Supabase
@@ -84,7 +91,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).build(); 
         }
  
-        User loggedIn = userRepository.login(username, password);                       // Log them in automatically after signing up
+        User loggedIn = userRepository.login(email, password);                          // Log them in automatically after signing up
         return ResponseEntity.ok(loggedIn);
     }
  
@@ -124,6 +131,35 @@ public class AuthController {
         }
 
         return ResponseEntity.ok(Map.of("message", "OTP verified"));
+    }
+
+    @PostMapping("/auth/forgot-password")                                                  
+    public ResponseEntity<Void> forgotPassword(@RequestBody Map<String, String> body) {           // Called when user input their email to reset password in login page
+        String email = body.get("email");                                                    // fetch users email to send the OTP to
+        if (email == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        User user = userRepository.findByEmail(email); // check email exists
+        if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        otpService.sendOtp(email);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody Map<String, String> body) {           // Called when user submits the code and new password in the forgot password page
+        String email = body.get("email");
+        String code = body.get("code");
+        String newPassword = body.get("password");
+
+        if (email == null || code == null || newPassword == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        boolean valid = otpService.verifyOtp(email, code);
+        if (!valid) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        userRepository.resetPassword(email, BCrypt.hashpw(newPassword, BCrypt.gensalt())); // hash new password
+        return ResponseEntity.ok().build();
     }
 
 

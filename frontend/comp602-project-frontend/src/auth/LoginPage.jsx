@@ -1,9 +1,10 @@
 import { useState } from "react";
 import BASE_URL from "../config.js";
 import "./LoginPage.css";
+import OtpPage from "./OtpPage";
+import ForgotPasswordPage from "./ForgotPasswordPage";
 
-
-// Icons inside the entry boxes, profile and password
+// Icons
 const PersonIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="8" r="4" />
@@ -20,17 +21,14 @@ const LockIcon = () => (
 
 export default function LoginPage({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [toast, setToast] = useState(null);                                         // floating toast message
-  const [usernameErr, setUsernameErr] = useState(false);
+  const [emailErr, setEmailErr] = useState(false);
   const [passwordErr, setPasswordErr] = useState(false);
-  const [step, setStep] = useState("login");                                        // Show what UI to show otp or login
-  const [otpCode, setOtpCode] = useState("");                                       // Store Otp Code
-  const [otpEmail, setOtpEmail] = useState("");                                     // Store user email
-  const [pendingUser, setPendingUser] = useState(null);                               // holds user while waiting for OTP
-  const [otpErr, setOtpErr] = useState(false);
+  const [step, setStep] = useState("login");                                        // "login" | "otp" | "forgot"
+  const [pendingUser, setPendingUser] = useState(null);                             // holds user while waiting for OTP
   const [loading, setLoading] = useState(false);
 
   const showToast = (msg) => {                                                      // display toast notification for 3 sec
@@ -39,125 +37,71 @@ export default function LoginPage({ onLogin }) {
   };
 
   const handleSubmit = async () => {
-    setUsernameErr(false);
+    setEmailErr(false);
     setPasswordErr(false);
     setLoading(true);
-    
+
     let hasErr = false;                                                             // check if any of the fields are empty
-    if (!username.trim()) { setUsernameErr(true); hasErr = true; }
+    if (!email.trim()) { setEmailErr(true); hasErr = true; }
     if (!password.trim()) { setPasswordErr(true); hasErr = true; }
-    if (hasErr) return;
+    if (hasErr) { setLoading(false); return; }
 
-
-    if (isSignUp && password.length < 6) {                                          // On the sign up page, check if the password is less than 6 characters
+    if (isSignUp && password.length < 6) {                                         // On the sign up page, check if the password is less than 6 characters
       setPasswordErr(true);
       showToast("Password must be at least 6 characters.");
+      setLoading(false);
       return;
     }
 
-    const endpoint = isSignUp ? "/auth/signup" : "/auth/login";                     // change the fetch depending on the current page.
+    const endpoint = isSignUp ? "/auth/signup" : "/auth/login";                    // change the fetch depending on the current page
     try {
       const res = await fetch(`${BASE_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.toLowerCase().trim(), password }),
+        body: JSON.stringify({ email: email.toLowerCase().trim(), password }),
       });
 
-      if (!res.ok) {                                                                // Let the user know the server rejected the input
-        showToast(isSignUp ? "Username already taken." : "Incorrect username or password.");
-        return; 
+      if (!res.ok) {                                                               // Let the user know the server rejected the input
+        showToast(isSignUp ? "Email already taken." : "Incorrect email or password.");
+        return;
       }
 
       const user = await res.json();
 
       if (!isSignUp && user.otpEnabled) {
-        setPendingUser(user);         // hold the user until OTP is verified
-        setOtpEmail(user.email);      // remember their email for verification
-        setStep("otp");               // show OTP screen
+        setPendingUser(user);                                                      // hold the user until OTP is verified
+        setStep("otp");                                                            // show OTP screen
         return;
       }
 
-      if (rememberMe) localStorage.setItem("currentUser", JSON.stringify(user));    // Save the user to the local device
+      if (rememberMe) localStorage.setItem("currentUser", JSON.stringify(user));   // Save the user to the local device
       onLogin(user);
 
     } catch { showToast("Could not connect to server."); }
-
-    finally{setLoading(false);}
-  };
-
-  const handleVerifyOtp = async () => {
-    setOtpErr(false);
-
-    if (!otpCode.trim()) { setOtpErr(true); return; }
-
-    try {
-      const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: otpEmail, code: otpCode }),
-      });
-      
-
-      if (!res.ok) {
-        setOtpErr(true);
-        showToast("Invalid or expired code. Try again.");
-        return;
-      }
-
-      // OTP verified — finish logging in
-      if (rememberMe) localStorage.setItem("currentUser", JSON.stringify(pendingUser));
-      onLogin(pendingUser);
-
-    } catch { showToast("Could not connect to server."); }
+    finally { setLoading(false); }
   };
 
   const handleKeyDown = (e) => { if (e.key === "Enter") handleSubmit(); };
 
-  if (step === "otp") {
-    return (
-      <div className="login-page">
-        <div className="login-card">
-          {toast && <div className="login-toast">{toast}</div>}
+  if (step === "otp") return (                                                    // Show the OTP page, pass the pending
+    <OtpPage
+      email={pendingUser?.email}
+      pendingUser={pendingUser}
+      rememberMe={rememberMe}
+      onLogin={onLogin}
+      onBack={() => setStep("login")}
+    />
+  );
 
-          <div className="login-form-content">
-            <h1 className="login-heading">Check your email</h1>
-            <p className="login-subheading">Enter the 6 character code sended to <strong>{otpEmail}</strong></p>
-          </div>
-
-          <div className="login-field">
-            <div className="login-input-wrap">
-              <span className="login-input-icon"><LockIcon /></span>
-              <input
-                className={`login-input${otpErr ? ' login-input--error' : ''}`}
-                type="text"
-                placeholder="Enter code"
-                value={otpCode}
-                maxLength={6}
-                onChange={e => { setOtpCode(e.target.value.toUpperCase()); setOtpErr(false); }}
-                onKeyDown={e => { if (e.key === "Enter") handleVerifyOtp(); }}
-                autoCapitalize="characters"
-              />
-            </div>
-          </div>
-
-          <button className="login-btn" onClick={handleVerifyOtp}>
-            Verify Code
-          </button>
-
-          {/* Go back */}
-          <p className="login-toggle">
-            Wrong account?
-            <button onClick={() => { setStep("login"); setOtpCode(""); setOtpErr(false); }}>
-              Go back
-            </button>
-          </p>
-
-        </div>
-      </div>
-    );
-  }
-
-
+  if (step === "forgot") return (                                                 // Show the forgot password page
+    <ForgotPasswordPage
+      onBack={() => setStep("login")}
+      onSuccess={() => {                                                          
+        showToast("Password reset! Please sign in.");
+        setStep("login");
+      }}
+    />
+  );
 
   return (
     <div className="login-page">
@@ -171,16 +115,16 @@ export default function LoginPage({ onLogin }) {
           <p className="login-subheading">{isSignUp ? "Join Connectly today." : "Enter your credentials to continue."}</p>
         </div>
 
-        {/* Username */}
+        {/* Email */}
         <div className="login-field">
           <div className="login-input-wrap">
             <span className="login-input-icon"><PersonIcon /></span>
             <input
-              className={`login-input${usernameErr ? ' login-input--error' : ''}`}
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={e => { setUsername(e.target.value); setUsernameErr(false); }}
+              className={`login-input${emailErr ? ' login-input--error' : ''}`}
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={e => { setEmail(e.target.value); setEmailErr(false); }}
               onKeyDown={handleKeyDown}
               autoCapitalize="none"
               autoCorrect="off"
@@ -209,18 +153,21 @@ export default function LoginPage({ onLogin }) {
             <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} />
             Remember me
           </label>
-          <button className="login-forgot">Forgot password?</button>
+          {/* switches to forgot password flow */}
+          <button className="login-forgot" onClick={() => setStep("forgot")}>Forgot password?</button>
         </div>
 
         <button className="login-btn" onClick={handleSubmit}>
           {isSignUp ? "Create Account" : "Sign In"}
         </button>
 
+        <p className="login-toggle" disabled={loading}>{loading ? "Loading....." : ""}</p>
+
         <div className="login-divider"><span>or</span></div>
 
         <p className="login-toggle">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}
-          <button onClick={() => { setIsSignUp(s => !s); setToast(null); setUsernameErr(false); setPasswordErr(false); }}>
+          <button onClick={() => { setIsSignUp(s => !s); setToast(null); setEmailErr(false); setPasswordErr(false); }}>
             {isSignUp ? "Sign In" : "Sign Up"}
           </button>
         </p>
