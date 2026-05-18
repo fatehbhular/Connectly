@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import OnlineDot from '../components/OnlineStatusDot.jsx';
 import BASE_URL from '../config.js';
 
-// Haversine formula — calculates the distance in km between two GPS coordinates
+// Haversine formula - calculates the distance in km between two GPS coordinates
 // Returns null if either coordinate is missing
 function calcDistance(lat1, lng1, lat2, lng2) {
   if (!lat1 || !lng1 || !lat2 || !lng2) return null;
@@ -13,11 +13,11 @@ function calcDistance(lat1, lng1, lat2, lng2) {
   return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(0);
 }
 
-function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, location, currentUser, wantsToConnect, SwipeLeft, SwipeRight }) {
+function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, location, currentUser, wantsToConnect, mutuals, verified, hasPendingRequest, SwipeLeft, SwipeRight }) {
   const startX = useRef(null);       // stores where the mouse was when the drag started
-  const dragXRef = useRef(0);        // stores how far the mouse has moved — useRef so it doesn't cause re-renders
+  const dragXRef = useRef(0);        // stores how far the mouse has moved - useRef so it doesn't cause re-renders
   const [isDragging, setIsDragging] = useState(false);  // true while the mouse is held down
-  const [dragX, setDragX] = useState(0);                // how far the card has been dragged — useState so the card visually moves
+  const [dragX, setDragX] = useState(0);                // how far the card has been dragged - useState so the card visually moves
   const cooldownRef = useRef(false); // prevents arrow keys from firing too fast
   const [isOnline, setIsOnline] = useState(false);      // fetch presence for this card's user
 
@@ -73,8 +73,8 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
       if (!isDragging) return;
       setIsDragging(false);
       startX.current = null;
-      if (dragXRef.current > 150) SwipeRight?.();        // dragged far enough right → connect
-      else if (dragXRef.current < -150) SwipeLeft?.();   // dragged far enough left → pass
+      if (dragXRef.current > 150) SwipeRight?.();        // dragged far enough right - connect
+      else if (dragXRef.current < -150) SwipeLeft?.();   // dragged far enough left - pass
       dragXRef.current = 0;
       setDragX(0);                             // snap card back to center
     }
@@ -84,7 +84,7 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
     document.addEventListener('touchmove', onTouchMove, { passive: true });
     document.addEventListener('touchend', onMouseUp);
 
-    // cleanup — remove listeners when this effect re-runs or component unmounts
+    // cleanup - remove listeners when this effect re-runs or component unmounts
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
@@ -93,7 +93,7 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
     };
   }, [isDragging]);
 
-  // This useEffect adds keyboard support — left/right arrow keys trigger swipes
+  // This useEffect adds keyboard support - left/right arrow keys trigger swipes
   // Re-runs whenever SwipeLeft or SwipeRight changes
   useEffect(() => {
     function onKeyPressed(e) {
@@ -118,7 +118,7 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
   const distance = calcDistance(currentUser?.latitude, currentUser?.longitude, latitude, longitude);
 
   // Card border glows green when dragging right, red when dragging left
-  // Card background tints subtly — Math.min clamps opacity so it never goes above 0.08
+  // Card background tints subtly - Math.min clamps opacity so it never goes above 0.08
   const bgColor = dragX > 50
     ? `rgba(0, 180, 100, ${Math.min(dragX / 150, 0.08)})`
     : dragX < -50
@@ -144,22 +144,43 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
         opacity: isDragging ? 1 - Math.abs(dragX) / 300 : 1,              // card fades slightly as you drag further
         backgroundColor: bgColor,
         boxShadow,
+        outline: (hasPendingRequest || wantsToConnect) ? '2px solid #f97040' : 'none', // orange border for users who want to connect
+        outlineOffset: '-1px',
       }}
     >
-      {/* "Wants to connect" badge — only shown if the displayed user has already requested the signed-in user */}
-      {wantsToConnect && (
-        <div className="inline-flex items-center gap-1.5 mb-4 px-3 py-1 rounded-full bg-[#FDF3EE] border border-[#F0CBB8] text-[#C4785A] text-xs font-semibold tracking-wide">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] inline-block" />
-          Wants to connect
-        </div>
-      )}
+      {/* Badges row - wants to connect, verified, and mutuals all sit inline */}
+      <div className="flex items-center gap-2 flex-wrap mb-4">
 
-      {/* Avatar — initials circle matching the DM list style */}
+        {/* Wants to connect badge */}
+        {wantsToConnect && (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDF3EE] border border-[#F0CBB8] text-[#C4785A] text-xs font-semibold tracking-wide">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] inline-block" />
+            Wants to connect
+          </div>
+        )}
+
+        {/* Verified badge - placeholder until the feature is built */}
+        {verified && (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A] text-xs font-semibold tracking-wide">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] inline-block" />
+            Verified
+          </div>
+        )}
+
+        {/* Mutuals badge - same style as wants to connect but blue */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] text-[#3B82F6] text-xs font-semibold tracking-wide">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] inline-block" />
+          {mutuals} mutual{mutuals !== 1 ? 's' : ''}
+        </div>
+
+      </div>
+
+      {/* Avatar - initials circle matching the DM list style */}
       <div className="relative w-12 h-12 mb-4">
         <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-sm text-white bg-gradient-to-br from-orange-300 to-orange-400">
           {user?.[0]?.toUpperCase() || '?'}
         </div>
-        {/* ADDED: online dot pinned to bottom-right */}
+        {/* Online dot pinned to bottom-right */}
         <span className="absolute bottom-0 right-0">
           <OnlineDot isOnline={isOnline} />
         </span>
@@ -169,7 +190,7 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
       <h2 className="text-gray-900 font-bold text-xl leading-tight">{user}</h2>
       <p className="text-[#C4785A] text-sm font-semibold tracking-wide mt-0.5">{industry}</p>
 
-      {/* Location + distance — only shown if distance can be calculated */}
+      {/* Location + distance - only shown if distance can be calculated */}
       {distance && (
         <p className="text-[#B0A99F] text-xs mt-2">
           {location} · {distance} km away
@@ -184,7 +205,7 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
         <p className="text-gray-700 text-sm leading-relaxed">{bio}</p>
       )}
 
-      {/* Skills — only shown if user has skills */}
+      {/* Skills - only shown if user has skills */}
       {skills && skills.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-4">
           {skills.map((skill, i) => (

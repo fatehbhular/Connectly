@@ -5,7 +5,7 @@ import java.time.Instant;
 /**
  * Immutable value object that represents a single message in a conversation.
  * 
- * Stores everything needed to identify, display and modify a message by -> who sent it, what it says, who it's sent to, when it was send, and which conversation it belongs to.
+ * Stores everything needed to identify, display and modify a message by -> who sent it, what it says, who its sent to, when it was send, and which conversation it belongs to.
  * 
  * This is a plain java object (no Spring annotations) -> just carries data, no business logic or database communications.
  */
@@ -20,6 +20,8 @@ public class Message {
     private Instant timestamp;
     /** Conversation to which this message belogns to */
     private String conversationKey;
+    /** True if this message is part of a connection request intro - saved when a request is accepted */
+    private boolean isIntro = false;
 
     /**
      * Constructs a message -> called by {@link MessagingRepository#mapToMessage} when retrieving a row from the database and turning it into a Java object.
@@ -46,6 +48,8 @@ public class Message {
     public int getSenderId() { return senderId; }
     public String getContent() { return content; }
     public Instant getTimestamp() { return timestamp; }
+    public boolean isIntro() { return isIntro; }
+    public void setIsIntro(boolean isIntro) { this.isIntro = isIntro; }
 
     /**
      * Checks whether this message was sent by a given user.

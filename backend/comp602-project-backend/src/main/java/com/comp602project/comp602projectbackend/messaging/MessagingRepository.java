@@ -39,7 +39,7 @@ public class MessagingRepository {
         Persists a message to the database
 
         Flow:
-        1. Checks if conversation row exists, if it doesn't -> creates new conversation so the message can be stored in (Avoids having separate createConversation()).
+        1. Checks if conversation row exists, if it doesnt -> creates new conversation so the message can be stored in (Avoids having separate createConversation()).
         2. Insert the message by linking it to the conversation above.
 
         @param conversationKey -> sorted userID string identifying the conversation
@@ -49,7 +49,7 @@ public class MessagingRepository {
     */
     public void saveMessageToDatabase(String conversationKey, int senderId, String content, String timestamp) {
         /*
-            Upsert the conversation -> create if it doesn't already exist, otherwise leave it untouched.
+            Upsert the conversation -> create if it doesnt already exist, otherwise leave it untouched.
             ON CONFLICT DO NOTHING prevents duplicate key error for when the conversation already exists
         */
         String checkConversation = "INSERT INTO conversations (conversation_key) VALUES (?) ON CONFLICT (conversation_key) DO NOTHING";
@@ -59,6 +59,20 @@ public class MessagingRepository {
             Inputs the message into the messages database associated with conversationKey.
         */
         String insertMessage = "INSERT INTO messages (conversation_key, sender_id, content, timestamp) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(insertMessage, conversationKey, senderId, content, timestamp);
+    }
+
+    /**
+     * Persists an intro message to the database, flagged with is_intro = true.
+     *
+     * Called when a connection request is accepted - saves both the senders intro message
+     * and the receivers reply as the first two messages in the conversation.
+     */
+    public void saveIntroMessage(String conversationKey, int senderId, String content, String timestamp) {
+        String checkConversation = "INSERT INTO conversations (conversation_key) VALUES (?) ON CONFLICT (conversation_key) DO NOTHING";
+        jdbcTemplate.update(checkConversation, conversationKey);
+
+        String insertMessage = "INSERT INTO messages (conversation_key, sender_id, content, timestamp, is_intro) VALUES (?, ?, ?, ?, true)";
         jdbcTemplate.update(insertMessage, conversationKey, senderId, content, timestamp);
     }
 
@@ -100,13 +114,15 @@ public class MessagingRepository {
         String rawTimestamp = rs.getString("timestamp");
         Instant sentAt = Instant.parse(rawTimestamp); // parses ISO 8601 like "2026-04-22T05:54:32.585010Z"
 
-        return new Message(
+        Message message = new Message(
             rs.getInt("id"),
             rs.getString("conversation_key"),
             rs.getInt("sender_id"),
             rs.getString("content"),
             sentAt
         );
+        message.setIsIntro(rs.getBoolean("is_intro"));                     // read the intro flag so the frontend can style it differently
+        return message;
     }
 
     /**
