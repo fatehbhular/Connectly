@@ -1,9 +1,9 @@
 package com.comp602project.comp602projectbackend.auth;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class User {
 
@@ -50,14 +50,6 @@ public class User {
         this.username = username;
         this.password = password;
     }
-
-
-
-    public boolean checkPassword(String plainPassword) {                        // Check if plaintext password matches with the stored password
-        return this.password.equals(plainPassword);
-    }
-
-
     
     // SETTERS AND GETTERS
 
