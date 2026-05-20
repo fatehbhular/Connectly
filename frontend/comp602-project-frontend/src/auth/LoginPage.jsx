@@ -29,7 +29,6 @@ export default function LoginPage({ onLogin }) {
   const [passwordErr, setPasswordErr] = useState(false);
   const [step, setStep] = useState("login");                                        // "login" | "otp" | "forgot"
   const [pendingUser, setPendingUser] = useState(null);                             // holds user while waiting for OTP
-  const [loading, setLoading] = useState(false);
 
   const showToast = (msg) => {                                                      // display toast notification for 3 sec
     setToast(msg);
@@ -39,17 +38,14 @@ export default function LoginPage({ onLogin }) {
   const handleSubmit = async () => {
     setUsernameErr(false);
     setPasswordErr(false);
-    setLoading(true);
     
     let hasErr = false;                                                             // check if any of the fields are empty
     if (!username.trim()) { setUsernameErr(true); hasErr = true; }
     if (!password.trim()) { setPasswordErr(true); hasErr = true; }
-    if (hasErr) { setLoading(false); return; }
 
     if (isSignUp && password.length < 6) {                                         // On the sign up page, check if the password is less than 6 characters
       setPasswordErr(true);
       showToast("Password must be at least 6 characters.");
-      setLoading(false);
       return;
     }
 
@@ -78,7 +74,6 @@ export default function LoginPage({ onLogin }) {
       onLogin(user);
 
     } catch { showToast("Could not connect to server."); }
-    finally { setLoading(false); }
   };
 
   const handleKeyDown = (e) => { if (e.key === "Enter") handleSubmit(); };
@@ -161,7 +156,6 @@ export default function LoginPage({ onLogin }) {
           {isSignUp ? "Create Account" : "Sign In"}
         </button>
 
-        <p className="login-toggle" disabled={loading}>{loading ? "Loading....." : ""}</p>
         <div className="login-divider"><span>or</span></div>
 
         <p className="login-toggle">
