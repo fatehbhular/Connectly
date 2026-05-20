@@ -35,11 +35,13 @@ public class ProfileController {
         String city = body.get("city");
         String bio = body.get("bio");
         String skills = body.get("skills");
+        String email = body.get("email");
 
         // Update each field in the user profile
         if (displayName != null && !displayName.isBlank()) user.setDisplayName(displayName.trim());
         if (industry != null && !industry.isBlank()) user.setIndustry(industry.trim());
         if (bio != null) user.setBio(bio.trim());
+        if (email != null && !email.isBlank()) user.setEmail(email.trim());             // save email from onboarding
         if (skills != null && !skills.isBlank()) {                                      // Convert the comma seperated string into a list
             String[] skillArray = skills.split(",");
             for (int i = 0; i < skillArray.length; i++)

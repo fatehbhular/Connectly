@@ -21,6 +21,11 @@ export default function SettingsPage({ onSignOut, user, onUserUpdate}) {
   const handleToggleOtp = async (e) => {
     const enable = e.target.checked;
 
+    if (enable && !user.email) {                                                            // cant enable 2FA without an email
+        setOtpToast("Please add an email to your profile first.");
+        return;
+    }
+
     try {
       const res = await fetch(`${BASE_URL}/auth/otp/toggle`, {
         method: "POST",
@@ -152,6 +157,8 @@ export default function SettingsPage({ onSignOut, user, onUserUpdate}) {
             onSignOut();
           }}>Sign Out</button>
         </section>
+
+        {otpToast && <div className="...">{otpToast}</div>}
 
       </div>
     </div>

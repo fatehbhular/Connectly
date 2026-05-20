@@ -56,3 +56,39 @@ public class Examplecode {
         return "Backend is talking to React!";                              // This is the message sent back to the browser/React
     }
 }
+
+/*
+
+import com.openai.client.OpenAIClient;
+import com.openai.client.okhttp.OpenAIOkHttpClient;
+import com.openai.models.chat.completions.ChatCompletionCreateParams;
+
+public class Main {
+
+    public static void main(String[] args) {
+
+        OpenAIClient client = OpenAIOkHttpClient.builder()
+                .apiKey(System.getenv("GROQ_API_KEY"))
+                .baseUrl("https://api.groq.com/openai/v1")
+                .build();
+
+        ChatCompletionCreateParams params =
+                ChatCompletionCreateParams.builder()
+                        .model("llama-3.3-70b-versatile")
+                        .addUserMessage("Hello!")
+                        .build();
+
+        String response = client.chat()
+                .completions()
+                .create(params)
+                .choices()
+                .get(0)
+                .message()
+                .content()
+                .orElse("No response");
+
+        System.out.println(response);
+    }
+}
+
+*/

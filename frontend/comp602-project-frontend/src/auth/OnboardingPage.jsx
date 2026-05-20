@@ -2,7 +2,7 @@ import { useState } from "react";
 import BASE_URL from "../config.js";
 import "./OnboardingPage.css";
 
-const STEPS = [                                                                     // Each step is one screen in the onboarding flow
+const STEPS = [                                                                     // Each step defines one screen in the onboarding flow
     {
         field: "displayName",
         title: "What's your name?",
@@ -11,6 +11,15 @@ const STEPS = [                                                                 
         placeholder: "Display name",
         required: true,
         autoCapitalize: "words",
+    },
+    {
+        field: "email",
+        title: "What's your email?",
+        subtitle: "Used for account security and recovery.",
+        type: "text",
+        placeholder: "e.g. user@example.com",
+        required: true,
+        autoCapitalize: "none",
     },
     {
         field: "industry",
@@ -50,16 +59,16 @@ const STEPS = [                                                                 
 
 export default function OnboardingPage({ currentUser, onComplete }) {
     const [step, setStep] = useState(0);
-    const [animKey, setAnimKey] = useState(0);                                      // Incremented on every step change to trigger slide animation
-    const [slideDir, setSlideDir] = useState("forward");                            // Controls which direction the slide animation plays
-    const [values, setValues] = useState({ displayName: "", industry: "", city: "", skills: [], bio: "" });
+    const [animKey, setAnimKey] = useState(0);
+    const [slideDir, setSlideDir] = useState("forward");
+    const [values, setValues] = useState({ displayName: "", email: "", industry: "", city: "", skills: [], bio: "" });
     const [skillInput, setSkillInput] = useState("");                               // Controlled input for the skills tag field
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
 
     const current = STEPS[step];                                                    // The current step object
     const isLast = step === STEPS.length - 1;
-    const progress = (step / (STEPS.length - 1)) * 100;                             // Progress bar percentage
+    const progress = (step / (STEPS.length - 1)) * 100;                            // Progress bar percentage
 
     const addSkill = () => {                                                        // Add a skill tag if valid
         const trimmed = skillInput.trim();
@@ -85,7 +94,7 @@ export default function OnboardingPage({ currentUser, onComplete }) {
             return;
         }
 
-        if (step === 2) {                                                           // Validate city against before proceeding
+        if (step === 3) {                                                           // Validate city against Nominatim before proceeding
             setLoading(true);
             try {
                 const res = await fetch(
@@ -117,7 +126,7 @@ export default function OnboardingPage({ currentUser, onComplete }) {
         goTo(step + 1, "forward");
     };
 
-    const handleSubmit = async () => {                                              // Submit all collected values to the profile
+    const handleSubmit = async () => {                                              // Submit all collected values to the profile endpoint
         setLoading(true);
         setError(null);
         try {
@@ -126,10 +135,11 @@ export default function OnboardingPage({ currentUser, onComplete }) {
                 headers: { "Content-Type": "application/json", "userId": currentUser.userId },
                 body: JSON.stringify({
                     displayName: values.displayName,
-                    industry: values.industry,
-                    city: values.city,
-                    bio: values.bio,
-                    skills: values.skills.join(", "),
+                    email:       values.email,
+                    industry:    values.industry,
+                    city:        values.city,
+                    bio:         values.bio,
+                    skills:      values.skills.join(", "),
                 }),
             });
 
@@ -144,12 +154,12 @@ export default function OnboardingPage({ currentUser, onComplete }) {
         <div className="ob-page">
             <div className="ob-card">
 
-                {/* Progress bar*/}
+                {/* Progress bar - fills left to right as steps complete */}
                 <div className="ob-progress-track">
                     <div className="ob-progress-fill" style={{ width: `${progress}%` }} />
                 </div>
 
-                {/* This div recreates itself on every step change, so it can replay the slide animation */}
+                {/* This div re-creates itself on every step change, which replays the slide animation */}
                 <div className={`ob-content ob-slide-${slideDir}`} key={animKey}>
                     <p className="ob-step-label">Step {step + 1} of {STEPS.length}</p>
                     <h1 className="ob-title">{current.title}</h1>
@@ -197,7 +207,7 @@ export default function OnboardingPage({ currentUser, onComplete }) {
                                     {values.skills.map(skill => (
                                         <span key={skill} className="ob-tag">
                                             {skill}
-                                            <button className="ob-tag-remove" onClick={() => removeSkill(skill)}>×</button>
+                                            <button className="ob-tag-remove" onClick={() => removeSkill(skill)}>x</button>
                                         </span>
                                     ))}
                                 </div>
@@ -214,7 +224,7 @@ export default function OnboardingPage({ currentUser, onComplete }) {
                         <button className="ob-back-btn" onClick={handleBack} disabled={loading}>Back</button>
                     )}
                     <button className="ob-next-btn" onClick={handleNext} disabled={loading}>
-                        {loading ? "Setting up…" : isLast ? "Get Started" : "Continue"}
+                        {loading ? "Setting up..." : isLast ? "Get Started" : "Continue"}
                     </button>
                 </div>
 

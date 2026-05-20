@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.mindrot.jbcrypt.BCrypt;
 
 import com.comp602project.comp602projectbackend.matching.DistanceScorer;
 
@@ -77,14 +77,22 @@ public class UserRepository {
 
 
 
-    public User login(String email, String password) {                   // Find a user by email and verify their password. Returns User or Null
+    public User login(String username, String password) {                   // Find a user by username and verify their password. Returns User or Null
 
-        // Find the row in Supabase by email
-        UserDatabase row = db.findByEmail(email).orElse(null);
+        // Find the row in Supabase by username
+        UserDatabase row = db.findByUsername(username).orElse(null);
         if (row == null) return null;
 
         User user = toUser(row);                                            // Convert the database entires into a User Object
-        if (!BCrypt.checkpw(password, user.getPassword())) return null;
+
+        // Check password - supports both BCrypt hashed and legacy plain text passwords
+        boolean passwordValid;
+        try {
+            passwordValid = BCrypt.checkpw(password, user.getPassword());
+        } catch (Exception e) {
+            passwordValid = false;
+        }
+        if (!passwordValid) return null;
 
         this.signedInUser = user;
         signedInUser.setConnections(getConnections());
@@ -169,10 +177,10 @@ public class UserRepository {
     public void logout() { signedInUser = null; }
 
     public User toggleOtp(String email, boolean enable){
-        UserDatabase row = db.findByEmail(email).orElse(null);         //Get the email 
+        UserDatabase row = db.findByEmail(email).orElse(null);              // Get the email
         if (row == null) return null; 
-        row.setOtpEnabled(enable);                                           //Enable Otp if row != null
-        db.save(row);                                                        //Save to database
+        row.setOtpEnabled(enable);                                          // Enable Otp if row != null
+        db.save(row);                                                       // Save to database
         User user = toUser(row);
         if (signedInUser != null && signedInUser.getEmail().equals(email)) {
             signedInUser.setOtpEnabled(enable);
@@ -181,7 +189,7 @@ public class UserRepository {
     }
 
     public User findByEmail(String email){
-        UserDatabase row = db.findByEmail(email).orElse(null);          //Get the email 
+        UserDatabase row = db.findByEmail(email).orElse(null);             // Get the email
         return toUser(row);
     }
 

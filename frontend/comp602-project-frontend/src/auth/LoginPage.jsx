@@ -7,25 +7,25 @@ import ForgotPasswordPage from "./ForgotPasswordPage";
 // Icons
 const PersonIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="8" r="4" />
-    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    <circle cx="12" cy="8" r="4"/>
+    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
   </svg>
 );
 
 const LockIcon = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" />
-    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    <rect x="3" y="11" width="18" height="11" rx="2"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
   </svg>
 );
 
 export default function LoginPage({ onLogin }) {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [toast, setToast] = useState(null);                                         // floating toast message
-  const [emailErr, setEmailErr] = useState(false);
+  const [usernameErr, setUsernameErr] = useState(false);
   const [passwordErr, setPasswordErr] = useState(false);
   const [step, setStep] = useState("login");                                        // "login" | "otp" | "forgot"
   const [pendingUser, setPendingUser] = useState(null);                             // holds user while waiting for OTP
@@ -37,12 +37,12 @@ export default function LoginPage({ onLogin }) {
   };
 
   const handleSubmit = async () => {
-    setEmailErr(false);
+    setUsernameErr(false);
     setPasswordErr(false);
     setLoading(true);
-
+    
     let hasErr = false;                                                             // check if any of the fields are empty
-    if (!email.trim()) { setEmailErr(true); hasErr = true; }
+    if (!username.trim()) { setUsernameErr(true); hasErr = true; }
     if (!password.trim()) { setPasswordErr(true); hasErr = true; }
     if (hasErr) { setLoading(false); return; }
 
@@ -58,11 +58,11 @@ export default function LoginPage({ onLogin }) {
       const res = await fetch(`${BASE_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.toLowerCase().trim(), password }),
+        body: JSON.stringify({ username: username.toLowerCase().trim(), password }),
       });
 
       if (!res.ok) {                                                               // Let the user know the server rejected the input
-        showToast(isSignUp ? "Email already taken." : "Incorrect email or password.");
+        showToast(isSignUp ? "Username already taken." : "Incorrect username or password.");
         return;
       }
 
@@ -83,7 +83,7 @@ export default function LoginPage({ onLogin }) {
 
   const handleKeyDown = (e) => { if (e.key === "Enter") handleSubmit(); };
 
-  if (step === "otp") return (                                                    // Show the OTP page, pass the pending
+  if (step === "otp") return (                                                    // Show the OTP page, pass the pending user
     <OtpPage
       email={pendingUser?.email}
       pendingUser={pendingUser}
@@ -115,16 +115,16 @@ export default function LoginPage({ onLogin }) {
           <p className="login-subheading">{isSignUp ? "Join Connectly today." : "Enter your credentials to continue."}</p>
         </div>
 
-        {/* Email */}
+        {/* Username */}
         <div className="login-field">
           <div className="login-input-wrap">
             <span className="login-input-icon"><PersonIcon /></span>
             <input
-              className={`login-input${emailErr ? ' login-input--error' : ''}`}
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={e => { setEmail(e.target.value); setEmailErr(false); }}
+              className={`login-input${usernameErr ? ' login-input--error' : ''}`}
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={e => { setUsername(e.target.value); setUsernameErr(false); }}
               onKeyDown={handleKeyDown}
               autoCapitalize="none"
               autoCorrect="off"
@@ -162,12 +162,11 @@ export default function LoginPage({ onLogin }) {
         </button>
 
         <p className="login-toggle" disabled={loading}>{loading ? "Loading....." : ""}</p>
-
         <div className="login-divider"><span>or</span></div>
 
         <p className="login-toggle">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}
-          <button onClick={() => { setIsSignUp(s => !s); setToast(null); setEmailErr(false); setPasswordErr(false); }}>
+          <button onClick={() => { setIsSignUp(s => !s); setToast(null); setUsernameErr(false); setPasswordErr(false); }}>
             {isSignUp ? "Sign In" : "Sign Up"}
           </button>
         </p>
