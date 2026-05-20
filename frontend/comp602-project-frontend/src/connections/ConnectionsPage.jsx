@@ -10,6 +10,8 @@ export default function ConnectionsPage({ currentUser }) {
   const [showReplyModal, setShowReplyModal] = useState(false);              // modal shown when swiping right on a pending card
   const [introMessage, setIntroMessage] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
+  const [accepting, setAccepting] = useState(false);
+  const [sending, setSending] = useState(false);
 
   // Returns number of mutual connections between the signed-in user and another user
   const getMutualCount = (user) => {
@@ -68,7 +70,8 @@ export default function ConnectionsPage({ currentUser }) {
   }
 
   const handleSendIntro = async () => {                                     // sends the intro message and advances to the next card
-    if (!introMessage.trim()) return;
+    if (!introMessage.trim() || sending) return;                            // block double tap
+    setSending(true);
     try {
       await fetch(`${BASE_URL}/api/connections/request`, {
         method: 'POST',
@@ -76,13 +79,15 @@ export default function ConnectionsPage({ currentUser }) {
         body: JSON.stringify({ senderId: currentUser.userId, receiverId: currentItem.userId, message: introMessage })
       });
     } catch (e) { console.log('Failed to send request:', e); }
+    setSending(false);
     setShowIntroModal(false);
     setIntroMessage('');
     advance();
   };
 
   const handleAccept = async () => {                                        // accepts the pending request with a reply and advances
-    if (!replyMessage.trim()) return;
+    if (!replyMessage.trim() || accepting) return;                          // block double tap
+    setAccepting(true);
     try {
       await fetch(`${BASE_URL}/api/connections/request/accept`, {
         method: 'POST',
@@ -90,6 +95,7 @@ export default function ConnectionsPage({ currentUser }) {
         body: JSON.stringify({ requestId: currentItem.requestId, replyMessage: replyMessage })
       });
     } catch (e) { console.log('Failed to accept:', e); }
+    setAccepting(false);
     setShowReplyModal(false);
     setReplyMessage('');
     advance();

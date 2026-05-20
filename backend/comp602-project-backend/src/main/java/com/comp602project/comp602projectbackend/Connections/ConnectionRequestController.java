@@ -106,6 +106,15 @@ public class ConnectionRequestController {
         int senderId   = request.getSenderId();
         int receiverId = request.getReceiverId();
 
+        User sender   = userRepository.getById(senderId);
+        User receiver = userRepository.getById(receiverId);
+
+        // If already connected, this request was already processed - clean up and return early
+        if (sender.getConnectionKeys() != null && sender.getConnectionKeys().contains(receiverId)) {
+            requestRepository.deleteById(requestId);
+            return ResponseEntity.ok().build();
+        }
+
         // Create the conversation key - always sorted numerically so both users share the same key
         String conversationKey = senderId > receiverId
             ? receiverId + "_" + senderId
@@ -119,9 +128,6 @@ public class ConnectionRequestController {
         messagingRepository.saveIntroMessage(conversationKey, receiverId, replyMessage, now);
 
         // Add connection keys for both users
-        User sender   = userRepository.getById(senderId);
-        User receiver = userRepository.getById(receiverId);
-
         List<Integer> senderConnections = sender.getConnectionKeys();
         if (senderConnections == null) senderConnections = new ArrayList<>();
         senderConnections.add(receiverId);
