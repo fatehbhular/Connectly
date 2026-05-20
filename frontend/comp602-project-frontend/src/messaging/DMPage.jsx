@@ -15,7 +15,7 @@ import { useRef, useEffect, useState } from 'react';
  * @param {Function} onSendMessage - handler for sending a message
  * @param {Function} onBack - handler for going back to DMs List
  */
-export default function DMPage({conversation, conversationName, userId, dmNames, selectedKey, onSendMessage, onBack}) {
+export default function DMPage({conversation, conversationName, userId, dmNames, selectedKey, onSendMessage, onBack, sendSignal, recipientId, startCall, endCall}) {
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef(null);
     const hasScrolled = useRef(false);
@@ -57,6 +57,7 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                             className="bg-transparent border-none"
                             whileTap={{ scale: 0.9 }}
                             animate={{ scale: 1 }}
+                            onClick={startCall}
                         >
                             <i className="bi bi-telephone text-xl text-orange-600"></i>
                         </motion.button>
