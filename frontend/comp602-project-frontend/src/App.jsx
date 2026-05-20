@@ -25,6 +25,8 @@ function App() {
   // Tracks who the current user is in call with.
   const [activeRecipientId, setActiveRecipientId] = useState(null);
 
+  const [isCallActive, setIsCallActive] = useState(false);
+
   // Keeps a fresh reference pointer to the active recipient ID to bypass stale execution closures in hooks
   const activeRecipientIdRef = useRef(null);
 
@@ -105,6 +107,7 @@ function App() {
         console.log("Other person ended the call");
         pendingIceCandidatesRef.current = []; // Clear the buffer
         setIncomingCall(null); // Clear the banner if they hang up before we answer
+        setIsCallActive(false);
         endCall();
         break;
 
@@ -147,20 +150,22 @@ function App() {
       {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
       {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
       {page === "messages" && (
-        <MessagingPage 
-          currentUser={currentUser} 
-          onDMOpen={setInDM} 
-          sendSignal={sendSignal}
-          onRecipientChange={(id) => setActiveRecipientId(id ? Number(id) : null)}
-          startCall={(id) => {
-            setActiveRecipientId(id ? Number(id) : null);
-            startCall(id);
-          }}
-          endCall={() => {
-            setActiveRecipientId(null);
-            endCall();
-          }}
-        />
+      <MessagingPage 
+        currentUser={currentUser} 
+        onDMOpen={setInDM} 
+        sendSignal={sendSignal}
+        onRecipientChange={(id) => setActiveRecipientId(id ? Number(id) : null)}
+        startCall={(id) => {
+          setActiveRecipientId(id ? Number(id) : null);
+          setIsCallActive(true); // Mark call active when dialing
+          startCall(id);
+        }}
+        endCall={() => {
+          setActiveRecipientId(null);
+          setIsCallActive(false); // Turn off call UI
+          endCall();
+        }}
+      />
       )}
       {page === "settings" && (
         <SettingsPage
@@ -200,6 +205,8 @@ function App() {
                         pendingIceCandidatesRef.current = [];
                       }
                       
+                      setIsCallActive(true);
+
                       // 4. Finally, dismiss the banner
                       setIncomingCall(null);
                     }}
@@ -233,6 +240,38 @@ function App() {
         ? <NavigationBar setPage={setPage} currentPage={page} currentUser={currentUser} />
         : null
       }
+
+      {/* Persistent Floating Call Widget */}
+      {isCallActive && (
+        createPortal(
+          <div className="fixed bottom-6 right-6 z-[9999] bg-gray-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-gray-800 flex items-center gap-4 animate-fade-in">
+            <div className="flex flex-col">
+              <span className="text-xs text-green-400 font-bold tracking-wider uppercase animate-pulse">
+                ● Live Voice Call
+              </span>
+              <span className="text-sm text-gray-300 font-medium">
+                Connected with User {activeRecipientId}
+              </span>
+            </div>
+            
+            <button
+              onClick={() => {
+                setActiveRecipientId(null);
+                setIsCallActive(false);
+                endCall();
+              }}
+              className="p-3 bg-red-600 hover:bg-red-700 transition-colors text-white rounded-full flex items-center justify-center shadow-lg"
+              title="Disconnect Call"
+            >
+              {/* Simple inline SVG End-Call Phone Icon */}
+              <svg className="w-5 height-5 transform rotate-135" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.01 21.675c2.396-.142 4.673-1.077 6.554-2.67a1 1 0 00.261-1.214l-2.344-4.343a1 1 0 00-1.31-.411l-2.112 1.056a15.148 15.148 0 01-6.9-6.9l1.056-2.112a1 1 0 00-.411-1.31L6.46 1.43a1 1 0 00-1.214.261C3.653 3.573 2.718 5.85 2.575 8.246c-.22 3.665 1.034 7.288 3.541 10.204 2.916 3.385 6.84 5.438 10.97 5.234z" />
+              </svg>
+            </button>
+          </div>,
+          document.body
+        )
+      )}
     </div>
   );
 }
