@@ -11,8 +11,13 @@ import org.springframework.stereotype.Service;
 import com.comp602project.comp602projectbackend.auth.OtpToken;
 import com.comp602project.comp602projectbackend.auth.OtpTokenJpaRepository;
 
-import com.sendgrid.*;
-import com.sendgrid.helpers.mail.*;
+import com.sendgrid.SendGrid;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.Method;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.Email;
+import com.sendgrid.helpers.mail.Content;
 
 import jakarta.transaction.Transactional;
 
