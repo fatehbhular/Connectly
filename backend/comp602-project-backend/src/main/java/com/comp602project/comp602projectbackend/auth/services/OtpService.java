@@ -65,10 +65,13 @@ public class OtpService {
             request.setMethod(Method.POST);
             request.setEndpoint("mail/send");
             request.setBody(body);
-            sg.api(request);
+            com.sendgrid.Response response = sg.api(request);
+            System.err.println("SendGrid status: " + response.getStatusCode());
+            System.err.println("SendGrid body: " + response.getBody());
 
         } catch (Exception e) {
             System.err.println("Failed to send OTP email: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
