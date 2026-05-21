@@ -11,8 +11,8 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("https://localhost:5173"); //change to proper backend later.
-        config.addAllowedOriginPattern("*");
+        config.addAllowedOrigin("https://connectly-production-3714.up.railway.app "); //change to proper backend later.
+        config.addAllowedOriginPattern("*");    
         config.addAllowedMethod("*");
         config.addAllowedHeader("*");
         config.setAllowCredentials(true);

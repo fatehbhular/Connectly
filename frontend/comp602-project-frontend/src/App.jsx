@@ -256,6 +256,13 @@ function App() {
             
             <button
               onClick={() => {
+                // Capture the active user ID and tell them the call is over
+                const peerId = activeRecipientId;
+                if (peerId) {
+                  stableSendSignal('call-ended', peerId, null);
+                }
+
+                // Reset local UI states
                 setActiveRecipientId(null);
                 setIsCallActive(false);
                 endCall();

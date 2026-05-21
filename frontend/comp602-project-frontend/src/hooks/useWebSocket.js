@@ -3,6 +3,8 @@ import { Client } from '@stomp/stompjs';
 
 const BACKEND_URL = import.meta.env.VITE_API_URL;
 
+const WS_BROKER_URL = BACKEND_URL.replace(/^http/, 'ws') + '/ws';
+
 export function useWebSocket(userId, onSignalReceived) {
     /**
      * useRef keeps the STOMP client alive across re-renders
@@ -21,12 +23,12 @@ export function useWebSocket(userId, onSignalReceived) {
     useEffect(() => {
         if (!userId) return;
 
-        console.log("🚀 Attempting WebSocket connection..."); 
+        console.log("🚀 Attempting WebSocket connection to:", WS_BROKER_URL); 
 
         /** Creates the STOMP client */
         const client = new Client({
             /** Native WebSocket */
-            brokerURL: `ws://localhost:8080/ws`,
+            brokerURL: WS_BROKER_URL,
 
             onConnect: () => {
                 console.log("WebSocket connected!");
