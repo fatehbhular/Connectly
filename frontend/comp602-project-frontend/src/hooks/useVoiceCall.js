@@ -48,11 +48,23 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
          * We attach this to an Audio element so it plays through the speakers.
          */
         pc.ontrack = (event) => {
-            console.log("Remote audio stream received!");
-            const remoteAudio = new Audio();
-            remoteAudio.srcObject = event.streams[0];
-            remoteAudio.play();
-        }
+            console.log("🟢 Remote audio stream received!");
+            
+            // Grab the persistent audio element we just added to App.jsx
+            const remoteAudio = document.getElementById("remote-audio-player");
+            
+            if (remoteAudio) {
+                // Attach the incoming WebRTC live media stream
+                remoteAudio.srcObject = event.streams[0];
+                
+                // Explicitly trigger playback on the DOM element
+                remoteAudio.play().catch((error) => {
+                    console.error("Browser blocked audio autoplay:", error);
+                });
+            } else {
+                console.error("CRITICAL: #remote-audio-player element not found in the DOM.");
+            }
+        };
 
         pc.onconnectionstatechange = () => {
             console.log("Connection state:", pc.connectionState);
