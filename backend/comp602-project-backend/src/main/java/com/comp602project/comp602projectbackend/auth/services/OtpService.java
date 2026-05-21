@@ -58,7 +58,7 @@ public class OtpService {
             Resend resend = new Resend(resendApiKey);
 
             CreateEmailOptions params = CreateEmailOptions.builder()
-                .from("Connectly <onboarding@yourdomain.com>") // replace with your verified Resend domain
+                .from("Connectly <onboarding@resend.dev>") // replace with your verified Resend domain
                 .to(email)
                 .subject("Your Connectly Login Code")
                 .html("""
