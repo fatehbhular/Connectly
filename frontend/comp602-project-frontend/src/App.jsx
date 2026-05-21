@@ -189,12 +189,14 @@ function App() {
                   <button
                     onClick={async () => {
                       const callerId = incomingCall.callerId;
+                      const currentOffer = incomingCall.offer;
                       
-                      // 1. Set the active recipient ID state
+                      // 1. Set the active recipient ID state instantly
                       setActiveRecipientId(callerId);
+                      setIsCallActive(true);
                       
                       // 2. Await the complete setup of the WebRTC Peer Connection and Remote Description
-                      await handleOffer(callerId, incomingCall.offer);
+                      await handleOffer(callerId, currentOffer);
                       
                       // 3. Now that the peer connection is officially ready, safely flush the early candidates
                       if (pendingIceCandidatesRef.current.length > 0) {
@@ -204,10 +206,8 @@ function App() {
                         });
                         pendingIceCandidatesRef.current = [];
                       }
-                      
-                      setIsCallActive(true);
 
-                      // 4. Finally, dismiss the banner
+                      // 4. Finally, dismiss the banner AFTER everything is complete
                       setIncomingCall(null);
                     }}
                     className="px-4 py-2 rounded-full bg-green-500 text-white text-sm font-semibold"

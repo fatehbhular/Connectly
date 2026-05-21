@@ -5,10 +5,23 @@ import { useRef, useCallback, useEffect } from 'react';
  */
 const ICE_SERVERS = {
     iceServers: [
+        // One fast STUN server is plenty
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
+        
+        // Metered TURN over UDP (Fastest, works for 85% of router blocks)
+        {
+          urls: "turn:global.relay.metered.ca:80",
+          username: "28407d56dc46ff5c510119a7",
+          credential: "ehesKJGOngsnTFgV",
+        },
+        // Metered Secure TURN over TCP (Ultimate backup strategy for strict firewalls)
+        {
+          urls: "turns:global.relay.metered.ca:443?transport=tcp",
+          username: "28407d56dc46ff5c510119a7",
+          credential: "ehesKJGOngsnTFgV",
+        },
     ]
-}
+};
 
 /**
  * Manages the full WebRTC voice call lifecycle.
@@ -24,6 +37,9 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
 
     /** Holds our local microphone stream */
     const localStreamRef = useRef(null);
+
+    /** ---- CHANGE: Buffer for ICE candidates that arrive before remoteDescription is set ---- */
+    const pendingCandidatesRef = useRef([]);
 
     /**
      * Crates and configures new RTCPeerConnection.
@@ -131,6 +147,13 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
             // Step 4: Set their offer as our remote description
             await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
+            /** ---- CHANGE: Flush any ICE candidates that arrived before the offer was processed ---- */
+            for (const candidate of pendingCandidatesRef.current) {
+                console.log("Flushing buffered ICE candidate");
+                await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+            pendingCandidatesRef.current = [];
+
             // Step 5: Create our answer
             const answer = await pc.createAnswer();
 
@@ -157,6 +180,14 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
             await peerConnectionRef.current?.setRemoteDescription(
                 new RTCSessionDescription(answer)
             );
+
+            /** ---- CHANGE: Flush any ICE candidates that arrived before the answer was processed ---- */
+            for (const candidate of pendingCandidatesRef.current) {
+                console.log("Flushing buffered ICE candidate");
+                await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+            pendingCandidatesRef.current = [];
+
         } catch (error) {
             console.error("Failed to handle answer", error);
         }
@@ -168,8 +199,16 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
      */
     const handleIceCandidate = useCallback(async (candidate) => {
         try {
-            console.log("Received ICE candidate");
-            await peerConnectionRef.current?.addIceCandidate(
+            // 1. CRITICAL GUARD: Check if peer connection exists AND remote description is set
+            if (!peerConnectionRef.current || !peerConnectionRef.current.remoteDescription) {
+                /** ---- CHANGE: Buffer the candidate instead of dropping it ---- */
+                console.log("⏳ Buffering ICE candidate for later");
+                pendingCandidatesRef.current.push(candidate);
+                return;
+            }
+
+            console.log("Received ICE candidate - adding to peer connection");
+            await peerConnectionRef.current.addIceCandidate(
                 new RTCIceCandidate(candidate)
             );
         } catch (error) {
@@ -181,6 +220,9 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
      * Ends the call - stops the microphone and closes the connection.
      */
     const endCall = useCallback(() => {
+        /** ---- CHANGE: Clear the ICE candidate buffer ---- */
+        pendingCandidatesRef.current = [];
+
         console.log("Ending call");
 
         /** Stop all microphone tracks */
