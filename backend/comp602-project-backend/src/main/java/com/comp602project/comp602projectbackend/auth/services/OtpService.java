@@ -41,18 +41,20 @@ public class OtpService {
         return code.toString();
     }
 
-    @Async
     @Transactional
-    public void sendOtp(String email) {
+    public void saveOtp(String email, String code) {
         otpTokenJpaRepository.deleteByEmail(email);
-
-        String code = generateCode();
-
         OtpToken otpToken = new OtpToken();
         otpToken.setEmail(email);
         otpToken.setCode(code);
         otpToken.setExpiresAt(LocalDateTime.now().plusMinutes(10));
         otpTokenJpaRepository.save(otpToken);
+    }
+
+    @Async
+    public void sendOtp(String email) {
+        String code = generateCode();
+        saveOtp(email, code);
 
         try {
             String body = "{\"personalizations\":[{\"to\":[{\"email\":\"" + email + "\"}]}],"
