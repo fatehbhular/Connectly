@@ -3,7 +3,7 @@ import * as MessagingService from '../services/MessagingService';
 import DMListUI from './DMListUI';
 import DMPage from './DMPage';
 
-export default function MessagingPage({currentUser, onDMOpen}) {
+export default function MessagingPage({currentUser, onDMOpen, sendSignal, onRecipientChange, startCall, endCall}) {
     const [dms, setDMs] = useState([]);
     const [conversation, setConversation] = useState([]);
     const [selectedKey, setSelectedKey] = useState(null);
@@ -89,6 +89,7 @@ export default function MessagingPage({currentUser, onDMOpen}) {
         onDMOpen(true);
         const otherUserId = key.split('_').find(id => parseInt(id) !== userId);
         setRecipientId(otherUserId);
+        onRecipientChange(otherUserId);
         try {
             const name = await MessagingService.getDisplayName(otherUserId);
             setConversationName(name);
@@ -128,6 +129,10 @@ export default function MessagingPage({currentUser, onDMOpen}) {
                 selectedKey={selectedKey}
                 onSendMessage={handleSendMessage}
                 onBack={handleBack}
+                sendSignal={sendSignal}
+                recipientId={recipientId}
+                startCall={startCall}
+                endCall={endCall}
             />
         );
     }
