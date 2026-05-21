@@ -38,6 +38,9 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
     /** Holds our local microphone stream */
     const localStreamRef = useRef(null);
 
+    /** ---- CHANGE: Buffer for ICE candidates that arrive before remoteDescription is set ---- */
+    const pendingCandidatesRef = useRef([]);
+
     /**
      * Crates and configures new RTCPeerConnection.
      * Wired up once and reused for the duration of the voice call.
@@ -144,6 +147,13 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
             // Step 4: Set their offer as our remote description
             await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
+            /** ---- CHANGE: Flush any ICE candidates that arrived before the offer was processed ---- */
+            for (const candidate of pendingCandidatesRef.current) {
+                console.log("Flushing buffered ICE candidate");
+                await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+            pendingCandidatesRef.current = [];
+
             // Step 5: Create our answer
             const answer = await pc.createAnswer();
 
@@ -170,6 +180,14 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
             await peerConnectionRef.current?.setRemoteDescription(
                 new RTCSessionDescription(answer)
             );
+
+            /** ---- CHANGE: Flush any ICE candidates that arrived before the answer was processed ---- */
+            for (const candidate of pendingCandidatesRef.current) {
+                console.log("Flushing buffered ICE candidate");
+                await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+            pendingCandidatesRef.current = [];
+
         } catch (error) {
             console.error("Failed to handle answer", error);
         }
@@ -183,7 +201,9 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
         try {
             // 1. CRITICAL GUARD: Check if peer connection exists AND remote description is set
             if (!peerConnectionRef.current || !peerConnectionRef.current.remoteDescription) {
-                console.log("⏳ Connection not fully initialized yet. Buffering or ignoring candidate.");
+                /** ---- CHANGE: Buffer the candidate instead of dropping it ---- */
+                console.log("⏳ Buffering ICE candidate for later");
+                pendingCandidatesRef.current.push(candidate);
                 return;
             }
 
@@ -200,6 +220,9 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
      * Ends the call - stops the microphone and closes the connection.
      */
     const endCall = useCallback(() => {
+        /** ---- CHANGE: Clear the ICE candidate buffer ---- */
+        pendingCandidatesRef.current = [];
+
         console.log("Ending call");
 
         /** Stop all microphone tracks */
