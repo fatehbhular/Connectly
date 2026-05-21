@@ -181,8 +181,14 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
      */
     const handleIceCandidate = useCallback(async (candidate) => {
         try {
-            console.log("Received ICE candidate");
-            await peerConnectionRef.current?.addIceCandidate(
+            // 1. CRITICAL GUARD: Check if peer connection exists AND remote description is set
+            if (!peerConnectionRef.current || !peerConnectionRef.current.remoteDescription) {
+                console.log("⏳ Connection not fully initialized yet. Buffering or ignoring candidate.");
+                return;
+            }
+
+            console.log("Received ICE candidate - adding to peer connection");
+            await peerConnectionRef.current.addIceCandidate(
                 new RTCIceCandidate(candidate)
             );
         } catch (error) {
