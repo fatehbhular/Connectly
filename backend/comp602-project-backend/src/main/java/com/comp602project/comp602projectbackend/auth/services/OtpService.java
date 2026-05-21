@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 import com.comp602project.comp602projectbackend.auth.OtpToken;
 import com.comp602project.comp602projectbackend.auth.OtpTokenJpaRepository;
 
-import com.resend.Resend;
-import com.resend.services.emails.model.CreateEmailOptions;
+import com.sendgrid.*;
+import com.sendgrid.helpers.mail.*;
 
 import jakarta.transaction.Transactional;
 
@@ -22,8 +22,8 @@ public class OtpService {
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     private static final int CODE_LENGTH = 6;
 
-    @Value("${resend.api.key}")
-    private String resendApiKey;
+    @Value("${sendgrid.api.key}")
+    private String sendgridApiKey;
 
     private final OtpTokenJpaRepository otpTokenJpaRepository;
 
@@ -55,28 +55,29 @@ public class OtpService {
         otpTokenJpaRepository.save(otpToken);
 
         try {
-            Resend resend = new Resend(resendApiKey);
-
-            CreateEmailOptions params = CreateEmailOptions.builder()
-                .from("Connectly <onboarding@resend.dev>") // replace with your verified Resend domain
-                .to(email)
-                .subject("Your Connectly Login Code")
-                .html("""
-                    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 32px; background: #F0EDE6; border-radius: 16px;">
-                        <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 4px;">Connectly</h1>
-                        <p style="color: #B0A99F; font-size: 13px; margin-top: 0;">Account Security</p>
-                        <hr style="border: none; border-top: 1px solid #E8E4DC; margin: 24px 0;">
-                        <div style="text-align: center; margin: 32px 0;">
-                            <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #ffffff; background: #E8845A; padding: 16px 32px; border-radius: 12px;">%s</span>
-                        </div>
-                        <p style="color: #B0A99F; font-size: 13px; text-align: center;">
-                            This code expires in <strong>10 minutes</strong>.
-                        </p>
+            Email from = new Email("connectlyapp.noreply@gmail.com");
+            Email to = new Email(email);
+            Content content = new Content("text/html", """
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: auto; padding: 32px; background: #F0EDE6; border-radius: 16px;">
+                    <h1 style="color: #1a1a1a; font-size: 24px; margin-bottom: 4px;">Connectly</h1>
+                    <p style="color: #B0A99F; font-size: 13px; margin-top: 0;">Account Security</p>
+                    <hr style="border: none; border-top: 1px solid #E8E4DC; margin: 24px 0;">
+                    <div style="text-align: center; margin: 32px 0;">
+                        <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #ffffff; background: #E8845A; padding: 16px 32px; border-radius: 12px;">%s</span>
                     </div>
-                """.formatted(code))
-                .build();
+                    <p style="color: #B0A99F; font-size: 13px; text-align: center;">
+                        This code expires in <strong>10 minutes</strong>.
+                    </p>
+                </div>
+            """.formatted(code));
 
-            resend.emails().send(params);
+            Mail mail = new Mail(from, "Your Connectly Login Code", to, content);
+            SendGrid sg = new SendGrid(sendgridApiKey);
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            sg.api(request);
 
         } catch (Exception e) {
             System.err.println("Failed to send OTP email: " + e.getMessage());
