@@ -10,32 +10,62 @@ import java.util.Map;
 public class ProfileAnalyticsController {
 
     private final ProfileAnalyticsRepository analyticsRepository;
+    private final UserJpaRepository userRepository;
 
-    public ProfileAnalyticsController(ProfileAnalyticsRepository analyticsRepository) {
+    public ProfileAnalyticsController(
+            ProfileAnalyticsRepository analyticsRepository,
+            UserJpaRepository userRepository
+    ) {
         this.analyticsRepository = analyticsRepository;
+        this.userRepository = userRepository;
     }
 
     // API endpoint used to retrieve analytics data for a user
     @GetMapping("/{userId}")
     public Map<String, Integer> getAnalytics(@PathVariable int userId) {
-        ProfileAnalyticsDatabase analytics = analyticsRepository
-                .findByUser_UserId(userId)
-                .orElse(null);
+        ProfileAnalyticsDatabase analytics = getOrCreateAnalytics(userId);
 
-        // If the user has no analytics row yet, return empty stats
-        if (analytics == null) {
-            return Map.of(
-                    "views", 0,
-                    "likes", 0,
-                    "matches", 0
-            );
+        return Map.of(
+                "rightSwipes", analytics.getRightSwipes(),
+                "leftSwipes", analytics.getLeftSwipes(),
+                "matches", analytics.getMatches()
+        );
+    }
+
+    // API endpoint used to record when another user swipes on this user's profile
+    @PostMapping("/{userId}/swipe")
+    public Map<String, Integer> recordSwipe(
+            @PathVariable int userId,
+            @RequestParam String direction
+    ) {
+        ProfileAnalyticsDatabase analytics = getOrCreateAnalytics(userId);
+
+        if (direction.equalsIgnoreCase("right")) {
+            analytics.setRightSwipes(analytics.getRightSwipes() + 1);
+        } else if (direction.equalsIgnoreCase("left")) {
+            analytics.setLeftSwipes(analytics.getLeftSwipes() + 1);
         }
 
-        // Return analytics values in a simple format for the frontend
+        analyticsRepository.save(analytics);
+
         return Map.of(
-                "views", analytics.getProfileViews(),
-                "likes", analytics.getLikes(),
-                "matches", analytics.getSuccessfulMatches()
+                "rightSwipes", analytics.getRightSwipes(),
+                "leftSwipes", analytics.getLeftSwipes(),
+                "matches", analytics.getMatches()
         );
+    }
+
+    // Creates an analytics row if the user does not already have one
+    private ProfileAnalyticsDatabase getOrCreateAnalytics(int userId) {
+        return analyticsRepository.findByUser_UserId(userId)
+                .orElseGet(() -> {
+                    UserDatabase user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+
+                    ProfileAnalyticsDatabase analytics = new ProfileAnalyticsDatabase();
+                    analytics.setUser(user);
+
+                    return analyticsRepository.save(analytics);
+                });
     }
 }
