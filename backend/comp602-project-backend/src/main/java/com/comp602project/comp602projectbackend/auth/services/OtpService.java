@@ -111,4 +111,9 @@ public class OtpService {
         return true;
     }
 
+    public boolean isExpired(String email) {
+        Optional<OtpToken> token = otpTokenJpaRepository.findByEmail(email);
+        if (token.isEmpty()) return true; // no token = treat as expired
+        return token.get().expiresAt().isBefore(LocalDateTime.now());
+    }
 }

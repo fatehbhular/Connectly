@@ -177,10 +177,10 @@ public class UserRepository {
     public void logout() { signedInUser = null; }
 
     public User toggleOtp(String email, boolean enable){
-        UserDatabase row = db.findByEmail(email).orElse(null);              // Get the email
+        UserDatabase row = db.findByEmail(email).orElse(null);         // Get the email 
         if (row == null) return null; 
-        row.setOtpEnabled(enable);                                          // Enable Otp if row != null
-        db.save(row);                                                       // Save to database
+        row.setOtpEnabled(enable);                                           // Enable Otp if row != null
+        db.save(row);                                                        // Save to database
         User user = toUser(row);
         if (signedInUser != null && signedInUser.getEmail().equals(email)) {
             signedInUser.setOtpEnabled(enable);
@@ -189,7 +189,7 @@ public class UserRepository {
     }
 
     public User findByEmail(String email){
-        UserDatabase row = db.findByEmail(email).orElse(null);             // Get the email
+        UserDatabase row = db.findByEmail(email).orElse(null);          //  Get the email 
         return toUser(row);
     }
 
@@ -198,5 +198,9 @@ public class UserRepository {
         if(row == null) return;
         row.setPassword(newPassword);
         db.save(row);
+    }
+
+    public void deleteByEmail(String email){                                   //  Delete a user by email
+        db.deleteByEmail(email);
     }
 }

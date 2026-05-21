@@ -10,7 +10,7 @@ const LockIcon = () => (
   </svg>
 );
 
-export default function OtpPage({ email, pendingUser, rememberMe, onLogin, onBack }) {
+export default function OtpPage({ email, pendingUser, isSignUp, rememberMe, onLogin, onBack }) {
   const [otpCode, setOtpCode] = useState("");                                             // Typed Code
   const [otpErr, setOtpErr] = useState(false);                                            // Code Error
   const [toast, setToast] = useState(null);                                               // Notfication
@@ -28,7 +28,7 @@ export default function OtpPage({ email, pendingUser, rememberMe, onLogin, onBac
       const res = await fetch(`${BASE_URL}/auth/verify-otp`, {                             // Verify the OTP code entered by the user
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: otpCode }),
+        body: JSON.stringify({ email, code: otpCode, context: isSignUp ? "signup" : "login" }),
       });
 
       if (!res.ok) {                                                                      // Server responds with an error, show notfication

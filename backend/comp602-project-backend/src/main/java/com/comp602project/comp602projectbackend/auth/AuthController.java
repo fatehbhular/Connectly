@@ -114,10 +114,14 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> verifyOtp(@RequestBody Map<String, String> body) { // runs when React sends a Post request to "/auth/verify-otp"    
         String email = body.get("email");                                                    // fetch users input of their email and code to verify
         String code = body.get("code");
+        String context = body.get("context");
 
         boolean valid = otpService.verifyOtp(email, code);
 
         if (!valid) {
+            if ("signup".equals(context) && otpService.isExpired(email)) {              // if expired during signup, delete the unverified user
+                userRepository.deleteByEmail(email);
+            }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "Invalid or expired code"));
         }
@@ -125,11 +129,22 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("message", "OTP verified"));
     }
 
+    @PostMapping("/auth/send-verification")
+    public ResponseEntity<Void> sendVerification(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        if (email == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        if (userRepository.findByEmail(email) != null) {                        // email already in use
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();          // 409
+        }
+        otpService.sendOtp(email);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/auth/forgot-password")                                                  
     public ResponseEntity<Void> forgotPassword(@RequestBody Map<String, String> body) {           // Called when user input their email to reset password in login page
         String email = body.get("email");                                                    // fetch users email to send the OTP to
         if (email == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        User user = userRepository.findByEmail(email);                                          // check email exists
+        User user = userRepository.findByEmail(email);                                      // check email exists
         if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         otpService.sendOtp(email);
         return ResponseEntity.ok().build();

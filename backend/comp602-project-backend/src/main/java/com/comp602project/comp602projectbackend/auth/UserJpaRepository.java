@@ -3,6 +3,8 @@ package com.comp602project.comp602projectbackend.auth;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import jakarta.transaction.Transactional;
+
 import java.util.Optional;
 
 
@@ -35,4 +37,7 @@ public interface UserJpaRepository extends JpaRepository<UserDatabase, Integer> 
 
     // Select * from users from email
     Optional<UserDatabase> findByEmail(String email);
+
+    @Transactional
+    public void deleteByEmail(String email);
 }
