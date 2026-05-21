@@ -68,11 +68,12 @@ export default function LoginPage({ onLogin }) {
 
       const user = await res.json();
 
-      if (!isSignUp && user.otpEnabled) {
-        setPendingUser(user);                                                      // hold the user until OTP is verified
-        setStep("otp");                                                            // show OTP screen
+      if (isSignUp || user.otpEnabled) { //Enable otp if user is signing up or has otp enabled, set the pending user and move to the otp page
+        setPendingUser(user);
+        setStep("otp");
         return;
       }
+
 
       if (rememberMe) localStorage.setItem("currentUser", JSON.stringify(user));   // Save the user to the local device
       onLogin(user);
@@ -87,6 +88,7 @@ export default function LoginPage({ onLogin }) {
     <OtpPage
       email={pendingUser?.email}
       pendingUser={pendingUser}
+      isSignUp={isSignUp}
       rememberMe={rememberMe}
       onLogin={onLogin}
       onBack={() => setStep("login")}

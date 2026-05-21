@@ -90,7 +90,8 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build(); 
         }
- 
+
+        otpService.sendOtp(email);                                                  //Send Otp to user email after signing up
         User loggedIn = userRepository.login(email, password);                          // Log them in automatically after signing up
         return ResponseEntity.ok(loggedIn);
     }
@@ -124,8 +125,11 @@ public class AuthController {
         String code = body.get("code");
 
         boolean valid = otpService.verifyOtp(email, code);
-
+        String context = body.get("context");
         if (!valid) {
+            if("signup".equals(context) && otpService.isExpired(email)) { // if the code is expired and the context is signup, delete the user that was just created since they can't verify their email anymore
+                userRepository.deleteByEmail(email); 
+            }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "Invalid or expired code"));
         }
