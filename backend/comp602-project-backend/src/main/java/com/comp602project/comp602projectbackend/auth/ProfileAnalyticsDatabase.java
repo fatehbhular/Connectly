@@ -16,32 +16,55 @@ public class ProfileAnalyticsDatabase {
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     private UserDatabase user;
 
-    // Stores how many times the user's profile has been viewed
-    @Column(name = "profile_views")
-    private int profileViews = 0;
+    // Number of right swipes received on this user's profile
+    @Column(name = "right_swipes")
+    private int rightSwipes = 0;
 
-    // Stores how many likes the user's profile has received
-    @Column(name = "likes")
-    private int likes = 0;
+    // Number of left swipes received on this user's profile
+    @Column(name = "left_swipes")
+    private int leftSwipes = 0;
 
-    // Stores how many successful matches the user has received
-    @Column(name = "successful_matches")
-    private int successfulMatches = 0;
+    // Number of successful matches from swipes
+    @Column(name = "matches")
+    private int matches = 0;
 
-    public int getAnalyticsId() { return analyticsId; }
-    public void setAnalyticsId(int analyticsId) { this.analyticsId = analyticsId; }
+    public int getAnalyticsId() {
+        return analyticsId;
+    }
 
-    public UserDatabase getUser() { return user; }
-    public void setUser(UserDatabase user) { this.user = user; }
+    public void setAnalyticsId(int analyticsId) {
+        this.analyticsId = analyticsId;
+    }
 
-    public int getProfileViews() { return profileViews; }
-    public void setProfileViews(int profileViews) { this.profileViews = profileViews; }
+    public UserDatabase getUser() {
+        return user;
+    }
 
-    public int getLikes() { return likes; }
-    public void setLikes(int likes) { this.likes = likes; }
+    public void setUser(UserDatabase user) {
+        this.user = user;
+    }
 
-    public int getSuccessfulMatches() { return successfulMatches; }
-    public void setSuccessfulMatches(int successfulMatches) {
-        this.successfulMatches = successfulMatches;
+    public int getRightSwipes() {
+        return rightSwipes;
+    }
+
+    public void setRightSwipes(int rightSwipes) {
+        this.rightSwipes = rightSwipes;
+    }
+
+    public int getLeftSwipes() {
+        return leftSwipes;
+    }
+
+    public void setLeftSwipes(int leftSwipes) {
+        this.leftSwipes = leftSwipes;
+    }
+
+    public int getMatches() {
+        return matches;
+    }
+
+    public void setMatches(int matches) {
+        this.matches = matches;
     }
 }
