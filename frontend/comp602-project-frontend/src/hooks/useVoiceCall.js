@@ -5,10 +5,40 @@ import { useRef, useCallback, useEffect } from 'react';
  */
 const ICE_SERVERS = {
     iceServers: [
+        // Google's standard STUN servers
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
+        
+        // Metered STUN fallback
+        {
+          urls: "stun:stun.relay.metered.ca:80",
+        },
+        // Metered TURN over UDP (Standard Port 80)
+        {
+          urls: "turn:global.relay.metered.ca:80",
+          username: "28407d56dc46ff5c510119a7",
+          credential: "ehesKJGOngsnTFgV",
+        },
+        // Metered TURN over TCP (Port 80 fallback)
+        {
+          urls: "turn:global.relay.metered.ca:80?transport=tcp",
+          username: "28407d56dc46ff5c510119a7",
+          credential: "ehesKJGOngsnTFgV",
+        },
+        // Metered TURN over UDP (Secure Port 443)
+        {
+          urls: "turn:global.relay.metered.ca:443",
+          username: "28407d56dc46ff5c510119a7",
+          credential: "ehesKJGOngsnTFgV",
+        },
+        // Metered Secure TURN over TCP (Port 443 - Ultimate Firewall Breaker)
+        {
+          urls: "turns:global.relay.metered.ca:443?transport=tcp",
+          username: "28407d56dc46ff5c510119a7",
+          credential: "ehesKJGOngsnTFgV",
+        },
     ]
-}
+};
 
 /**
  * Manages the full WebRTC voice call lifecycle.
