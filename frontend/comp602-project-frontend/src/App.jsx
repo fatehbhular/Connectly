@@ -108,6 +108,7 @@ function App() {
         pendingIceCandidatesRef.current = []; // Clear the buffer
         setIncomingCall(null); // Clear the banner if they hang up before we answer
         setIsCallActive(false);
+        setActiveRecipientId(null);
         endCall();
         break;
 
@@ -161,8 +162,10 @@ function App() {
           startCall(id);
         }}
         endCall={() => {
+          const peerId = activeRecipientIdRef.current; // use ref so recipientId is always fresh 
+          if (peerId) stableSendSignal('call-ended', peerId, null);
           setActiveRecipientId(null);
-          setIsCallActive(false); // Turn off call UI
+          setIsCallActive(false);
           endCall();
         }}
       />
@@ -256,10 +259,8 @@ function App() {
             
             <button
               onClick={() => {
-                const peerId = activeRecipientId;
-                if (peerId) {
-                  stableSendSignal('call-ended', peerId, null);
-                }
+                const peerId = activeRecipientIdRef.current;
+                if (peerId) stableSendSignal('call-ended', peerId, null);
                 setActiveRecipientId(null);
                 setIsCallActive(false);
                 endCall();

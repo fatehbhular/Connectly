@@ -147,7 +147,7 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
             // Step 4: Set their offer as our remote description
             await pc.setRemoteDescription(new RTCSessionDescription(offer));
 
-            /** ---- CHANGE: Flush any ICE candidates that arrived before the offer was processed ---- */
+            /** Flush any ICE candidates that arrived before the offer was processed */
             for (const candidate of pendingCandidatesRef.current) {
                 console.log("Flushing buffered ICE candidate");
                 await pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -181,7 +181,7 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
                 new RTCSessionDescription(answer)
             );
 
-            /** ---- CHANGE: Flush any ICE candidates that arrived before the answer was processed ---- */
+            /** Flush any ICE candidates that arrived before the answer was processed */
             for (const candidate of pendingCandidatesRef.current) {
                 console.log("Flushing buffered ICE candidate");
                 await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
@@ -201,7 +201,7 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
         try {
             // 1. CRITICAL GUARD: Check if peer connection exists AND remote description is set
             if (!peerConnectionRef.current || !peerConnectionRef.current.remoteDescription) {
-                /** ---- CHANGE: Buffer the candidate instead of dropping it ---- */
+                /** Buffer the candidate instead of dropping it */
                 console.log("⏳ Buffering ICE candidate for later");
                 pendingCandidatesRef.current.push(candidate);
                 return;
@@ -220,21 +220,19 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
      * Ends the call - stops the microphone and closes the connection.
      */
     const endCall = useCallback(() => {
-        /** ---- CHANGE: Clear the ICE candidate buffer ---- */
+        /** Clear the ICE candidate buffer */
         pendingCandidatesRef.current = [];
-
+    
         console.log("Ending call");
-
+    
         /** Stop all microphone tracks */
         localStreamRef.current?.getTracks().forEach(track => track.stop());
         localStreamRef.current = null;
-
+    
         /** Close the peer connection */
         peerConnectionRef.current?.close();
         peerConnectionRef.current = null;
-
-        sendSignal('call-ended', recipientId, null);
-    }, [recipientId, sendSignal]);
+    }, []);
 
     /**
      * Clean up if the component unmounts mid-call.
