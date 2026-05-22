@@ -53,7 +53,7 @@ export default function SettingsPage({ onSignOut, user, onUserUpdate}) {
     <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]">
 
       {/* Header */}
-      <div className="flex items-baseline gap-2 px-6 pt-14 pb-5">
+      <div className="flex items-baseline gap-2 px-6 pt-6 pb-5">
         <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
         <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#C4785A] mb-1">
           your account

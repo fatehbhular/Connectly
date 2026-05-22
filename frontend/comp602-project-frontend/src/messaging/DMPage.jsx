@@ -5,32 +5,36 @@ import { useRef, useEffect, useState } from 'react';
 /**
  * Full screen conversation page.
  * 
- * Shows the message history for the selected conversation and the input bar for sending new messages.
+ * Works for both regular DMs and group chats.
  * 
  * @param {object[]} conversation - array of message objects
- * @param {string} conversationName - display name of the other user
+ * @param {string} conversationName - display name of the other user or group
  * @param {number} userId - ID of the signed-in user
  * @param {object} dmNames - map of conversationKey -> displayName
  * @param {string} selectedKey - active conversation key
  * @param {Function} onSendMessage - handler for sending a message
  * @param {Function} onBack - handler for going back to DMs List
+ * @param {boolean} isGroup - true if this is a group conversation
+ * @param {Function} onAddMember - handler for opening the add member modal (group only)
  */
-export default function DMPage({conversation, conversationName, userId, dmNames, selectedKey, onSendMessage, onBack, sendSignal, recipientId, startCall, endCall}) {
+export default function DMPage({conversation, conversationName, userId, dmNames, selectedKey, onSendMessage, onBack, sendSignal, recipientId, startCall, endCall, isGroup, onAddMember, senderNamesMap}) {
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef(null);
     const hasScrolled = useRef(false);
 
     useEffect(() => {
-    document.body.style.backgroundColor = 'white';
-    return () => {
-        document.body.style.backgroundColor = '';
-    };
-}, []);
-    /** Scroll to the bottom when conversation is loaded */
+        document.body.style.backgroundColor = 'white';
+        return () => {
+            document.body.style.backgroundColor = '';
+        };
+    }, []);
+
     useEffect(() => {
         if (!hasScrolled.current && conversation.length > 0) {
-            messagesEndRef.current?.scrollIntoView({ behaviour: 'instant' });
+            messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
             hasScrolled.current = true;
+        } else if (hasScrolled.current) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [conversation]);
 
@@ -53,21 +57,29 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                     </div>
                     <h2 className="text-base font-semibold text-gray-900">{conversationName}</h2>
                     <div className="flex-1 flex justify-end pr-5 gap-4">
-                        <motion.button
-                            className="bg-transparent border-none"
-                            whileTap={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            onClick={startCall}
-                        >
-                            <i className="bi bi-telephone text-xl text-orange-600"></i>
-                        </motion.button>
-                        <motion.button
-                            className="bg-transparent border-none"
-                            whileTap={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                        >
-                            <i className="bi bi-camera-video text-2xl text-orange-600"></i>
-                        </motion.button>
+                        {isGroup ? (
+                            /* Plain Add Member button for groups */
+                            <button onClick={onAddMember}>Add Member</button>
+                        ) : (
+                            /* Call buttons for regular DMs — unchanged */
+                            <>
+                                <motion.button
+                                    className="bg-transparent border-none"
+                                    whileTap={{ scale: 0.9 }}
+                                    animate={{ scale: 1 }}
+                                    onClick={startCall}
+                                >
+                                    <i className="bi bi-telephone text-xl text-orange-600"></i>
+                                </motion.button>
+                                <motion.button
+                                    className="bg-transparent border-none"
+                                    whileTap={{ scale: 0.9 }}
+                                    animate={{ scale: 1 }}
+                                >
+                                    <i className="bi bi-camera-video text-2xl text-orange-600"></i>
+                                </motion.button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -83,6 +95,7 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                             message={message}
                             userId={userId}
                             senderName={dmNames[selectedKey]}
+                            senderNamesMap={senderNamesMap}
                         />
                     ))
                 )}

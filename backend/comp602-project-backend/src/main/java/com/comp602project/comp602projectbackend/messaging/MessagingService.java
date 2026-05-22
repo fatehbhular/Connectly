@@ -1,5 +1,6 @@
 package com.comp602project.comp602projectbackend.messaging;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.comp602project.comp602projectbackend.auth.User;
 
@@ -19,6 +20,9 @@ public class MessagingService {
     
     private final MessagingRepository messagingRepository;
     private final MessageValidator messageValidator;
+
+    @Autowired
+    private GroupJpaRepository groupRepository;                             // used to fetch group membership for authorization and DM list
 
     /**
      * Constructor injection - Spring wires the beans required.
@@ -66,6 +70,20 @@ public class MessagingService {
     }
 
     /**
+     * Sends a message to a group conversation.
+     *
+     * @param senderId -> ID of the user sending the message
+     * @param groupId -> ID of the group to send to
+     * @param content -> text of the message
+     * @param timestamp -> exact moment the message was created
+     */
+    public void sendGroupMessage(int senderId, int groupId, String content, Instant timestamp) {
+        messageValidator.validateMessage(content);
+        String conversationKey = "group_" + groupId;                       // group keys are prefixed with "group_" to distinguish from DM keys
+        messagingRepository.saveMessageToDatabase(conversationKey, senderId, content, timestamp.toString());
+    }
+
+    /**
      * Generates a stable conversation key by sorting all participant userIDs (including the sender's) and joining them together using "_".
      * 
      * Example -> sender=3, participants=[1,10], sorted=[1,3,10], conversationKey="1_3_10"
@@ -103,7 +121,7 @@ public class MessagingService {
     }
 
     /**
-     * Retrieves all conversation keys for the given user.
+     * Retrieves all conversation keys for the given user — both DMs and group chats.
      * 
      * @param userId -> ID of the user whose DM list is being requested
      * @return a {@link List} of conversation key strings
@@ -111,25 +129,40 @@ public class MessagingService {
      */
     public List<String> getDMList(Integer userId) {
         if (userId == null) throw new IllegalArgumentException("userId must not be null");
-        return messagingRepository.getConversationKeysByUserId(userId);
+
+        // Fetch regular DM keys from the users table
+        List<String> allKeys = new ArrayList<>(messagingRepository.getConversationKeysByUserId(userId));
+
+        // Append group conversation keys — prefixed with "group_" so the frontend can tell them apart
+        List<Group> groups = groupRepository.findByMemberIdsContaining(userId);
+        for (Group group : groups) {
+            allKeys.add("group_" + group.getId());
+        }
+
+        return allKeys;
     }
 
     /**
      * Retrieves all messages in a conversation, after verifying the user 
      * is a member of the conversation.
      * 
-     * Authorisation check -> Splits the conversation key by "_" and verifies 
-     * whether the userId matches any of the keys.
-     * Throws an exception if the user is not a member, preventing unauthorised access.
+     * Handles both regular DM keys ("10_18") and group keys ("group_5").
      * 
-     * @param conversationKey -> sorted userId string identifying the conversation
+     * @param conversationKey -> sorted userId string or group key identifying the conversation
      * @param userId -> ID of the user requesting the conversation
-     * @return a {@link Li}
+     * @return a list of messages
      */
     public List<Message> getConversation(String conversationKey, Integer userId) {
-        boolean isMemberOfConversation = List.of(conversationKey.split("_")).contains(String.valueOf(userId));
-
-        if (!isMemberOfConversation) throw new IllegalArgumentException("User " + userId + " is not part of this conversation.");
+        if (conversationKey.startsWith("group_")) {                         // group conversation — check group membership
+            int groupId = Integer.parseInt(conversationKey.substring(6));
+            Group group = groupRepository.findById(groupId).orElse(null);
+            if (group == null || !group.getMemberIds().contains(userId)) {
+                throw new IllegalArgumentException("User " + userId + " is not part of this group.");
+            }
+        } else {                                                            // regular DM — check if userId is in the key
+            boolean isMemberOfConversation = List.of(conversationKey.split("_")).contains(String.valueOf(userId));
+            if (!isMemberOfConversation) throw new IllegalArgumentException("User " + userId + " is not part of this conversation.");
+        }
 
         return messagingRepository.getMessageByConversationKey(conversationKey);
     }
@@ -137,17 +170,24 @@ public class MessagingService {
     /**
      * Retrieves the last message in a conversation.
      * 
-     * Authorisation check -> Splits the conversation key by "_" and verifies 
-     * whether the userId matches any of the keys.
-     * Throws an exception if the user is not a member, preventing unauthorised access.
+     * Handles both regular DM keys and group keys.
      * 
      * @param conversationKey - the conversation to fetch the last message from
      * @param userId - ID of the user requesting the last message (authorisation check)
      * @return the most recent {@link Message} object, or null if none found
      */
     public Message getLastMessage(String conversationKey, Integer userId) {
-        boolean isMemberOfConversation = List.of(conversationKey.split("_")).contains(String.valueOf(userId));
-        if (!isMemberOfConversation) throw new IllegalArgumentException("User " + userId + " is not part of this conversation.");
+        if (conversationKey.startsWith("group_")) {                         // group conversation — check group membership
+            int groupId = Integer.parseInt(conversationKey.substring(6));
+            Group group = groupRepository.findById(groupId).orElse(null);
+            if (group == null || !group.getMemberIds().contains(userId)) {
+                throw new IllegalArgumentException("User " + userId + " is not part of this group.");
+            }
+        } else {                                                            // regular DM — check if userId is in the key
+            boolean isMemberOfConversation = List.of(conversationKey.split("_")).contains(String.valueOf(userId));
+            if (!isMemberOfConversation) throw new IllegalArgumentException("User " + userId + " is not part of this conversation.");
+        }
+
         return messagingRepository.getLastMessage(conversationKey);
     }
 

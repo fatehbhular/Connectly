@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
  * @param {number} userId - ID of the signed-in user
  * @param {string} senderName - display name of the receipient
  */
-export default function DMPageRenderer({message, userId, senderName}) {
+export default function DMPageRenderer({message, userId, senderName, senderNamesMap}) {
     const isSent = message.senderId === parseInt(userId);
 
     return (
@@ -31,7 +31,7 @@ export default function DMPageRenderer({message, userId, senderName}) {
                 </span>
             )}
 
-            <span className="text-xs text-gray-400 mb-1">{isSent ? 'You' : senderName}</span>
+            <span className="text-xs text-gray-400 mb-1">{isSent ? 'You' : (senderNamesMap?.[message.senderId] || senderName)}</span>
             <motion.div
                 className={`px-4 py-2 rounded-2xl text-white text-sm break-words max-w-[70vw] w-fit ${
                     isSent 

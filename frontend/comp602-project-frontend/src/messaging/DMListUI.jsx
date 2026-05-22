@@ -6,28 +6,31 @@ import BASE_URL from '../config.js';
 /**
  * Full screen DM list page.
  *
- * Shows all conversations for the signed-in user.
- * When a DM is tapped, navigates to the conversation screen.
+ * Shows all conversations for the signed-in user — both DMs and group chats.
+ * When a conversation is tapped, navigates to the conversation screen.
  *
- * @param {string[]} dms            - array of conversation keys
+ * @param {string[]} dms            - array of conversation keys (DMs and group_ keys)
  * @param {object}   dmNames        - map of conversationKey -> display name
  * @param {boolean}  namesLoaded    - whether display names have finished loading
- * @param {Function} onSelectDM     - handler for when a DM is tapped
+ * @param {Function} onSelectDM     - handler for when a conversation is tapped
  * @param {object}   lastMessages   - map of conversationKey -> { senderId, content }
  * @param {string}   userId         - the signed-in user's id
+ * @param {Function} onNewGroup     - handler for when the New Group button is tapped
  */
-export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMessages, userId }) {
+export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMessages, userId, onNewGroup }) {
     const [presenceMap, setPresenceMap] = useState({});
 
     useEffect(() => {
         if (!namesLoaded || dms.length === 0) return;
 
         const fetchPresence = async () => {
+            // Only fetch presence for regular DMs — groups don't have a single other user
+            const dmOnly = dms.filter(key => !key.startsWith('group_'));
             const entries = await Promise.all(
-                dms.map(async (key) => {
+                dmOnly.map(async (key) => {
                     const otherUserId = key.split('_').find(id => String(id) !== String(userId));
                     try {
-                        const res = await fetch(`${BASE_URL}/presence/${otherUserId}`); 
+                        const res = await fetch(`${BASE_URL}/presence/${otherUserId}`);
                         const isOnline = await res.json();
                         return [otherUserId, isOnline];
                     } catch {
@@ -39,7 +42,6 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
         };
 
         fetchPresence();
-        // re-fetch every 30 seconds to keep dots fresh
         const interval = setInterval(fetchPresence, 30000);
         return () => clearInterval(interval);
     }, [namesLoaded, dms, userId]);
@@ -48,11 +50,13 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
         <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]">
 
             {/* Header */}
-            <div className="flex items-baseline gap-2 px-6 pt-14 pb-5">
+            <div className="flex items-baseline gap-2 px-6 pt-6 pb-5">
                 <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
                 <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#C4785A] mb-1">
                     for you
                 </p>
+                {/* New Group button — plain, no styling */}
+                <button style={{ marginLeft: 'auto' }} onClick={onNewGroup}>+ New Group</button>
             </div>
 
             {/* Search Bar */}
@@ -100,16 +104,16 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
                         </motion.div>
                     ) : (
                         dms.map((dm, index) => {
+                            const isGroup = dm.startsWith('group_');
                             const initials = dmNames[dm]?.[0]?.toUpperCase() || '?';
                             const displayName = dmNames[dm] || dm;
                             const last = lastMessages?.[dm];
                             const preview = last
                                 ? `${last.senderId === userId ? 'You' : displayName}: ${last.content}`
                                 : 'No messages yet';
-                            
-                            // Gets the other usersi ID to look up their presence
-                            const otherUserId = dm ? dm.split('_').find(id => String(id) !== String(userId)) : null;
-                            const isOnline = otherUserId ? (presenceMap[otherUserId] ?? false) : false;
+
+                            const otherUserId = isGroup ? null : dm.split('_').find(id => String(id) !== String(userId));
+                            const isOnline = !isGroup && otherUserId ? (presenceMap[otherUserId] ?? false) : false;
 
                             return (
                                 <motion.div
@@ -131,16 +135,18 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
                                         <div className="w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm text-white bg-gradient-to-br from-orange-300 to-orange-400">
                                             {initials}
                                         </div>
-                                        {/* ADDED: dot pinned to bottom-right of avatar */}
-                                        <span className="absolute bottom-0 right-0">
-                                            <OnlineDot isOnline={isOnline} />
-                                        </span>
+                                        {/* Online dot — DMs only */}
+                                        {!isGroup && (
+                                            <span className="absolute bottom-0 right-0">
+                                                <OnlineDot isOnline={isOnline} />
+                                            </span>
+                                        )}
                                     </div>
 
                                     {/* Name + preview */}
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <span className="text-gray-900 font-semibold text-sm leading-tight">
-                                            {displayName}
+                                            {displayName} {isGroup && <span style={{ fontSize: '11px', color: '#B0A99F' }}>(Group)</span>}
                                         </span>
                                         <span className="text-[#B0A99F] text-xs truncate mt-0.5">
                                             {preview}

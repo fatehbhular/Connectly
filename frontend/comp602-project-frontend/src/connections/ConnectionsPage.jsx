@@ -106,7 +106,7 @@ export default function ConnectionsPage({ currentUser }) {
 
       {/* Header */}
       <motion.div
-        className="flex items-baseline gap-2 px-6 pt-14 pb-5"
+        className="flex items-baseline gap-2 px-6 pt-6 pb-5"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 320, damping: 26 }}

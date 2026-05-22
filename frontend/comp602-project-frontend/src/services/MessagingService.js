@@ -86,3 +86,40 @@ export const getLastMessage = async (conversationKey, userId) => {
     if (!response.ok) throw new Error('Failed to fetch last message');
     return response.json();
 };
+
+
+
+export async function createGroup(name, memberIds) {                        // creates a new group and returns the saved group object
+    const res = await fetch(`${BASE_URL}/groups/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, memberIds })
+    });
+    return res.json();
+}
+ 
+export async function getGroupName(groupId) {                               // returns the display name of a group
+    const res = await fetch(`${BASE_URL}/groups/${groupId}/name`);
+    return res.text();
+}
+ 
+export async function getGroupMembers(groupId) {                            // returns the list of member user IDs in a group
+    const res = await fetch(`${BASE_URL}/groups/${groupId}/members`);
+    return res.json();
+}
+ 
+export async function addGroupMember(groupId, userId) {                     // adds a user to an existing group
+    await fetch(`${BASE_URL}/groups/${groupId}/addMember`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+    });
+}
+ 
+export async function sendGroupMessage(userId, groupId, content, timestamp) { // sends a message to a group conversation
+    await fetch(`${BASE_URL}/messaging/send-group`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'userId': userId },
+        body: JSON.stringify({ groupId, content, timestamp })
+    });
+}
