@@ -17,7 +17,7 @@ const STEPS = [                                                                 
         title: "What's your email?",
         subtitle: "Used for account security and recovery.",
         type: "text",
-        placeholder: "e.g. leo@example.com",
+        placeholder: "e.g. user@example.com",
         required: true,
         autoCapitalize: "none",
     },
