@@ -153,21 +153,25 @@ export default function AnalyticsPage({ currentUser }) {
     return () => eventSource.close();
   }, [userId]);
 
+  // Calculatee total swipes
   const totalSwipes = analytics
     ? analytics.rightSwipes + analytics.leftSwipes
     : 0;
 
-  const hasInteractions = analytics
+  // Check for user interactions
+    const hasInteractions = analytics
     ? analytics.rightSwipes > 0 || analytics.leftSwipes > 0 || analytics.matches > 0
     : false;
 
-  const rightPct =
+  // Calculate percentages for right and left swipes
+    const rightPct =
     totalSwipes === 0
       ? 0
       : Math.round((analytics.rightSwipes / totalSwipes) * 100);
 
   const leftPct = totalSwipes === 0 ? 0 : 100 - rightPct;
 
+  // Calculate match rate
   const matchRate =
     analytics?.rightSwipes > 0
       ? Math.round((analytics.matches / analytics.rightSwipes) * 100)
@@ -182,6 +186,7 @@ export default function AnalyticsPage({ currentUser }) {
           <p>User #{userId}</p>
         </div>
 
+        {/* Metric summary cards */}
         {!analytics ? (
           <div className="analytics-loading">Loading analytics…</div>
         ) : !hasInteractions ? (
@@ -214,6 +219,7 @@ export default function AnalyticsPage({ currentUser }) {
               </div>
             </div>
 
+            /* Swipe breakdown progress bars */}
             <div className="analytics-section">
               <p className="section-title">Swipe breakdown</p>
               <div className="bar-row">
