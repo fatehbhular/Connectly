@@ -29,9 +29,7 @@ public class ProfileAnalyticsController {
     // Retrieves analytics data for a specific user
     @GetMapping("/{userId}")
     public Map<String, Integer> getAnalytics(@PathVariable int userId) {
-
         ProfileAnalyticsDatabase analytics = getOrCreateAnalytics(userId);
-
         return Map.of(
                 "rightSwipes", analytics.getRightSwipes(),
                 "leftSwipes", analytics.getLeftSwipes(),
@@ -42,14 +40,23 @@ public class ProfileAnalyticsController {
     // Frontend subscribes here for live analytics updates
     @GetMapping("/{userId}/stream")
     public SseEmitter streamAnalytics(@PathVariable int userId) {
-
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-
         emitters.put(userId, emitter);
-
         emitter.onCompletion(() -> emitters.remove(userId));
         emitter.onTimeout(() -> emitters.remove(userId));
         emitter.onError((e) -> emitters.remove(userId));
+
+        // Send current stats immediately on connect so frontend loads data right away
+        try {
+            ProfileAnalyticsDatabase analytics = getOrCreateAnalytics(userId);
+            emitter.send(Map.of(
+                    "rightSwipes", analytics.getRightSwipes(),
+                    "leftSwipes", analytics.getLeftSwipes(),
+                    "matches", analytics.getMatches()
+            ));
+        } catch (IOException e) {
+            emitters.remove(userId);
+        }
 
         return emitter;
     }
@@ -60,12 +67,10 @@ public class ProfileAnalyticsController {
             @PathVariable int userId,
             @RequestParam String direction
     ) {
-
         ProfileAnalyticsDatabase analytics = getOrCreateAnalytics(userId);
 
         if (direction.equalsIgnoreCase("right")) {
             analytics.setRightSwipes(analytics.getRightSwipes() + 1);
-
         } else if (direction.equalsIgnoreCase("left")) {
             analytics.setLeftSwipes(analytics.getLeftSwipes() + 1);
         }
@@ -80,11 +85,9 @@ public class ProfileAnalyticsController {
 
         // Sends updated analytics to connected frontend clients
         SseEmitter emitter = emitters.get(userId);
-
         if (emitter != null) {
             try {
                 emitter.send(updatedData);
-
             } catch (IOException e) {
                 emitters.remove(userId);
             }
@@ -95,19 +98,13 @@ public class ProfileAnalyticsController {
 
     // Creates analytics data if the user does not already have a record
     private ProfileAnalyticsDatabase getOrCreateAnalytics(int userId) {
-
         return analyticsRepository.findByUser_UserId(userId)
                 .orElseGet(() -> {
-
                     UserDatabase user = userRepository.findById(userId)
                             .orElseThrow(() ->
                                     new RuntimeException("User not found"));
-
-                    ProfileAnalyticsDatabase analytics =
-                            new ProfileAnalyticsDatabase();
-
+                    ProfileAnalyticsDatabase analytics = new ProfileAnalyticsDatabase();
                     analytics.setUser(user);
-
                     return analyticsRepository.save(analytics);
                 });
     }
