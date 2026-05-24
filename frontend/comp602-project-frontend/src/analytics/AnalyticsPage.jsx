@@ -153,7 +153,7 @@ export default function AnalyticsPage({ currentUser }) {
     return () => eventSource.close();
   }, [userId]);
 
-  // Calculatee total swipes
+  // Calculate total swipes
   const totalSwipes = analytics
     ? analytics.rightSwipes + analytics.leftSwipes
     : 0;
@@ -219,7 +219,7 @@ export default function AnalyticsPage({ currentUser }) {
               </div>
             </div>
 
-            /* Swipe breakdown progress bars */}
+            {/* Swipe breakdown progress bars */}
             <div className="analytics-section">
               <p className="section-title">Swipe breakdown</p>
               <div className="bar-row">
