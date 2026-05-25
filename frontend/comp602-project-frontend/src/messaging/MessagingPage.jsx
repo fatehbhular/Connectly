@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import * as MessagingService from '../services/MessagingService';
 import DMListUI from './DMListUI';
 import DMPage from './DMPage';
+import BASE_URL from '../config.js';
 
 export default function MessagingPage({currentUser, onDMOpen, sendSignal, onRecipientChange, startCall, endCall}) {
     const [dms, setDMs] = useState([]);
@@ -25,17 +26,24 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
     const [currentGroupMembers, setCurrentGroupMembers] = useState([]);
 
+    const [freshConnectionKeys, setFreshConnectionKeys] = useState([]);
+
     // Load connection display names when the new group modal opens
     useEffect(() => {
-        if (!showGroupModal || !currentUser.connectionKeys?.length) return;
+        if (!showGroupModal) return;
         const load = async () => {
+            const res = await fetch(`${BASE_URL}/users/connections`, {
+                headers: { 'userId': userId }
+            });
+            const connectionKeys = await res.json();
             const names = {};
             await Promise.all(
-                currentUser.connectionKeys.map(async (id) => {
+                connectionKeys.map(async (id) => {
                     names[id] = await MessagingService.getDisplayName(id);
                 })
             );
             setConnectionNames(names);
+            setFreshConnectionKeys(connectionKeys);         // new state instead of freshConnectionKeys
         };
         load();
     }, [showGroupModal]);
@@ -45,11 +53,11 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
         if (!showAddMemberModal || !selectedKey?.startsWith('group_')) return;
         const groupId = selectedKey.split('_')[1];
         MessagingService.getGroupMembers(groupId).then(setCurrentGroupMembers).catch(console.log);
-        if (!currentUser.connectionKeys?.length) return;
+        if (!freshConnectionKeys?.length) return;
         const load = async () => {
             const names = {};
             await Promise.all(
-                currentUser.connectionKeys.map(async (id) => {
+                freshConnectionKeys.map(async (id) => {
                     names[id] = await MessagingService.getDisplayName(id);
                 })
             );
@@ -223,10 +231,10 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
                         <div style={{ width: '100%', maxWidth: '360px', background: 'white', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <p>Add a member</p>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '240px', overflowY: 'auto' }}>
-                                {currentUser.connectionKeys?.filter(id => !currentGroupMembers.includes(id)).length === 0 ? (
+                                {freshConnectionKeys?.filter(id => !currentGroupMembers.includes(id)).length === 0 ? (
                                     <p>All your connections are already in this group.</p>
                                 ) : (
-                                    currentUser.connectionKeys
+                                    freshConnectionKeys
                                         ?.filter(id => !currentGroupMembers.includes(id))
                                         .map(id => (
                                             <button
@@ -275,10 +283,10 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
                         />
                         <p>Select connections to add:</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '240px', overflowY: 'auto' }}>
-                            {!currentUser.connectionKeys?.length ? (
+                            {!freshConnectionKeys?.length ? (
                                 <p>You have no connections yet.</p>
                             ) : (
-                                currentUser.connectionKeys.map(id => {
+                                freshConnectionKeys.map(id => {
                                     const selected = selectedMembers.includes(id);
                                     return (
                                         <button

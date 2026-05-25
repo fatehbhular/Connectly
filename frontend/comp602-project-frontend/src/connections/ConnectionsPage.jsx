@@ -85,20 +85,26 @@ export default function ConnectionsPage({ currentUser }) {
     advance();
   };
 
-  const handleAccept = async () => {                                        // accepts the pending request with a reply and advances
-    if (!replyMessage.trim() || accepting) return;                          // block double tap
-    setAccepting(true);
-    try {
-      await fetch(`${BASE_URL}/api/connections/request/accept`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId: currentItem.requestId, replyMessage: replyMessage })
-      });
-    } catch (e) { console.log('Failed to accept:', e); }
-    setAccepting(false);
-    setShowReplyModal(false);
-    setReplyMessage('');
-    advance();
+  const handleAccept = async () => {
+      if (!replyMessage.trim() || accepting) return;
+      setAccepting(true);
+      try {
+          await fetch(`${BASE_URL}/api/connections/request/accept`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ requestId: currentItem.requestId, replyMessage: replyMessage })
+          });
+          const res = await fetch(`${BASE_URL}/users/profile`, {
+              headers: { 'userId': currentUser.userId }
+          });
+          const updated = await res.json();
+          onUserUpdate(updated);
+          console.log('updated connectionKeys:', updated.connectionKeys);
+      } catch (e) { console.log('Failed to accept:', e); }
+      setAccepting(false);
+      setShowReplyModal(false);
+      setReplyMessage('');
+      advance();
   };
 
   return (

@@ -55,7 +55,7 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
                 <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#C4785A] mb-1">
                     for you
                 </p>
-                {/* New Group button — plain, no styling */}
+                {/* New Group button — plain */}
                 <button style={{ marginLeft: 'auto' }} onClick={onNewGroup}>+ New Group</button>
             </div>
 
@@ -77,7 +77,7 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
             </div>
 
             {/* List Container */}
-            <div className="flex flex-col flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4">
+            <div className="flex flex-col flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 pb-25">
                 <AnimatePresence>
                     {!namesLoaded ? (
                         <motion.p

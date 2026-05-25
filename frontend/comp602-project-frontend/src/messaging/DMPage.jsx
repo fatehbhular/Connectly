@@ -21,6 +21,7 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef(null);
     const hasScrolled = useRef(false);
+    const scrollContainerRef = useRef(null);
 
     useEffect(() => {
         document.body.style.backgroundColor = 'white';
@@ -29,11 +30,17 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
         };
     }, []);
 
+    const isNearBottom = () => {
+        const el = scrollContainerRef.current;
+        if (!el) return true;
+        return el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+    };
+
     useEffect(() => {
         if (!hasScrolled.current && conversation.length > 0) {
             messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
             hasScrolled.current = true;
-        } else if (hasScrolled.current) {
+        } else if (hasScrolled.current && isNearBottom()) {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
     }, [conversation]);
@@ -85,7 +92,7 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
             </div>
 
             {/* Scrollable message list */}
-            <div className="flex flex-col flex-1 overflow-y-auto px-4 py-3 gap-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div ref={scrollContainerRef} className="flex flex-col flex-1 overflow-y-auto px-4 py-3 gap-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {conversation.length === 0 ? (
                     <p className="text-[#B0A99F] text-center mt-4 text-sm">No messages yet</p>
                 ) : (

@@ -149,7 +149,7 @@ function App() {
   return (
     <div>
       {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
-      {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
+      {page === "connections" && <ConnectionsPage currentUser={currentUser} onUserUpdate={setCurrentUser} />}
       {page === "messages" && (
       <MessagingPage 
         currentUser={currentUser} 
