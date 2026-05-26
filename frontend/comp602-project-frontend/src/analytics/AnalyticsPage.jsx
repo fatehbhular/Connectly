@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import BASE_URL from "../config.js";
+
 const styles = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&display=swap');
 
@@ -138,9 +140,7 @@ export default function AnalyticsPage({ currentUser }) {
   // Connect to SSE stream — backend sends current stats on connect,
   // then pushes live updates whenever a swipe is recorded
   useEffect(() => {
-    const eventSource = new EventSource(
-      `http://localhost:8080/analytics/${userId}/stream`
-    );
+    const eventSource = new EventSource(`${BASE_URL}/analytics/${userId}/stream`);
 
     eventSource.onmessage = (e) => {
       setAnalytics(JSON.parse(e.data));
