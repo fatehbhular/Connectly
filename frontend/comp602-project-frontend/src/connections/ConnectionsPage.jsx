@@ -94,10 +94,22 @@ export default function ConnectionsPage({ currentUser }) {
         body: JSON.stringify({ requestId: currentItem.requestId })
       }).catch(e => console.log('Failed to decline:', e));
     }
+    // record a left swipe on the card owner's analytics
+    if (cardUser?.userId) {
+      fetch(`http://localhost:8080/analytics/${cardUser.userId}/swipe?direction=left`, {
+        method: 'POST'
+      }).catch(e => console.log('Failed to record left swipe:', e));
+    }
     advance();
   }
 
   function SwipeRight() {
+    // record a right swipe on the card owner's analytics
+    if (cardUser?.userId) {
+      fetch(`http://localhost:8080/analytics/${cardUser.userId}/swipe?direction=right`, {
+        method: 'POST'
+      }).catch(e => console.log('Failed to record right swipe:', e));
+    }
     if (isPending) {
       setShowReplyModal(true);
     } else {
