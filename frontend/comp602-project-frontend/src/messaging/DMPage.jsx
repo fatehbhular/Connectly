@@ -57,7 +57,7 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                             className="bg-transparent border-none"
                             whileTap={{ scale: 0.9 }}
                             animate={{ scale: 1 }}
-                            onClick={() => startCall(recipientId)}
+                            onClick={() => startCall(recipientId, false)} // false = voice only
                         >
                             <i className="bi bi-telephone text-xl text-orange-600"></i>
                         </motion.button>
@@ -65,6 +65,7 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                             className="bg-transparent border-none"
                             whileTap={{ scale: 0.9 }}
                             animate={{ scale: 1 }}
+                            onClick={() => startCall(recipientId, true)} // true = video call
                         >
                             <i className="bi bi-camera-video text-2xl text-orange-600"></i>
                         </motion.button>
