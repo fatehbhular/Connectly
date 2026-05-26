@@ -142,7 +142,7 @@ export default function ConnectionsPage({ currentUser }) {
 
       {/* Header */}
       <motion.div
-        className="flex items-baseline justify-between px-6 pt-14 pb-5"
+        className="flex items-center justify-between px-6 pt-14 pb-5"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 320, damping: 26 }}
@@ -157,7 +157,7 @@ export default function ConnectionsPage({ currentUser }) {
         {/* filter button — orange dot shows when filters are active */}
         <button
           onClick={() => setShowFilterPanel(prev => !prev)}
-          style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+          style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', zIndex: 10 }}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="4" y1="6" x2="20" y2="6" />
