@@ -64,29 +64,21 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                     </div>
                     <h2 className="text-base font-semibold text-gray-900">{conversationName}</h2>
                     <div className="flex-1 flex justify-end pr-5 gap-4">
-                        {isGroup ? (
-                            /* Plain Add Member button for groups */
-                            <button onClick={onAddMember}>Add Member</button>
-                        ) : (
-                            /* Call buttons for regular DMs — unchanged */
-                            <>
-                                <motion.button
-                                    className="bg-transparent border-none"
-                                    whileTap={{ scale: 0.9 }}
-                                    animate={{ scale: 1 }}
-                                    onClick={startCall}
-                                >
-                                    <i className="bi bi-telephone text-xl text-orange-600"></i>
-                                </motion.button>
-                                <motion.button
-                                    className="bg-transparent border-none"
-                                    whileTap={{ scale: 0.9 }}
-                                    animate={{ scale: 1 }}
-                                >
-                                    <i className="bi bi-camera-video text-2xl text-orange-600"></i>
-                                </motion.button>
-                            </>
-                        )}
+                        <motion.button
+                            className="bg-transparent border-none"
+                            whileTap={{ scale: 0.9 }}
+                            animate={{ scale: 1 }}
+                            onClick={() => startCall(recipientId)}
+                        >
+                            <i className="bi bi-telephone text-xl text-orange-600"></i>
+                        </motion.button>
+                        <motion.button
+                            className="bg-transparent border-none"
+                            whileTap={{ scale: 0.9 }}
+                            animate={{ scale: 1 }}
+                        >
+                            <i className="bi bi-camera-video text-2xl text-orange-600"></i>
+                        </motion.button>
                     </div>
                 </div>
             </div>

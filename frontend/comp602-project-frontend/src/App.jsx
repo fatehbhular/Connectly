@@ -38,6 +38,14 @@ function App() {
   // Incoming call state - shown when someone calls the user.
   const [incomingCall, setIncomingCall] = useState(null); // { callerId, offer }
 
+  // Ref to always give handleSignal a fresh incomingCall value, avoiding stale closures
+  const incomingCallRef = useRef(null);
+
+  // Keep the mutable ref perfectly aligned whenever incomingCall state changes
+  useEffect(() => {
+    incomingCallRef.current = incomingCall;
+  }, [incomingCall]);
+
   // Holds early ICE candidates arriving before the user clicks "Accept"
   const pendingIceCandidatesRef = useRef([]);
 
@@ -64,7 +72,6 @@ function App() {
   // Voice call hook at App level
   const { startCall, endCall, handleOffer, handleAnswer, handleIceCandidate } = useVoiceCall(
     currentUser?.userId, 
-    activeRecipientId, 
     stableSendSignal, 
     handleIncomingCall
   );
@@ -91,9 +98,10 @@ function App() {
         break;
 
       case 'ice-candidate':
+        // Use incomingCallRef instead of stale incomingCall state value
         // If the receiver hasn't dismissed the incoming call banner yet, 
         // it means the call is still initializing, so keep buffering!
-        if (incomingCall !== null) {
+        if (incomingCallRef.current !== null) {
           console.log("Buffering early ICE candidate from caller...");
           pendingIceCandidatesRef.current.push(signal.payload);
         } else {
@@ -108,14 +116,13 @@ function App() {
         pendingIceCandidatesRef.current = []; // Clear the buffer
         setIncomingCall(null); // Clear the banner if they hang up before we answer
         setIsCallActive(false);
-        setActiveRecipientId(null);
-        endCall();
+        endCall(null); //  Pass null so the receiver doesn't re-send a call-ended signal
         break;
 
       default:
         console.warn("Unknown signal type", signal.type);
     }
-  }, [handleAnswer, handleIceCandidate, endCall]);
+  }, [handleAnswer, handleIceCandidate, endCall]); // incomingCall removed - now using ref
 
   // Connect to WebSocket signalling server once user is logged in.
   const { sendSignal } = useWebSocket(currentUser?.userId, handleSignal);
@@ -132,7 +139,7 @@ function App() {
     }
   }, [sendSignal])
 
-  // Runs ffor the whole session once logged in
+  // Runs for the whole session once logged in
   UserHeatbeat(currentUser?.userId);
 
   // If nobody is logged in, show the login page
@@ -159,14 +166,13 @@ function App() {
         startCall={(id) => {
           setActiveRecipientId(id ? Number(id) : null);
           setIsCallActive(true); // Mark call active when dialing
-          startCall(id);
+          startCall(id); // id passed directly into startCall, bypassing stale recipientId prop
         }}
         endCall={() => {
-          const peerId = activeRecipientIdRef.current; // use ref so recipientId is always fresh 
-          if (peerId) stableSendSignal('call-ended', peerId, null);
+          const peerId = activeRecipientId; // Capture before clearing state
           setActiveRecipientId(null);
-          setIsCallActive(false);
-          endCall();
+          setIsCallActive(false); // Turn off call UI
+          endCall(peerId); // Pass captured ID so endCall sends the signal before state is cleared
         }}
       />
       )}
@@ -259,11 +265,13 @@ function App() {
             
             <button
               onClick={() => {
-                const peerId = activeRecipientIdRef.current;
-                if (peerId) stableSendSignal('call-ended', peerId, null);
+                const peerId = activeRecipientId; // Capture before clearing state
+                if (peerId) {
+                  stableSendSignal('call-ended', peerId, null);
+                }
                 setActiveRecipientId(null);
                 setIsCallActive(false);
-                endCall();
+                endCall(peerId); // Pass captured ID
               }}
               className="p-3 bg-red-600 hover:bg-red-700 transition-colors text-white rounded-full flex items-center justify-center shadow-lg"
               title="Disconnect Call"
