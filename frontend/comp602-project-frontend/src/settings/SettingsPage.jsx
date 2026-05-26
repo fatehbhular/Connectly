@@ -7,6 +7,8 @@ export default function SettingsPage({ onSignOut, user, onUserUpdate}) {
   const [language, setLanguage] = useState("English");
   const [otpEnabled, setOtpEnabled] = useState(user?.otpEnabled || false);                  //Used to display the tick for otp
   const [otpToast, setOtpToast] = useState(null); 
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordToast, setPasswordToast] = useState(null);
 
   // Shared card animation — each card fades and slides up, staggered by index
   const cardVariants = {
@@ -48,6 +50,34 @@ export default function SettingsPage({ onSignOut, user, onUserUpdate}) {
       setOtpToast("Could not connect to server.");
     }
   };
+
+    //This fetches the users to check if the details is correct and to send to the update-password endpoint
+    const handleUpdatePassword = async () => {
+      if (!newPassword) {
+        setPasswordToast("Please enter a new password.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${BASE_URL}/auth/update-password`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email, password: newPassword }),
+        });
+
+        if (!res.ok) {
+          setPasswordToast("Failed to update password.");
+          return;
+        }
+
+        setNewPassword("");
+        setPasswordToast("Password updated successfully!");
+        setTimeout(() => setPasswordToast(null), 3000);
+
+      } catch {
+        setPasswordToast("Could not connect to server.");
+      }
+    };
 
   return (
     <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]">
@@ -101,14 +131,18 @@ export default function SettingsPage({ onSignOut, user, onUserUpdate}) {
             type="password"
             placeholder="New password"
             className="w-full px-3 py-2 rounded-xl bg-[#F0EDE6] border border-[#E8E4DC] text-sm text-gray-900 placeholder-[#B0A99F] outline-none focus:ring-2 focus:ring-orange-300 transition-shadow"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
           />
           <motion.button
             className="self-start px-4 py-2 rounded-xl bg-orange-400 text-white text-sm font-semibold"
             whileTap={{ scale: 0.97 }}
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            onClick={handleUpdatePassword}
           >
             Update Password
           </motion.button>
+          {passwordToast && <p className="text-xs text-green-600">{passwordToast}</p>}
         </motion.div>
 
         {/* Security */}

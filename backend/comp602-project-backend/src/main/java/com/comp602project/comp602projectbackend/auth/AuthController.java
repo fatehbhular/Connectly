@@ -3,6 +3,7 @@ package com.comp602project.comp602projectbackend.auth;
 import java.util.List;
 import java.util.Map;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.mindrot.jbcrypt.BCrypt;
+
 import com.comp602project.comp602projectbackend.auth.services.OtpService;
 
 /*
@@ -162,6 +163,17 @@ public class AuthController {
         boolean valid = otpService.verifyOtp(email, code);
         if (!valid) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         userRepository.resetPassword(email, BCrypt.hashpw(newPassword, BCrypt.gensalt())); // hash new password
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/auth/update-password")
+    public ResponseEntity<Void> updatePassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String newPassword = body.get("password");
+        if (email == null || newPassword == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        userRepository.resetPassword(email, BCrypt.hashpw(newPassword, BCrypt.gensalt()));
         return ResponseEntity.ok().build();
     }
 
