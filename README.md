@@ -1,5 +1,5 @@
 # Connectly 🌐
-> A modern, full-stack social networking web application designed for seamless direct messaging. Built as a COMP602 Semester Project at AUT.
+> A modern, full-stack social networking web application. Featuring real-time direct communication, intelligent matching algorithm, and analytics to help track your interactions over time - all in one seamless experience. Built as a COMP602 Semester Project at AUT.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20App-brightgreen?style=for-the-badge&logo=vercel)](https://connectly-pink-six.vercel.app/)
 [![Java](https://img.shields.io/badge/Java-17%2B-orange?style=for-the-badge&logo=openjdk)](https://www.oracle.com/java/)
