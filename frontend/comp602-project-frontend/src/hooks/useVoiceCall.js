@@ -27,11 +27,10 @@ const ICE_SERVERS = {
  * Manages the full WebRTC voice call lifecycle.
  * 
  * @param {string} userId -> current user's ID
- * @param {string} recipientId -> other user's ID
  * @param {Function} sendSignal -> sends signalling messages via WebSocket
  * @param {Function} onIncomingCall -> called when an incoming call comes through
  */
-export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
+export function useVoiceCall(userId, sendSignal, onIncomingCall) {
     /** Holds the RTC PeerConnection instance across re-renders */
     const peerConnectionRef = useRef(null);
 
@@ -89,17 +88,20 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
     /**
      * Called when the user taps the call button.
      * Creates the peer connection, gets the mic, and sends an offer.
+     * 
+     * Accepts targetId as a parameter instead of closing over the recipientId prop,
+     * preventing stale closure bugs when calling again after a previous call.
      */
-    const startCall = useCallback(async () => {
+    const startCall = useCallback(async (targetId) => {
         try {
-            console.log("Starting call to", recipientId);
+            console.log("Starting call to", targetId);
 
             // Step 1: Ask the browser for microphone access
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             localStreamRef.current = stream;
 
             // Step 2: Create the peer connection
-            const pc = createPeerConnection(recipientId);
+            const pc = createPeerConnection(targetId);
             peerConnectionRef.current = pc;
 
             // Step 3: Add our microphone tracks to the connection - This tells WebRTC "send this audio to the other person".
@@ -112,12 +114,12 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
             await pc.setLocalDescription(offer);
 
             // Step 6: Send the offer to the other user via WebSocket
-            console.log("Sending call offer to", recipientId);
-            sendSignal("call-offer", recipientId, offer);
+            console.log("Sending call offer to", targetId);
+            sendSignal("call-offer", targetId, offer);
         } catch (error) {
             console.error("Failed to start call:", error);
         }
-    }, [recipientId, sendSignal, createPeerConnection]);
+    }, [sendSignal, createPeerConnection]); // FIX: recipientId removed from deps
 
     /**
      * Called when we receive a call-offer from another user.
@@ -192,8 +194,12 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
 
     /**
      * Ends the call - stops the microphone and closes the connection.
+     * 
+     * Accepts targetId as a parameter instead of closing over the recipientId prop.
+     * Pass null from the receiver side (call-ended signal handler) to skip sending a
+     * redundant signal back. Pass the actual ID from the sender side to notify the other user.
      */
-    const endCall = useCallback(() => {
+    const endCall = useCallback((targetId) => {
         console.log("Ending call");
 
         /** Stop all microphone tracks */
@@ -204,8 +210,12 @@ export function useVoiceCall(userId, recipientId, sendSignal, onIncomingCall) {
         peerConnectionRef.current?.close();
         peerConnectionRef.current = null;
 
-        sendSignal('call-ended', recipientId, null);
-    }, [recipientId, sendSignal]);
+        // Only send the signal if we have a target - prevents the receiver from
+        // sending a redundant call-ended signal back after the sender already hung up
+        if (targetId) {
+            sendSignal('call-ended', targetId, null);
+        }
+    }, [sendSignal]); // recipientId removed from deps entirely
 
     /**
      * Clean up if the component unmounts mid-call.

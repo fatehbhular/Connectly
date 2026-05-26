@@ -57,7 +57,7 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                             className="bg-transparent border-none"
                             whileTap={{ scale: 0.9 }}
                             animate={{ scale: 1 }}
-                            onClick={startCall}
+                            onClick={() => startCall(recipientId)}
                         >
                             <i className="bi bi-telephone text-xl text-orange-600"></i>
                         </motion.button>
