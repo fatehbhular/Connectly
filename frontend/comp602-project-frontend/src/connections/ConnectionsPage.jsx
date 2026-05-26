@@ -171,64 +171,28 @@ export default function ConnectionsPage({ currentUser }) {
       </motion.div>
 
       {/* filter panel */}
-      <AnimatePresence>
-        {showFilterPanel && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            style={{ overflow: 'hidden', background: 'white', borderBottom: '1px solid #E8E4DC' }}
-          >
-            <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Skill</label>
-                <input
-                  type="text"
-                  placeholder="e.g. React"
-                  value={skillInput}
-                  onChange={e => setSkillInput(e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Industry</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Software Engineering"
-                  value={industryInput}
-                  onChange={e => setIndustryInput(e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }}
-                />
-              </div>
-              <div>
-                <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Location</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Auckland"
-                  value={locationInput}
-                  onChange={e => setLocationInput(e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={handleApplyFilters}
-                  style={{ flex: 1, padding: '10px', background: '#C4785A', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 14 }}
-                >
-                  Apply Filters
-                </button>
-                <button
-                  onClick={handleClearFilters}
-                  style={{ flex: 1, padding: '10px', background: 'none', color: '#888', border: '1px solid #E8E4DC', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 14 }}
-                >
-                  Clear Filters
-                </button>
-              </div>
+      {showFilterPanel && (
+        <div style={{ background: 'white', borderBottom: '1px solid #E8E4DC' }}>
+          <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div>
+              <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Skill</label>
+              <input type="text" placeholder="e.g. React" value={skillInput} onChange={e => setSkillInput(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }} />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <div>
+              <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Industry</label>
+              <input type="text" placeholder="e.g. Software Engineering" value={industryInput} onChange={e => setIndustryInput(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }} />
+            </div>
+            <div>
+              <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Location</label>
+              <input type="text" placeholder="e.g. Auckland" value={locationInput} onChange={e => setLocationInput(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={handleApplyFilters} style={{ flex: 1, padding: '10px', background: '#C4785A', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>Apply Filters</button>
+              <button onClick={handleClearFilters} style={{ flex: 1, padding: '10px', background: 'none', color: '#888', border: '1px solid #E8E4DC', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>Clear Filters</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* active filter tags */}
       {hasActiveFilters && (
