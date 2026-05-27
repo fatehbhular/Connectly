@@ -1,44 +1,38 @@
 import { motion } from 'framer-motion';
 import DMPageRenderer from './DMPageRenderer';
+import OnlineDot from '../components/OnlineStatusDot.jsx';
 import { useRef, useEffect, useState } from 'react';
+import BASE_URL from '../config.js';
 
-/**
- * Full screen conversation page.
- * 
- * Works for both regular DMs and group chats.
- * 
- * @param {object[]} conversation - array of message objects
- * @param {string} conversationName - display name of the other user or group
- * @param {number} userId - ID of the signed-in user
- * @param {object} dmNames - map of conversationKey -> displayName
- * @param {string} selectedKey - active conversation key
- * @param {Function} onSendMessage - handler for sending a message
- * @param {Function} onBack - handler for going back to DMs List
- * @param {boolean} isGroup - true if this is a group conversation
- * @param {Function} onAddMember - handler for opening the add member modal (group only)
- */
 export default function DMPage({conversation, conversationName, userId, dmNames, selectedKey, onSendMessage, onBack, sendSignal, recipientId, startCall, endCall, isGroup, onAddMember, senderNamesMap}) {
     const [newMessage, setNewMessage] = useState('');
     const shouldAutoScroll = useRef(true);
     const scrollContainerRef = useRef(null);
     const hasScrolled = useRef(false);
+    const [isOnline, setIsOnline] = useState(false);
+
+    // Fetch online presence for the other user in DMs
+    useEffect(() => {
+        if (isGroup || !recipientId) return;
+        const fetchPresence = async () => {
+            try {
+                const res = await fetch(`${BASE_URL}/presence/${recipientId}`);
+                setIsOnline(await res.json());
+            } catch { setIsOnline(false); }
+        };
+        fetchPresence();
+    }, [recipientId, isGroup]);
 
     useEffect(() => {
-        return () => {
-            document.body.style.backgroundColor = '';
-        };
+        return () => { document.body.style.backgroundColor = ''; };
     }, []);
 
     useEffect(() => {
         const el = scrollContainerRef.current;
         if (!el) return;
-
         const handleScroll = () => {
-            const threshold = 100;
-            shouldAutoScroll.current =
-                el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+            shouldAutoScroll.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
         };
-
         el.addEventListener('scroll', handleScroll);
         return () => el.removeEventListener('scroll', handleScroll);
     }, []);
@@ -51,25 +45,16 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
     useEffect(() => {
         if (!scrollContainerRef.current) return;
         if (conversation.length === 0) return;
-
         const el = scrollContainerRef.current;
-
         const scrollToBottom = (smooth = false) => {
-            el.scrollTo({
-                top: el.scrollHeight,
-                behavior: smooth ? 'smooth' : 'auto'
-            });
+            el.scrollTo({ top: el.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
         };
-
         if (!hasScrolled.current) {
             scrollToBottom(false);
             hasScrolled.current = true;
             return;
         }
-
-        if (shouldAutoScroll.current) {
-            scrollToBottom(true);
-        }
+        if (shouldAutoScroll.current) scrollToBottom(true);
     }, [conversation]);
 
     const handleSend = () => {
@@ -79,18 +64,12 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
         }
     };
 
-    // Disable scrolling on the message list when the input is focused
-    // This prevents the input bar from being pushed down on short conversations
     const handleInputFocus = () => {
-        if (scrollContainerRef.current) {
-            scrollContainerRef.current.style.overflowY = 'hidden';
-        }
+        if (scrollContainerRef.current) scrollContainerRef.current.style.overflowY = 'hidden';
     };
 
     const handleInputBlur = () => {
-        if (scrollContainerRef.current) {
-            scrollContainerRef.current.style.overflowY = 'auto';
-        }
+        if (scrollContainerRef.current) scrollContainerRef.current.style.overflowY = 'auto';
     };
 
     return (
@@ -100,13 +79,41 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
             <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-[#E8E4DC]" style={{ flexShrink: 0 }}>
                 <button onClick={onBack} className="text-xl text-[#C4785A] hover:text-[#E05C3A] transition">←</button>
                 <div className="flex items-center gap-3 w-full">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-gradient-to-br from-orange-400 to-orange-600">
-                        {conversationName?.[0]?.toUpperCase() || '?'}
+
+                    {/* Avatar — matches DM list: from-orange-300 to-orange-400 with white ring and online dot */}
+                    <div className="relative shrink-0">
+                        <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold"
+                            style={{
+                                background: 'linear-gradient(135deg, #fdba74, #fb923c)',
+                                boxShadow: '0 0 0 2px white',
+                            }}
+                        >
+                            {conversationName?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        {!isGroup && (
+                            <span className="absolute bottom-0 right-0" style={{ transform: 'scale(0.85)', transformOrigin: 'bottom right' }}>
+                                <OnlineDot isOnline={isOnline} />
+                            </span>
+                        )}
                     </div>
+
                     <h2 className="text-base font-semibold text-gray-900">{conversationName}</h2>
                     <div className="flex-1 flex justify-end pr-5 gap-4">
                         {isGroup ? (
-                            <button onClick={onAddMember}>Add Member</button>
+                            <motion.button
+                                className="bg-transparent border-none"
+                                whileTap={{ scale: 0.9 }}
+                                animate={{ scale: 1 }}
+                                onClick={onAddMember}
+                            >
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <line x1="19" y1="8" x2="19" y2="14"/>
+                                    <line x1="22" y1="11" x2="16" y2="11"/>
+                                </svg>
+                            </motion.button>
                         ) : (
                             <>
                                 <motion.button
@@ -171,7 +178,6 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                     ↑
                 </button>
             </div>
-
         </div>
     );
 }

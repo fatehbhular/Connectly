@@ -5,7 +5,6 @@ import UserCardUI from "./UserCardUI";
 
 export default function ConnectionsPage({ currentUser, onUserUpdate }) {
   const [queue, setQueue] = useState([]);
-  const [introPopupVisible, setIntroPopupVisible] = useState(false);
   const [showIntroModal, setShowIntroModal] = useState(false);
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [introMessage, setIntroMessage] = useState('');
@@ -13,7 +12,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
   const [accepting, setAccepting] = useState(false);
   const [sending, setSending] = useState(false);
 
-  // filter state
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [skillInput, setSkillInput] = useState('');
   const [industryInput, setIndustryInput] = useState('');
@@ -47,13 +45,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     setQueue([...pendingItems, ...normalItems]);
   };
 
-  useEffect(() => {
-    loadQueue();
-  }, [currentUser]);
-
-  useEffect(() => {
-    setIntroPopupVisible(queue[0]?.type === 'pending');
-  }, [queue]);
+  useEffect(() => { loadQueue(); }, [currentUser]);
 
   const handleApplyFilters = () => {
     const filters = {};
@@ -97,24 +89,17 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
       }).catch(e => console.log('Failed to decline:', e));
     }
     if (cardUser?.userId) {
-      fetch(`${BASE_URL}/analytics/${cardUser.userId}/swipe?direction=left`, {
-        method: 'POST'
-      }).catch(e => console.log('Failed to record left swipe:', e));
+      fetch(`${BASE_URL}/analytics/${cardUser.userId}/swipe?direction=left`, { method: 'POST' }).catch(() => {});
     }
     advance();
   }
 
   function SwipeRight() {
     if (cardUser?.userId) {
-      fetch(`${BASE_URL}/analytics/${cardUser.userId}/swipe?direction=right`, {
-        method: 'POST'
-      }).catch(e => console.log('Failed to record right swipe:', e));
+      fetch(`${BASE_URL}/analytics/${cardUser.userId}/swipe?direction=right`, { method: 'POST' }).catch(() => {});
     }
-    if (isPending) {
-      setShowReplyModal(true);
-    } else {
-      setShowIntroModal(true);
-    }
+    if (isPending) setShowReplyModal(true);
+    else setShowIntroModal(true);
   }
 
   const handleSendIntro = async () => {
@@ -142,12 +127,9 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ requestId: currentItem.requestId, replyMessage: replyMessage })
       });
-      const res = await fetch(`${BASE_URL}/users/profile`, {
-        headers: { 'userId': currentUser.userId }
-      });
+      const res = await fetch(`${BASE_URL}/users/profile`, { headers: { 'userId': currentUser.userId } });
       const updated = await res.json();
       onUserUpdate(updated);
-      console.log('updated connectionKeys:', updated.connectionKeys);
     } catch (e) { console.log('Failed to accept:', e); }
     setAccepting(false);
     setShowReplyModal(false);
@@ -155,39 +137,78 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     advance();
   };
 
-  // Shared input style matching the rest of the app
   const filterInputStyle = {
-    width: '100%',
-    padding: '10px 14px',
-    border: '1px solid #E8E4DC',
-    borderRadius: 12,
-    fontSize: 14,
-    boxSizing: 'border-box',
-    background: '#F0EDE6',
-    outline: 'none',
-    color: '#1a1a1a',
-    fontFamily: 'inherit',
+    width: '100%', padding: '10px 14px', border: '1px solid #E8E4DC', borderRadius: 12,
+    fontSize: 14, boxSizing: 'border-box', background: '#F0EDE6', outline: 'none',
+    color: '#1a1a1a', fontFamily: 'inherit',
   };
 
   const filterLabelStyle = {
-    fontSize: '11px',
-    fontWeight: 600,
-    letterSpacing: '0.08em',
-    textTransform: 'uppercase',
-    color: '#B0A99F',
-    display: 'block',
-    marginBottom: 6,
+    fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase',
+    color: '#B0A99F', display: 'block', marginBottom: 6,
+  };
+
+  const modalCard = {
+    width: '100%', maxWidth: 400,
+    background: 'white', borderRadius: 24,
+    padding: '28px', border: '1px solid #E8E4DC',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.12)',
+    display: 'flex', flexDirection: 'column', gap: '18px',
+  };
+
+  const modalTextarea = {
+    width: '100%', padding: '14px', background: '#F0EDE6',
+    border: '1px solid #E8E4DC', borderRadius: 14,
+    fontSize: 14, color: '#1a1a1a', resize: 'none',
+    outline: 'none', fontFamily: 'inherit', lineHeight: 1.6,
+    boxSizing: 'border-box',
+  };
+
+  const primaryBtn = {
+    flex: 2, padding: '14px', background: '#fb923c', color: 'white',
+    border: 'none', borderRadius: 12, fontWeight: 700,
+    cursor: 'pointer', fontSize: 14, fontFamily: 'inherit',
+  };
+
+  const secondaryBtn = {
+    flex: 1, padding: '14px', background: '#F0EDE6', color: '#B0A99F',
+    border: '1px solid #E8E4DC', borderRadius: 12, fontWeight: 600,
+    cursor: 'pointer', fontSize: 14, fontFamily: 'inherit',
+  };
+
+  // Avatar matching the card gradient: from-orange-300 to-orange-400
+  const modalAvatar = (name) => (
+    <div style={{
+      width: 46, height: 46, borderRadius: '50%',
+      background: 'linear-gradient(135deg, #fdba74, #fb923c)',            // same as UserCardUI
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color: 'white', fontWeight: 700, fontSize: 19, flexShrink: 0,
+      boxShadow: '0 0 0 2px white',                                       // same white ring as UserCardUI
+    }}>
+      {name?.[0]?.toUpperCase() || '?'}
+    </div>
+  );
+
+  // Gradient blur backdrop — clear at top, blurs toward bottom
+  const gradientBlurBackdrop = {
+    position: 'fixed', inset: 0, zIndex: 50,
+    backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+    WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 45%)',
+    maskImage: 'linear-gradient(to bottom, transparent 0%, black 45%)',
+    background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.18) 100%)',
+    pointerEvents: 'none',
   };
 
   return (
     <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]" style={{ position: 'relative' }}>
 
-      {/* Header */}
+      {/* Header — zIndex 60 stays above gradient blur */}
       <motion.div
         className="flex items-baseline justify-between px-6 pt-6 pb-5"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+        style={{ position: 'relative', zIndex: 60 }}
       >
         <div className="flex items-baseline gap-2">
           <h1 className="text-3xl font-bold text-gray-900">Connect</h1>
@@ -206,110 +227,117 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
             <line x1="11" y1="18" x2="13" y2="18" />
           </svg>
           {hasActiveFilters && (
-            <span style={{ position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: '50%', background: '#C4785A' }} />
+            <span style={{ position: 'absolute', top: 2, right: 2, width: 8, height: 8, borderRadius: '50%', background: '#fb923c' }} />
           )}
         </button>
       </motion.div>
 
-      {/* Subtle backdrop blur — covers everything below the header when filter panel is open */}
+      {/* Filter backdrop + panel */}
       {showFilterPanel && (
-        <div
-          onClick={() => setShowFilterPanel(false)}
-          style={{ position: 'absolute', inset: 0, top: 80, zIndex: 30, backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', background: 'rgba(240,237,230,0.3)' }}
-        />
+        <div onClick={() => setShowFilterPanel(false)} style={{ position: 'absolute', inset: 0, top: 80, zIndex: 30, backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', background: 'rgba(240,237,230,0.3)' }} />
       )}
-
-      {/* Filter panel — app-consistent card styling, floats over the cards */}
       {showFilterPanel && (
         <div style={{ position: 'absolute', top: 80, left: 16, right: 16, zIndex: 40, background: 'white', borderRadius: 20, border: '1px solid #E8E4DC', boxShadow: '0 8px 32px rgba(0,0,0,0.08)', padding: '20px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
             <div>
               <label style={filterLabelStyle}>Skill</label>
               <input type="text" placeholder="e.g. React" value={skillInput} onChange={e => setSkillInput(e.target.value)} onFocus={preventViewportJump} style={filterInputStyle} />
             </div>
-
             <div>
               <label style={filterLabelStyle}>Industry</label>
               <input type="text" placeholder="e.g. Software Engineering" value={industryInput} onChange={e => setIndustryInput(e.target.value)} onFocus={preventViewportJump} style={filterInputStyle} />
             </div>
-
             <div>
               <label style={filterLabelStyle}>Location</label>
               <input type="text" placeholder="e.g. Auckland" value={locationInput} onChange={e => setLocationInput(e.target.value)} onFocus={preventViewportJump} style={filterInputStyle} />
             </div>
-
             <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
-              <button
-                onClick={handleApplyFilters}
-                style={{ flex: 1, padding: '11px', background: '#C4785A', color: 'white', border: 'none', borderRadius: 12, fontWeight: 600, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}
-              >
-                Apply
-              </button>
-              <button
-                onClick={handleClearFilters}
-                style={{ flex: 1, padding: '11px', background: '#F0EDE6', color: '#B0A99F', border: '1px solid #E8E4DC', borderRadius: 12, fontWeight: 600, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}
-              >
-                Clear
-              </button>
+              <button onClick={handleApplyFilters} style={{ flex: 1, padding: '11px', background: '#fb923c', color: 'white', border: 'none', borderRadius: 12, fontWeight: 600, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}>Apply</button>
+              <button onClick={handleClearFilters} style={{ flex: 1, padding: '11px', background: '#F0EDE6', color: '#B0A99F', border: '1px solid #E8E4DC', borderRadius: 12, fontWeight: 600, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}>Clear</button>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* active filter tags */}
+      {/* Active filter tags */}
       {hasActiveFilters && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 24px' }}>
-          {activeFilters.skill && (
-            <span style={{ background: '#FDF0EA', color: '#C4785A', fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>
-              Skill: {activeFilters.skill}
-            </span>
-          )}
-          {activeFilters.industry && (
-            <span style={{ background: '#FDF0EA', color: '#C4785A', fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>
-              Industry: {activeFilters.industry}
-            </span>
-          )}
-          {activeFilters.location && (
-            <span style={{ background: '#FDF0EA', color: '#C4785A', fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 20 }}>
-              Location: {activeFilters.location}
-            </span>
-          )}
+        <div style={{ position: 'absolute', top: 80, left: 16, right: 16, zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {activeFilters.skill && <span style={{ background: 'white', color: '#C4785A', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, border: '1px solid #E8E4DC', letterSpacing: '0.04em' }}>Skill: {activeFilters.skill}</span>}
+          {activeFilters.industry && <span style={{ background: 'white', color: '#C4785A', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, border: '1px solid #E8E4DC', letterSpacing: '0.04em' }}>Industry: {activeFilters.industry}</span>}
+          {activeFilters.location && <span style={{ background: 'white', color: '#C4785A', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, border: '1px solid #E8E4DC', letterSpacing: '0.04em' }}>Location: {activeFilters.location}</span>}
         </div>
       )}
 
-      {/* intro modal */}
+      {/* ─── Send Intro Modal ─────────────────────────────────────────────────── */}
       {showIntroModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'rgba(0,0,0,0.4)' }}>
-          <div style={{ width: '100%', maxWidth: '360px', background: 'white', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <p>Connect with {cardUser?.displayName}</p>
-            <p>Write a message to introduce yourself.</p>
-            <textarea rows={4} placeholder="Introduce yourself..." value={introMessage} onChange={e => setIntroMessage(e.target.value)} style={{ width: '100%', padding: '12px', boxSizing: 'border-box' }} />
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button style={{ flex: 1, padding: '12px' }} onClick={() => { setShowIntroModal(false); setIntroMessage(''); }}>Cancel</button>
-              <button style={{ flex: 1, padding: '12px' }} onClick={handleSendIntro}>Send</button>
-            </div>
+        <>
+          <div style={gradientBlurBackdrop} />
+          <div style={{ position: 'fixed', inset: 0, zIndex: 51, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 32px' }}>
+            <motion.div
+              style={modalCard}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                {modalAvatar(cardUser?.displayName)}
+                <div>
+                  <p style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', margin: 0, lineHeight: 1.2 }}>Connect with {cardUser?.displayName}</p>
+                  <p style={{ fontSize: 12, color: '#B0A99F', margin: '3px 0 0 0' }}>Write to introduce yourself.</p>
+                </div>
+              </div>
+              <div style={{ borderTop: '1px solid #E8E4DC' }} />
+              <textarea rows={5} placeholder="Write a short intro about yourself..." value={introMessage} onChange={e => setIntroMessage(e.target.value)} style={modalTextarea} />
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button style={secondaryBtn} onClick={() => { setShowIntroModal(false); setIntroMessage(''); }}>Cancel</button>
+                <button style={{ ...primaryBtn, opacity: sending ? 0.7 : 1 }} onClick={handleSendIntro} disabled={sending}>
+                  {sending ? 'Sending…' : 'Send Introduction'}
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* reply modal for pending requests */}
+      {/* ─── Accept & Reply Modal ─────────────────────────────────────────────── */}
       {showReplyModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: 'rgba(0,0,0,0.4)' }}>
-          <div style={{ width: '100%', maxWidth: '360px', background: 'white', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <p>Accept and reply</p>
-            <div>
-              <p>Their message:</p>
-              <p>"{currentItem?.senderMessage}"</p>
-            </div>
-            <textarea rows={4} placeholder="Write your reply..." value={replyMessage} onChange={e => setReplyMessage(e.target.value)} style={{ width: '100%', padding: '12px', boxSizing: 'border-box' }} />
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button style={{ flex: 1, padding: '12px' }} onClick={() => { setShowReplyModal(false); setReplyMessage(''); }}>Cancel</button>
-              <button style={{ flex: 1, padding: '12px' }} onClick={handleAccept}>Accept</button>
-            </div>
+        <>
+          <div style={gradientBlurBackdrop} />
+          <div style={{ position: 'fixed', inset: 0, zIndex: 51, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 32px' }}>
+            <motion.div
+              style={modalCard}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 30 }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                {modalAvatar(cardUser?.displayName)}
+                <div>
+                  <p style={{ fontSize: 17, fontWeight: 700, color: '#1a1a1a', margin: 0, lineHeight: 1.2 }}>Accept & Reply</p>
+                  <p style={{ fontSize: 12, color: '#B0A99F', margin: '3px 0 0 0' }}>Write a reply to complete the connection.</p>
+                </div>
+              </div>
+              <div style={{ borderTop: '1px solid #E8E4DC' }} />
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B0A99F', margin: '0 0 8px 0' }}>Their intro</p>
+                <div style={{ background: '#F0EDE6', borderRadius: 14, padding: '13px 15px', border: '1px solid #E8E4DC' }}>
+                  {/* No quotation marks — just the message */}
+                  <p style={{ fontSize: 13, color: '#1a1a1a', margin: 0, lineHeight: 1.6, fontStyle: 'italic' }}>{currentItem?.senderMessage}</p>
+                </div>
+              </div>
+              <div>
+                <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B0A99F', margin: '0 0 8px 0' }}>Your reply</p>
+                <textarea rows={4} placeholder="Write your reply..." value={replyMessage} onChange={e => setReplyMessage(e.target.value)} style={modalTextarea} />
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button style={secondaryBtn} onClick={() => { setShowReplyModal(false); setReplyMessage(''); }}>Cancel</button>
+                <button style={{ ...primaryBtn, opacity: accepting ? 0.7 : 1 }} onClick={handleAccept} disabled={accepting}>
+                  {accepting ? 'Connecting…' : 'Accept & Connect'}
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
+        </>
       )}
 
       {/* card area */}
@@ -325,15 +353,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
               transition={{ type: 'spring', stiffness: 320, damping: 26 }}
             >
               <div style={{ position: 'relative', width: '320px' }}>
-
-                {introPopupVisible && isPending && (
-                  <div className="absolute inset-0 rounded-2xl" style={{ background: 'white', padding: '24px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '16px', justifyContent: 'center' }}>
-                    <p>{cardUser?.displayName} wants to connect</p>
-                    <p>"{currentItem?.senderMessage}"</p>
-                    <button style={{ padding: '12px' }} onClick={() => setIntroPopupVisible(false)}>View Profile</button>
-                  </div>
-                )}
-
                 <UserCardUI
                   userId={cardUser.userId}
                   user={cardUser.displayName}
@@ -352,7 +371,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
                   SwipeRight={SwipeRight}
                 />
               </div>
-
               <p className="text-[#B0A99F] text-xs">pass - connect</p>
             </motion.div>
           ) : (

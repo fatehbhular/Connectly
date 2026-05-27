@@ -35,15 +35,17 @@ export const getDMList = async (userId) => {
  * @param {number} userId -> ID of the signed-in user (used for authorisation check on backend)
  * @returns {Promise<Message[]>} array of message objects
  */
-export const getConversation = async (key, userId) => {
-    const response = await fetch(`${BASE_URL}/messaging/conversation/${key}`, {
+export async function getConversation(conversationKey, userId) {
+    const res = await fetch(`${BASE_URL}/messaging/conversation/${conversationKey}`, {
         headers: { 'userId': userId }
     });
-    if (!response.ok) throw new Error('Failed to load conversation');
-    const data = await response.json();
-    return Array.isArray(data) ? data : [];  // always return an array
-};
-
+    if (!res.ok) {
+        const err = new Error('Failed to load conversation');
+        err.status = res.status;                                            // attach status so callers can detect kicks (400)
+        throw err;
+    }
+    return res.json();
+}
 /**
  * Sends a message to a recipient.
  *
@@ -121,5 +123,13 @@ export async function sendGroupMessage(userId, groupId, content, timestamp) { //
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'userId': userId },
         body: JSON.stringify({ groupId, content, timestamp })
+    });
+}
+
+export async function removeGroupMember(groupId, userId) {                  // removes a member from a group
+    await fetch(`${BASE_URL}/groups/${groupId}/removeMember`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
     });
 }

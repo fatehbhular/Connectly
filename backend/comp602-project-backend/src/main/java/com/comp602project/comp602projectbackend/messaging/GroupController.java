@@ -9,30 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/*
-React                           Spring Boot
-────────────────────────────────────────────────────────────────
-fetch("/groups/create")  ->  GroupController
-                                    v
-                               GroupJpaRepository
-                                    v
-                               group_chats table in Supabase
-*/
-
-/**
- * Handles HTTP requests for group chat management.
- * Creating groups, adding members, and fetching group info.
- */
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/groups")
 public class GroupController {
 
     @Autowired
-    private GroupJpaRepository groupRepository;                             // talks to group_chats table
+    private GroupJpaRepository groupRepository;
 
     @Autowired
-    private MessagingRepository messagingRepository;                        // creates the conversation entry for the group
+    private MessagingRepository messagingRepository;
 
     @PostMapping("/create")                                                 // called when a user creates a new group chat
     public ResponseEntity<Group> createGroup(@RequestBody Map<String, Object> body) {
@@ -48,7 +34,6 @@ public class GroupController {
         group.setMemberIds(memberIds);
         Group saved = groupRepository.save(group);
 
-        // Create the conversation entry so messages can be stored
         String conversationKey = "group_" + saved.getId();
         messagingRepository.createConversation(conversationKey);
 
@@ -73,7 +58,24 @@ public class GroupController {
         return ResponseEntity.ok(group);
     }
 
-    @GetMapping("/{groupId}/name")                                          // returns the group name — used by the frontend for the conversation list
+    @PostMapping("/{groupId}/removeMember")                                 // called when a member is removed from the group
+    public ResponseEntity<Group> removeMember(@PathVariable int groupId, @RequestBody Map<String, Object> body) {
+        int userId = (int) body.get("userId");
+
+        Group group = groupRepository.findById(groupId).orElse(null);
+        if (group == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+
+        List<Integer> members = group.getMemberIds();
+        if (members != null) {
+            members.remove(Integer.valueOf(userId));
+            group.setMemberIds(members);
+            groupRepository.save(group);
+        }
+
+        return ResponseEntity.ok(group);
+    }
+
+    @GetMapping("/{groupId}/name")                                          // returns the group name
     public ResponseEntity<String> getGroupName(@PathVariable int groupId) {
         Group group = groupRepository.findById(groupId).orElse(null);
         if (group == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
