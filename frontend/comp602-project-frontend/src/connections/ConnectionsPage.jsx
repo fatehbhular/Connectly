@@ -25,7 +25,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     return currentUser.connectionKeys.filter(id => user.connectionKeys.includes(id)).length;
   };
 
-  // fetch the queue, optionally with filter params
   const loadQueue = async (filters = {}) => {
     const pendingRes = await fetch(`${BASE_URL}/api/connections/requests/pending`, {
       headers: { 'userId': currentUser.userId }
@@ -45,7 +44,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     const usersData = await usersRes.json();
     const normalItems = usersData.map(u => ({ ...u, type: 'normal', mutuals: getMutualCount(u) }));
 
-    // pending requests always go first
     setQueue([...pendingItems, ...normalItems]);
   };
 
@@ -53,7 +51,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     loadQueue();
   }, [currentUser]);
 
-  // show the intro popup whenever the front card is a pending request
   useEffect(() => {
     setIntroPopupVisible(queue[0]?.type === 'pending');
   }, [queue]);
@@ -86,6 +83,11 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
 
   const advance = () => setQueue(prev => prev.slice(1));
 
+  const preventViewportJump = (e) => {
+    e.target.setAttribute('readonly', true);
+    setTimeout(() => e.target.removeAttribute('readonly'), 100);
+  };
+
   function SwipeLeft() {
     if (isPending) {
       fetch(`${BASE_URL}/api/connections/request/decline`, {
@@ -94,9 +96,8 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
         body: JSON.stringify({ requestId: currentItem.requestId })
       }).catch(e => console.log('Failed to decline:', e));
     }
-    // record a left swipe on the card owner's analytics
     if (cardUser?.userId) {
-      fetch(`http://localhost:8080/analytics/${cardUser.userId}/swipe?direction=left`, {
+      fetch(`${BASE_URL}/analytics/${cardUser.userId}/swipe?direction=left`, {
         method: 'POST'
       }).catch(e => console.log('Failed to record left swipe:', e));
     }
@@ -104,9 +105,8 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
   }
 
   function SwipeRight() {
-    // record a right swipe on the card owner's analytics
     if (cardUser?.userId) {
-      fetch(`http://localhost:8080/analytics/${cardUser.userId}/swipe?direction=right`, {
+      fetch(`${BASE_URL}/analytics/${cardUser.userId}/swipe?direction=right`, {
         method: 'POST'
       }).catch(e => console.log('Failed to record right swipe:', e));
     }
@@ -134,31 +134,55 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
   };
 
   const handleAccept = async () => {
-      if (!replyMessage.trim() || accepting) return;
-      setAccepting(true);
-      try {
-          await fetch(`${BASE_URL}/api/connections/request/accept`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ requestId: currentItem.requestId, replyMessage: replyMessage })
-          });
-          const res = await fetch(`${BASE_URL}/users/profile`, {
-              headers: { 'userId': currentUser.userId }
-          });
-          const updated = await res.json();
-          onUserUpdate(updated);
-          console.log('updated connectionKeys:', updated.connectionKeys);
-      } catch (e) { console.log('Failed to accept:', e); }
-      setAccepting(false);
-      setShowReplyModal(false);
-      setReplyMessage('');
-      advance();
+    if (!replyMessage.trim() || accepting) return;
+    setAccepting(true);
+    try {
+      await fetch(`${BASE_URL}/api/connections/request/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: currentItem.requestId, replyMessage: replyMessage })
+      });
+      const res = await fetch(`${BASE_URL}/users/profile`, {
+        headers: { 'userId': currentUser.userId }
+      });
+      const updated = await res.json();
+      onUserUpdate(updated);
+      console.log('updated connectionKeys:', updated.connectionKeys);
+    } catch (e) { console.log('Failed to accept:', e); }
+    setAccepting(false);
+    setShowReplyModal(false);
+    setReplyMessage('');
+    advance();
+  };
+
+  // Shared input style matching the rest of the app
+  const filterInputStyle = {
+    width: '100%',
+    padding: '10px 14px',
+    border: '1px solid #E8E4DC',
+    borderRadius: 12,
+    fontSize: 14,
+    boxSizing: 'border-box',
+    background: '#F0EDE6',
+    outline: 'none',
+    color: '#1a1a1a',
+    fontFamily: 'inherit',
+  };
+
+  const filterLabelStyle = {
+    fontSize: '11px',
+    fontWeight: 600,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    color: '#B0A99F',
+    display: 'block',
+    marginBottom: 6,
   };
 
   return (
-    <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]">
+    <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]" style={{ position: 'relative' }}>
 
-      {/* Header */}  
+      {/* Header */}
       <motion.div
         className="flex items-baseline justify-between px-6 pt-6 pb-5"
         initial={{ opacity: 0, y: -10 }}
@@ -172,10 +196,9 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
           </p>
         </div>
 
-        {/* filter button — orange dot shows when filters are active */}
         <button
           onClick={() => setShowFilterPanel(prev => !prev)}
-          style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', zIndex: 10 }}
+          style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: '4px', zIndex: 50 }}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="4" y1="6" x2="20" y2="6" />
@@ -188,26 +211,49 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
         </button>
       </motion.div>
 
-      {/* filter panel */}
+      {/* Subtle backdrop blur — covers everything below the header when filter panel is open */}
       {showFilterPanel && (
-        <div style={{ background: 'white', borderBottom: '1px solid #E8E4DC' }}>
-          <div style={{ padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div
+          onClick={() => setShowFilterPanel(false)}
+          style={{ position: 'absolute', inset: 0, top: 80, zIndex: 30, backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', background: 'rgba(240,237,230,0.3)' }}
+        />
+      )}
+
+      {/* Filter panel — app-consistent card styling, floats over the cards */}
+      {showFilterPanel && (
+        <div style={{ position: 'absolute', top: 80, left: 16, right: 16, zIndex: 40, background: 'white', borderRadius: 20, border: '1px solid #E8E4DC', boxShadow: '0 8px 32px rgba(0,0,0,0.08)', padding: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+
             <div>
-              <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Skill</label>
-              <input type="text" placeholder="e.g. React" value={skillInput} onChange={e => setSkillInput(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }} />
+              <label style={filterLabelStyle}>Skill</label>
+              <input type="text" placeholder="e.g. React" value={skillInput} onChange={e => setSkillInput(e.target.value)} onFocus={preventViewportJump} style={filterInputStyle} />
             </div>
+
             <div>
-              <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Industry</label>
-              <input type="text" placeholder="e.g. Software Engineering" value={industryInput} onChange={e => setIndustryInput(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }} />
+              <label style={filterLabelStyle}>Industry</label>
+              <input type="text" placeholder="e.g. Software Engineering" value={industryInput} onChange={e => setIndustryInput(e.target.value)} onFocus={preventViewportJump} style={filterInputStyle} />
             </div>
+
             <div>
-              <label style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#888', display: 'block', marginBottom: 4 }}>Location</label>
-              <input type="text" placeholder="e.g. Auckland" value={locationInput} onChange={e => setLocationInput(e.target.value)} style={{ width: '100%', padding: '8px 12px', border: '1px solid #E8E4DC', borderRadius: 8, fontSize: 14, boxSizing: 'border-box' }} />
+              <label style={filterLabelStyle}>Location</label>
+              <input type="text" placeholder="e.g. Auckland" value={locationInput} onChange={e => setLocationInput(e.target.value)} onFocus={preventViewportJump} style={filterInputStyle} />
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={handleApplyFilters} style={{ flex: 1, padding: '10px', background: '#C4785A', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>Apply Filters</button>
-              <button onClick={handleClearFilters} style={{ flex: 1, padding: '10px', background: 'none', color: '#888', border: '1px solid #E8E4DC', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: 14 }}>Clear Filters</button>
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
+              <button
+                onClick={handleApplyFilters}
+                style={{ flex: 1, padding: '11px', background: '#C4785A', color: 'white', border: 'none', borderRadius: 12, fontWeight: 600, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}
+              >
+                Apply
+              </button>
+              <button
+                onClick={handleClearFilters}
+                style={{ flex: 1, padding: '11px', background: '#F0EDE6', color: '#B0A99F', border: '1px solid #E8E4DC', borderRadius: 12, fontWeight: 600, cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' }}
+              >
+                Clear
+              </button>
             </div>
+
           </div>
         </div>
       )}
@@ -239,13 +285,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
           <div style={{ width: '100%', maxWidth: '360px', background: 'white', padding: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <p>Connect with {cardUser?.displayName}</p>
             <p>Write a message to introduce yourself.</p>
-            <textarea
-              rows={4}
-              placeholder="Introduce yourself..."
-              value={introMessage}
-              onChange={e => setIntroMessage(e.target.value)}
-              style={{ width: '100%', padding: '12px', boxSizing: 'border-box' }}
-            />
+            <textarea rows={4} placeholder="Introduce yourself..." value={introMessage} onChange={e => setIntroMessage(e.target.value)} style={{ width: '100%', padding: '12px', boxSizing: 'border-box' }} />
             <div style={{ display: 'flex', gap: '8px' }}>
               <button style={{ flex: 1, padding: '12px' }} onClick={() => { setShowIntroModal(false); setIntroMessage(''); }}>Cancel</button>
               <button style={{ flex: 1, padding: '12px' }} onClick={handleSendIntro}>Send</button>
@@ -263,13 +303,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
               <p>Their message:</p>
               <p>"{currentItem?.senderMessage}"</p>
             </div>
-            <textarea
-              rows={4}
-              placeholder="Write your reply..."
-              value={replyMessage}
-              onChange={e => setReplyMessage(e.target.value)}
-              style={{ width: '100%', padding: '12px', boxSizing: 'border-box' }}
-            />
+            <textarea rows={4} placeholder="Write your reply..." value={replyMessage} onChange={e => setReplyMessage(e.target.value)} style={{ width: '100%', padding: '12px', boxSizing: 'border-box' }} />
             <div style={{ display: 'flex', gap: '8px' }}>
               <button style={{ flex: 1, padding: '12px' }} onClick={() => { setShowReplyModal(false); setReplyMessage(''); }}>Cancel</button>
               <button style={{ flex: 1, padding: '12px' }} onClick={handleAccept}>Accept</button>
@@ -292,7 +326,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
             >
               <div style={{ position: 'relative', width: '320px' }}>
 
-                {/* overlay shown on pending cards before the user clicks View Profile */}
                 {introPopupVisible && isPending && (
                   <div className="absolute inset-0 rounded-2xl" style={{ background: 'white', padding: '24px', zIndex: 10, display: 'flex', flexDirection: 'column', gap: '16px', justifyContent: 'center' }}>
                     <p>{cardUser?.displayName} wants to connect</p>
@@ -331,9 +364,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
               transition={{ type: 'spring', stiffness: 320, damping: 26 }}
             >
               <div className="w-14 h-14 rounded-full bg-white border border-[#E8E4DC] flex items-center justify-center">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                  stroke="#C4785A" strokeWidth="1.8" strokeLinecap="round"
-                  strokeLinejoin="round" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C4785A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <circle cx="12" cy="8" r="4" />
                   <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
                 </svg>
