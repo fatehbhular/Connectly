@@ -19,29 +19,56 @@ import { useRef, useEffect, useState } from 'react';
  */
 export default function DMPage({conversation, conversationName, userId, dmNames, selectedKey, onSendMessage, onBack, sendSignal, recipientId, startCall, endCall, isGroup, onAddMember, senderNamesMap}) {
     const [newMessage, setNewMessage] = useState('');
-    const messagesEndRef = useRef(null);
-    const hasScrolled = useRef(false);
+    const shouldAutoScroll = useRef(true);
     const scrollContainerRef = useRef(null);
+    const hasScrolled = useRef(false);
 
     useEffect(() => {
-        document.body.style.backgroundColor = 'white';
         return () => {
             document.body.style.backgroundColor = '';
         };
     }, []);
 
-    const isNearBottom = () => {
+    useEffect(() => {
         const el = scrollContainerRef.current;
-        if (!el) return true;
-        return el.scrollHeight - el.scrollTop - el.clientHeight < 100;
-    };
+        if (!el) return;
+
+        const handleScroll = () => {
+            const threshold = 100;
+            shouldAutoScroll.current =
+                el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+        };
+
+        el.addEventListener('scroll', handleScroll);
+        return () => el.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
-        if (!hasScrolled.current && conversation.length > 0) {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+        hasScrolled.current = false;
+        shouldAutoScroll.current = true;
+    }, [selectedKey]);
+
+    useEffect(() => {
+        if (!scrollContainerRef.current) return;
+        if (conversation.length === 0) return;
+
+        const el = scrollContainerRef.current;
+
+        const scrollToBottom = (smooth = false) => {
+            el.scrollTo({
+                top: el.scrollHeight,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+        };
+
+        if (!hasScrolled.current) {
+            scrollToBottom(false);
             hasScrolled.current = true;
-        } else if (hasScrolled.current && isNearBottom()) {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
+
+        if (shouldAutoScroll.current) {
+            scrollToBottom(true);
         }
     }, [conversation]);
 
@@ -52,11 +79,25 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
         }
     };
 
+    // Disable scrolling on the message list when the input is focused
+    // This prevents the input bar from being pushed down on short conversations
+    const handleInputFocus = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.style.overflowY = 'hidden';
+        }
+    };
+
+    const handleInputBlur = () => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.style.overflowY = 'auto';
+        }
+    };
+
     return (
-        <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]" style={{paddingBottom: 'env(safe-area-inset-bottom)'}}>
+        <div className="w-full bg-[#F0EDE6]" style={{ position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
             {/* Header */}
-            <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-[#E8E4DC]">
+            <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-[#E8E4DC]" style={{ flexShrink: 0 }}>
                 <button onClick={onBack} className="text-xl text-[#C4785A] hover:text-[#E05C3A] transition">←</button>
                 <div className="flex items-center gap-3 w-full">
                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0 bg-gradient-to-br from-orange-400 to-orange-600">
@@ -64,28 +105,38 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                     </div>
                     <h2 className="text-base font-semibold text-gray-900">{conversationName}</h2>
                     <div className="flex-1 flex justify-end pr-5 gap-4">
-                        <motion.button
-                            className="bg-transparent border-none"
-                            whileTap={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            onClick={() => startCall(recipientId, false)} // false = voice only
-                        >
-                            <i className="bi bi-telephone text-xl text-orange-600"></i>
-                        </motion.button>
-                        <motion.button
-                            className="bg-transparent border-none"
-                            whileTap={{ scale: 0.9 }}
-                            animate={{ scale: 1 }}
-                            onClick={() => startCall(recipientId, true)} // true = video call
-                        >
-                            <i className="bi bi-camera-video text-2xl text-orange-600"></i>
-                        </motion.button>
+                        {isGroup ? (
+                            <button onClick={onAddMember}>Add Member</button>
+                        ) : (
+                            <>
+                                <motion.button
+                                    className="bg-transparent border-none"
+                                    whileTap={{ scale: 0.9 }}
+                                    animate={{ scale: 1 }}
+                                    onClick={() => startCall(recipientId, false)}
+                                >
+                                    <i className="bi bi-telephone text-xl text-orange-600"></i>
+                                </motion.button>
+                                <motion.button
+                                    className="bg-transparent border-none"
+                                    whileTap={{ scale: 0.9 }}
+                                    animate={{ scale: 1 }}
+                                    onClick={() => startCall(recipientId, true)}
+                                >
+                                    <i className="bi bi-camera-video text-2xl text-orange-600"></i>
+                                </motion.button>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
 
             {/* Scrollable message list */}
-            <div ref={scrollContainerRef} className="flex flex-col flex-1 overflow-y-auto px-4 py-3 gap-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div
+                ref={scrollContainerRef}
+                className="flex flex-col gap-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '12px 16px', minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowAnchor: 'none' }}
+            >
                 {conversation.length === 0 ? (
                     <p className="text-[#B0A99F] text-center mt-4 text-sm">No messages yet</p>
                 ) : (
@@ -99,16 +150,17 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                         />
                     ))
                 )}
-                <div ref={messagesEndRef} />
             </div>
 
             {/* Message input bar */}
-            <div className="flex items-center gap-2 px-4 py-4 pb-8 bg-white border-t border-[#E8E4DC]">
+            <div className="flex items-center gap-2 px-6 py-5 pb-8 bg-white border-t border-[#E8E4DC]" style={{ flexShrink: 0 }}>
                 <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                     placeholder="Message..."
                     className="flex-1 px-4 py-2.5 rounded-full bg-[#F0EDE6] border-none outline-none text-sm text-gray-900 placeholder-[#B0A99F]"
                 />
