@@ -177,6 +177,138 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/auth/change-email/initiate")
+    public ResponseEntity<Map<String, String>> changeEmailInitiate(
+            @RequestHeader("userId") int userId,
+            @RequestBody Map<String, String> body) {
+        String newEmail = body.get("newEmail");
+        if (newEmail == null || newEmail.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "New email is required."));
+        }
+        newEmail = newEmail.toLowerCase().trim();
+
+        User user = userRepository.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found."));
+        }
+        if (userRepository.findByEmail(newEmail) != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "That email is already in use."));
+        }
+
+        boolean hasCurrentEmail = user.getEmail() != null && !user.getEmail().isBlank();
+        if (!hasCurrentEmail) {
+            otpService.sendOtp(newEmail);
+            return ResponseEntity.ok(Map.of(
+                    "step", "verify-new",
+                    "message", "Verification code sent to your email."));
+        }
+
+        if (newEmail.equals(user.getEmail().toLowerCase().trim())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "That is already your current email."));
+        }
+
+        otpService.sendOtp(user.getEmail());
+        return ResponseEntity.ok(Map.of(
+                "step", "verify-current",
+                "message", "Verification code sent to your current email."));
+    }
+
+    @PostMapping("/auth/settings/update-password")
+    public ResponseEntity<Map<String, String>> settingsUpdatePassword(
+            @RequestHeader("userId") int userId,
+            @RequestBody Map<String, String> body) {
+        String newPassword = body.get("password");
+        if (newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Password is required."));
+        }
+
+        User user = userRepository.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found."));
+        }
+
+        boolean hasEmail = user.getEmail() != null && !user.getEmail().isBlank();
+        if (hasEmail) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Use email verification to change your password."));
+        }
+
+        userRepository.updatePasswordByUserId(userId, BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+        return ResponseEntity.ok(Map.of("message", "Password updated."));
+    }
+
+    @PostMapping("/auth/change-email/verify-current")
+    public ResponseEntity<Map<String, String>> changeEmailVerifyCurrent(
+            @RequestHeader("userId") int userId,
+            @RequestBody Map<String, String> body) {
+        String newEmail = body.get("newEmail");
+        String code = body.get("code");
+        if (newEmail == null || newEmail.isBlank() || code == null || code.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "New email and verification code are required."));
+        }
+        newEmail = newEmail.toLowerCase().trim();
+        code = code.trim().toUpperCase();
+
+        User user = userRepository.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found."));
+        }
+        if (userRepository.findByEmail(newEmail) != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "That email is already in use."));
+        }
+        if (!otpService.verifyOtp(user.getEmail(), code)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid or expired code."));
+        }
+
+        otpService.sendOtp(newEmail);
+        return ResponseEntity.ok(Map.of("message", "Code sent to your new email."));
+    }
+
+    @PostMapping("/auth/change-email/confirm")
+    public ResponseEntity<?> changeEmailConfirm(
+            @RequestHeader("userId") int userId,
+            @RequestBody Map<String, String> body) {
+        String newEmail = body.get("newEmail");
+        String code = body.get("code");
+        if (newEmail == null || newEmail.isBlank() || code == null || code.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "New email and verification code are required."));
+        }
+        newEmail = newEmail.toLowerCase().trim();
+        code = code.trim().toUpperCase();
+
+        User user = userRepository.getById(userId);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found."));
+        }
+        if (userRepository.findByEmail(newEmail) != null) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "That email is already in use."));
+        }
+        if (!otpService.verifyOtp(newEmail, code)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid or expired code."));
+        }
+
+        User updated = userRepository.changeEmail(userId, newEmail);
+        if (updated == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found."));
+        }
+        return ResponseEntity.ok(updated);
+    }
+
     @GetMapping("/users/me")                                                            // runs when React sends a GET request to "/users/me"
     public ResponseEntity<User> getSignedInUser() { 
         User user = userRepository.getSignedInUser();                                   // get the currently logged in user from UserRepository
