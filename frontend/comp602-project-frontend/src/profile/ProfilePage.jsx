@@ -1,6 +1,7 @@
 import BASE_URL from "../config.js";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import PortfolioSuggestionsModal from "./PortfolioSuggestionsModal.jsx";
 const cardVariants = {
   hidden: { opacity: 0, y: 16 },
   visible: {
@@ -297,6 +298,7 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
   const [skillInput, setSkillInput] = useState("");
   const [statusFeedback, setStatusFeedback] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const isComplete = currentUser?.profileComplete;
   const hasError = statusFeedback?.type === "error";
@@ -310,14 +312,17 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
   };
 
   useEffect(() => {
+    if (showSuggestions) return;
+
     const blockScroll = (e) => e.preventDefault();
+
     document.addEventListener("touchmove", blockScroll, { passive: false, capture: true });
     document.addEventListener("wheel", blockScroll, { passive: false, capture: true });
     return () => {
       document.removeEventListener("touchmove", blockScroll, { capture: true });
       document.removeEventListener("wheel", blockScroll, { capture: true });
     };
-  }, []);
+  }, [showSuggestions]);
 
   useEffect(() => {
     if (!statusFeedback) return;    const delay = statusFeedback.type === "success" ? 2500 : 3500;
@@ -335,6 +340,12 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
 
   const removeSkill = (skill) => {
     setSkillList((prev) => prev.filter((s) => s !== skill));
+    clearStatus();
+  };
+
+  const addSuggestedSkill = (skill) => {
+    if (!skill || skillList.includes(skill) || skillList.length >= 10) return;
+    setSkillList((prev) => [...prev, skill]);
     clearStatus();
   };
 
@@ -384,14 +395,29 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
   return (
     <div className="profile-page flex flex-col w-full h-dvh bg-[#F0EDE6] overflow-hidden">
       <motion.div
-        className="flex-shrink-0 flex items-baseline gap-2 px-6 pt-6 pb-5"
+        className="flex-shrink-0 flex items-baseline justify-between px-6 pt-6 pb-5"
         initial={{ opacity: 0, y: -10 }}        animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 320, damping: 26 }}
       >
-        <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-        <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#C4785A] mb-1">
-          your details
-        </p>
+        <div className="flex items-baseline gap-2">
+          <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
+          <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#C4785A] mb-1">
+            your details
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowSuggestions(true)}
+          aria-label="Portfolio suggestions"
+          style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", flexShrink: 0 }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18h6" />
+            <path d="M10 22h4" />
+            <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
+          </svg>
+        </button>
       </motion.div>
 
       {!isComplete && (
@@ -504,6 +530,15 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
           </div>
         </motion.div>
       </div>
+
+      {showSuggestions && (
+        <PortfolioSuggestionsModal
+          userId={currentUser?.userId}
+          existingSkills={skillList}
+          onClose={() => setShowSuggestions(false)}
+          onAddSkill={addSuggestedSkill}
+        />
+      )}
     </div>
   );
 }

@@ -74,7 +74,19 @@ function Donut({ interestRate }) {
         <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", lineHeight: 1 }}>
           {pct(interestRate)}%
         </span>
-        <span style={{ fontSize: 9, color: "#B0A99F", marginTop: 2 }}>liked you</span>
+        <span
+          style={{
+            fontSize: 7,
+            color: "#B0A99F",
+            marginTop: 2,
+            textAlign: "center",
+            lineHeight: 1.15,
+            letterSpacing: "0.03em",
+            maxWidth: 52,
+          }}
+        >
+          swiped right
+        </span>
       </div>
     </div>
   );
@@ -173,7 +185,7 @@ export default function ProfileAnalyticsCard({ userId }) {
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
             <Donut interestRate={stats.interestRate} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 11, color: "#B0A99F" }}>Connected with you</p>
+              <p style={{ margin: 0, fontSize: 11, color: "#B0A99F" }}>Mutual matches</p>
               <p
                 style={{
                   margin: "2px 0 0",
@@ -186,8 +198,8 @@ export default function ProfileAnalyticsCard({ userId }) {
               >
                 {pct(stats.connectRate, stats.connectRate > 0 && stats.connectRate < 1 ? 1 : 0)}%
               </p>
-              <p style={{ margin: "5px 0 0", fontSize: 10, color: "#B0A99F", lineHeight: 1.35 }}>
-                {stats.matches} out of {stats.views} people who saw you became a connection
+              <p style={{ margin: "5px 0 0", fontSize: 10, color: "#B0A99F", lineHeight: 1.4 }}>
+                {stats.matches} of {stats.views} liked you and you liked them back
               </p>
             </div>
           </div>
