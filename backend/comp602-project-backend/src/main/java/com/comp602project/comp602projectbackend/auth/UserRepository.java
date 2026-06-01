@@ -200,7 +200,29 @@ public class UserRepository {
         db.save(row);
     }
 
+    public boolean updatePasswordByUserId(int userId, String hashedPassword) {
+        User user = getById(userId);
+        if (user == null) return false;
+        user.setPassword(hashedPassword);
+        update(user);
+        if (signedInUser != null && signedInUser.getUserId() == userId) {
+            signedInUser.setPassword(hashedPassword);
+        }
+        return true;
+    }
+
     public void deleteByEmail(String email){                                   //  Delete a user by email
         db.deleteByEmail(email);
+    }
+
+    public User changeEmail(int userId, String newEmail) {
+        User user = getById(userId);
+        if (user == null) return null;
+        user.setEmail(newEmail);
+        update(user);
+        if (signedInUser != null && signedInUser.getUserId() == userId) {
+            signedInUser.setEmail(newEmail);
+        }
+        return user;
     }
 }

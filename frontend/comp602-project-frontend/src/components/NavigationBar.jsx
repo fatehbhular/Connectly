@@ -36,25 +36,6 @@ export default function NavigationBar({ setPage, currentPage }) {
                 </svg>
             </motion.button>
 
-            {/** Messages */}
-            <motion.button
-                onClick={() => setPage('messages')}
-                className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
-                whileTap={{ scale: 0.9 }}
-                animate={{ scale: currentPage === 'messages' ? 1.2 : 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            >
-                {currentPage === 'messages' && (
-                    <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
-                )}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke={currentPage === 'messages' ? "#f97040" : "#fb923c"}
-                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    className="relative z-10">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-            </motion.button>
-
             {/** Discover */}
             <motion.button
                 onClick={() => setPage('connections')}
@@ -79,25 +60,22 @@ export default function NavigationBar({ setPage, currentPage }) {
                 </svg>
             </motion.button>
 
-            {/** Analytics */}
+            {/** Messages */}
             <motion.button
-                onClick={() => setPage('analytics')}
+                onClick={() => setPage('messages')}
                 className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
                 whileTap={{ scale: 0.9 }}
-                animate={{ scale: currentPage === 'analytics' ? 1.2 : 0.95 }}
+                animate={{ scale: currentPage === 'messages' ? 1.2 : 0.95 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
-                {currentPage === 'analytics' && (
+                {currentPage === 'messages' && (
                     <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
                 )}
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke={currentPage === 'analytics' ? "#f97040" : "#fb923c"}
+                    stroke={currentPage === 'messages' ? "#f97040" : "#fb923c"}
                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
                     className="relative z-10">
-                    <path d="M4 19h16" />
-                    <path d="M7 16V8" />
-                    <path d="M12 16V5" />
-                    <path d="M17 16v-3" />
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
             </motion.button>
 
