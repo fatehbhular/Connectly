@@ -637,7 +637,10 @@ export default function SettingsPage({ onSignOut, user, onUserUpdate }) {
           transition={{ delay: 0.04 }}
           className="shrink-0"
         >
-          <ProfileAnalyticsCard userId={user?.userId} />
+          <ProfileAnalyticsCard
+            userId={user?.userId}
+            connectionCount={user?.connectionKeys?.length ?? 0}
+          />
         </motion.div>
 
         <motion.div

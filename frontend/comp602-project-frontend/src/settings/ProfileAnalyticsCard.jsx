@@ -7,17 +7,24 @@ function pct(n, digits = 0) {
   return digits > 0 ? n.toFixed(digits) : String(Math.round(n));
 }
 
-function deriveInsights({ rightSwipes, leftSwipes, matches }) {
+function deriveInsights({ rightSwipes, leftSwipes, connectionCount }) {
   const views = rightSwipes + leftSwipes;
   if (views === 0) return null;
+
+  const connections = connectionCount ?? 0;
 
   return {
     views,
     rightSwipes,
     leftSwipes,
-    matches,
+    connections,
     interestRate: (rightSwipes / views) * 100,
-    connectRate: (matches / views) * 100,
+    connectionSummary:
+      rightSwipes > 0 && connections <= rightSwipes
+        ? `${connections} of ${rightSwipes} liked you and you liked them back`
+        : rightSwipes > 0
+          ? `${connections} connections · ${rightSwipes} liked you on Discover`
+          : `${connections} connection${connections === 1 ? "" : "s"} made`,
   };
 }
 
@@ -111,7 +118,7 @@ function SplitBar({ interestRate }) {
   );
 }
 
-export default function ProfileAnalyticsCard({ userId }) {
+export default function ProfileAnalyticsCard({ userId, connectionCount = 0 }) {
   const [analytics, setAnalytics] = useState(null);
   const [live, setLive] = useState(false);
 
@@ -136,8 +143,8 @@ export default function ProfileAnalyticsCard({ userId }) {
   }, [userId]);
 
   const stats = useMemo(
-    () => (analytics ? deriveInsights(analytics) : null),
-    [analytics],
+    () => (analytics ? deriveInsights({ ...analytics, connectionCount }) : null),
+    [analytics, connectionCount],
   );
 
   return (
@@ -185,7 +192,7 @@ export default function ProfileAnalyticsCard({ userId }) {
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12 }}>
             <Donut interestRate={stats.interestRate} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 11, color: "#B0A99F" }}>Mutual matches</p>
+              <p style={{ margin: 0, fontSize: 11, color: "#B0A99F" }}>Connections made</p>
               <p
                 style={{
                   margin: "2px 0 0",
@@ -196,10 +203,10 @@ export default function ProfileAnalyticsCard({ userId }) {
                   lineHeight: 1,
                 }}
               >
-                {pct(stats.connectRate, stats.connectRate > 0 && stats.connectRate < 1 ? 1 : 0)}%
+                {stats.connections}
               </p>
               <p style={{ margin: "5px 0 0", fontSize: 10, color: "#B0A99F", lineHeight: 1.4 }}>
-                {stats.matches} of {stats.views} liked you and you liked them back
+                {stats.connectionSummary}
               </p>
             </div>
           </div>
