@@ -82,9 +82,9 @@ function App() {
 
   // Voice/video call hook at App level
   const { startCall, endCall, handleOffer, handleAnswer, handleIceCandidate, localStreamRef, localStreamVersion } = useVoiceCall(
-    currentUser?.userId, 
-    stableSendSignal, 
-    handleIncomingCall
+    currentUser?.userId,
+    stableSendSignal,
+    handleIncomingCall,
   );
 
   // Callback ref for the local camera preview - attaches stream as soon as the element mounts
@@ -99,11 +99,8 @@ function App() {
    * Sits at App level because signals can arrive at any time, regardless of which page the user is in.
    */
   const handleSignal = useCallback((signal) => {
-    console.log("Incoming signal:", signal);
-
     switch (signal.type) {
       case 'call-offer':
-        console.log("Processing call-offer from", signal.senderId);
         setIncomingCall({
           callerId: signal.senderId,
           offer: signal.payload,
@@ -113,7 +110,6 @@ function App() {
 
       // Video call offer - same flow as voice but sets isVideo flag so the receiver renders video UI
       case 'video-call-offer':
-        console.log("Processing video-call-offer from", signal.senderId);
         setIncomingCall({
           callerId: signal.senderId,
           offer: signal.payload,
@@ -131,7 +127,6 @@ function App() {
         // If the receiver hasn't dismissed the incoming call banner yet, 
         // it means the call is still initializing, so keep buffering
         if (incomingCallRef.current !== null) {
-          console.log("Buffering early ICE candidate from caller...");
           pendingIceCandidatesRef.current.push(signal.payload);
         } else {
           // The banner is gone (setIncomingCall(null) has run), so the connection is fully live!
@@ -141,13 +136,11 @@ function App() {
 
       case 'call-ended':
         // Other person hung up or cancelled the dial
-        console.log("Other person ended the call");
         resetCallState();
         endCall(null); // Pass null so the receiver doesn't re-send a call-ended signal
         break;
 
       case 'call-rejected':
-        console.log("Call was rejected");
         resetCallState();
         endCall(null);
         break;
@@ -159,11 +152,6 @@ function App() {
 
   // Connect to WebSocket signalling server once user is logged in.
   const { sendSignal } = useWebSocket(currentUser?.userId, handleSignal);
-
-  // Track incomingCall state changes for debugging
-  useEffect(() => {
-    console.log("incomingCall state changed to:", incomingCall);
-  }, [incomingCall]);
 
   // Keep the ref updated with the real live socket function once it connects
   useEffect(() => {
@@ -198,9 +186,11 @@ function App() {
   return (
     <div>
       {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
-      {page === "connections" && <ConnectionsPage currentUser={currentUser} />}
+      {page === "connections" && (
+        <ConnectionsPage currentUser={currentUser} onUserUpdate={setCurrentUser} />
+      )}
       {page === "messages" && (
-      <MessagingPage 
+      <MessagingPage
         currentUser={currentUser} 
         onDMOpen={setInDM} 
         sendSignal={sendSignal}
@@ -221,11 +211,6 @@ function App() {
       />
       )}
 
-      {page === "connections" && (
-        <ConnectionsPage currentUser={currentUser} onUserUpdate={setCurrentUser} />
-      )}
-
-
       {page === "settings" && (
         <SettingsPage
           onSignOut={() => { setCurrentUser(null); setPage("profile"); }}
@@ -235,66 +220,58 @@ function App() {
       )}
 
       {/* Incoming call banner - Rendered via createPortal to sit above everything visually */}
-      {incomingCall ? (
-        createPortal(
-          (() => {
-            console.log("The incomingCall condition evaluated to TRUE. Rendering HTML banner element now!");
-            return (
-              <div className="fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-[#E8E4DC] px-6 py-4 flex items-center justify-between shadow-md">
-                <p className="text-sm font-semibold text-gray-900">
-                  {incomingCall.isVideo ? '📹' : '📞'} Incoming {incomingCall.isVideo ? 'video' : 'voice'} call from user {incomingCall.callerId}
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={async () => {
-                      const callerId = incomingCall.callerId;
-                      const isVideo = incomingCall.isVideo;
-                      
-                      // 1. Set the active recipient ID and call type state
-                      setActiveRecipientId(callerId);
-                      setIsVideoCall(isVideo);
-                      setIsCallActive(true);
+      {incomingCall && createPortal(
+        <div className="fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-[#E8E4DC] px-6 py-4 flex items-center justify-between shadow-md">
+          <p className="text-sm font-semibold text-gray-900">
+            {incomingCall.isVideo ? "📹" : "📞"} Incoming {incomingCall.isVideo ? "video" : "voice"} call from user {incomingCall.callerId}
+          </p>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={async () => {
+                const callerId = incomingCall.callerId;
+                const isVideo = incomingCall.isVideo;
 
-                      // Give React one frame to mount the video element before the remote track can arrive.
-                      await new Promise((resolve) => requestAnimationFrame(resolve));
-                      
-                      // 2. Await the complete setup of the WebRTC Peer Connection and Remote Description
-                      await handleOffer(callerId, incomingCall.offer, isVideo);
-                      
-                      // 3. Now that the peer connection is officially ready, safely flush the early candidates
-                      if (pendingIceCandidatesRef.current.length > 0) {
-                        console.log(`Flushing ${pendingIceCandidatesRef.current.length} buffered candidates safely.`);
-                        pendingIceCandidatesRef.current.forEach((candidate) => {
-                          handleIceCandidate(candidate);
-                        });
-                        pendingIceCandidatesRef.current = [];
-                      }
-                      // 4. Finally, dismiss the banner
-                      setIncomingCall(null);
-                    }}
-                    className="px-4 py-2 rounded-full bg-green-500 text-white text-sm font-semibold"
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => {
-                      sendSignal('call-rejected', incomingCall.callerId, null);
-                      pendingIceCandidatesRef.current = [];
-                      setIncomingCall(null);
-                    }}
-                    className="px-4 py-2 rounded-full bg-red-500 text-white text-sm font-semibold"
-                  >
-                    Decline
-                  </button>
-                </div>
-              </div>
-            );
-          })(),
-          document.body
-        )
-      ) : (
-        // Inline execution log for when state remains blank
-        console.log("BANNER NOT RENDERING: incomingCall state is null or undefined.")
+                // 1. Set the active recipient ID and call type state
+                setActiveRecipientId(callerId);
+                setIsVideoCall(isVideo);
+                setIsCallActive(true);
+
+                // Give React one frame to mount the video element before the remote track can arrive.
+                await new Promise((resolve) => requestAnimationFrame(resolve));
+
+                // 2. Await the complete setup of the WebRTC Peer Connection and Remote Description
+                await handleOffer(callerId, incomingCall.offer, isVideo);
+
+                // 3. Now that the peer connection is officially ready, safely flush the early candidates
+                if (pendingIceCandidatesRef.current.length > 0) {
+                  pendingIceCandidatesRef.current.forEach((candidate) => {
+                    handleIceCandidate(candidate);
+                  });
+                  pendingIceCandidatesRef.current = [];
+                }
+
+                // 4. Finally, dismiss the banner
+                setIncomingCall(null);
+              }}
+              className="px-4 py-2 rounded-full bg-green-500 text-white text-sm font-semibold"
+            >
+              Accept
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                stableSendSignal("call-rejected", incomingCall.callerId, null);
+                pendingIceCandidatesRef.current = [];
+                setIncomingCall(null);
+              }}
+              className="px-4 py-2 rounded-full bg-red-500 text-white text-sm font-semibold"
+            >
+              Decline
+            </button>
+          </div>
+        </div>,
+        document.body,
       )}
 
       {/* only show the full nav if not in msg */}  
@@ -316,7 +293,7 @@ function App() {
               className="w-full h-full object-cover"
             />
 
-            {/* Local camera preview - bottom right corner */}
+            {/* Local camera preview - picture-in-picture in bottom right corner */}
             <video
               ref={localVideoRef}
               autoPlay
@@ -340,7 +317,7 @@ function App() {
         )
       )}
 
-      {/* Floating Voice Call Widget - Only shown during active voice calls */}
+      {/* Persistent Floating Voice Call Widget - Only shown during active voice calls */}
       {isCallActive && !isVideoCall && (
         createPortal(
           <div className="fixed bottom-6 right-6 z-[9999] bg-gray-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-gray-800 flex items-center gap-4 animate-fade-in">
@@ -354,17 +331,20 @@ function App() {
             </div>
             
             <button
+              type="button"
               onClick={handleHangUp}
               className="p-3 bg-red-600 hover:bg-red-700 transition-colors text-white rounded-full flex items-center justify-center shadow-lg"
-              title="Disconnect Call"
+              title="End call"
             >
-              Decline
+              <svg className="w-5 h-5 transform rotate-135" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.01 21.675c2.396-.142 4.673-1.077 6.554-2.67a1 1 0 00.261-1.214l-2.344-4.343a1 1 0 00-1.31-.411l-2.112 1.056a15.148 15.148 0 01-6.9-6.9l1.056-2.112a1 1 0 00-.411-1.31L6.46 1.43a1 1 0 00-1.214.261C3.653 3.573 2.718 5.85 2.575 8.246c-.22 3.665 1.034 7.288 3.541 10.204 2.916 3.385 6.84 5.438 10.97 5.234z" />
+              </svg>
             </button>
           </div>
         ,document.body
       ))}
 
-      {/* HTML Audio Player for WebRTC voice streams */}
+      {/* Persistent HTML Audio Player for WebRTC voice streams */}
       <audio 
         id="remote-audio-player" 
         autoPlay 
