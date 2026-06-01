@@ -1,7 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 
-const BACKEND_URL = import.meta.env.VITE_API_URL;
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const WS_BROKER_URL = BACKEND_URL.replace(/^http/, 'ws') + '/ws';
 

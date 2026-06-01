@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 
 /**
  * This is a free Google STUN server -> Helps browsers discover their public IP
@@ -37,6 +37,8 @@ export function useVoiceCall(userId, sendSignal, onIncomingCall) {
     /** Holds our local microphone/camera stream */
     const localStreamRef = useRef(null);
 
+    const [localStreamVersion, setLocalStreamVersion] = useState(0);
+
     /** ---- CHANGE: Buffer for ICE candidates that arrive before remoteDescription is set ---- */
     const pendingCandidatesRef = useRef([]);
 
@@ -70,7 +72,7 @@ export function useVoiceCall(userId, sendSignal, onIncomingCall) {
             const remoteVideo = document.getElementById("remote-video-player");
             const remoteAudio = document.getElementById("remote-audio-player");
 
-            if (remoteVideo && remoteVideo.offsetParent !== null) {
+            if (remoteVideo) {
                 // Video element is visible in the DOM - this is a video call
                 remoteVideo.srcObject = event.streams[0];
                 remoteVideo.play().catch((error) => {
@@ -111,6 +113,7 @@ export function useVoiceCall(userId, sendSignal, onIncomingCall) {
                 video: isVideo 
             });
             localStreamRef.current = stream;
+            setLocalStreamVersion((version) => version + 1);
 
             // Step 2: Create the peer connection
             const pc = createPeerConnection(targetId);
@@ -152,6 +155,7 @@ export function useVoiceCall(userId, sendSignal, onIncomingCall) {
                 video: isVideo 
             });
             localStreamRef.current = stream;
+            setLocalStreamVersion((version) => version + 1);
 
             // Step 2: Create our peer connection
             const pc = createPeerConnection(callerId);
@@ -243,6 +247,7 @@ export function useVoiceCall(userId, sendSignal, onIncomingCall) {
         /** Stop all microphone and camera tracks */
         localStreamRef.current?.getTracks().forEach(track => track.stop());
         localStreamRef.current = null;
+        setLocalStreamVersion((version) => version + 1);
     
         /** Close the peer connection */
         peerConnectionRef.current?.close();
@@ -272,5 +277,6 @@ export function useVoiceCall(userId, sendSignal, onIncomingCall) {
         handleAnswer,
         handleIceCandidate,
         localStreamRef, // Exposed so App.jsx can attach local camera preview to a <video> element
+        localStreamVersion,
     };
 }

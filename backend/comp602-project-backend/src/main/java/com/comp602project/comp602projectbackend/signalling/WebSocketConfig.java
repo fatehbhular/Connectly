@@ -24,7 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
         registry.addEndpoint("/ws")
                 .setAllowedOrigins(
                     "http://localhost:5173", 
-                    "https://connectly-pink-six.vercel.app/" // <-- Replace this with your actual live frontend production URL
+                    "https://connectly-pink-six.vercel.app" // <-- Replace this with your actual live frontend production URL
                 );
     }
 }
