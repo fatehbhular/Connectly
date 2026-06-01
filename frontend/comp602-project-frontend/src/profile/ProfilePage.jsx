@@ -300,6 +300,12 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
   const [saving, setSaving] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const [savedStrip, setSavedStrip] = useState({
+    displayName: currentUser?.displayName ?? "",
+    industry: currentUser?.industry ?? "",
+    city: currentUser?.location ?? "",
+  });
+
   const isComplete = currentUser?.profileComplete;
   const hasError = statusFeedback?.type === "error";
 
@@ -310,6 +316,14 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
     el.setAttribute("readonly", true);
     setTimeout(() => el.removeAttribute("readonly"), 100);
   };
+
+  useEffect(() => {
+    setSavedStrip({
+      displayName: currentUser?.displayName ?? "",
+      industry: currentUser?.industry ?? "",
+      city: currentUser?.location ?? "",
+    });
+  }, [currentUser?.displayName, currentUser?.industry, currentUser?.location]);
 
   useEffect(() => {
     if (showSuggestions) return;
@@ -384,6 +398,11 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
 
       const updated = await res.json();
       onProfileUpdate(updated);
+      setSavedStrip({
+        displayName: updated.displayName ?? displayName.trim(),
+        industry: updated.industry ?? industry.trim(),
+        city: updated.location ?? city.trim(),
+      });
       setStatusFeedback({ type: "success", message: "Profile saved." });
     } catch {
       setStatusFeedback({ type: "error", message: "Could not connect to server." });
@@ -444,10 +463,10 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
         >
           <SaveBadge type={statusFeedback?.type} />
           <ProfileStrip
-            displayName={displayName}
+            displayName={savedStrip.displayName}
             username={currentUser?.username}
-            industry={industry}
-            city={city}
+            industry={savedStrip.industry}
+            city={savedStrip.city}
           />
         </motion.div>
 

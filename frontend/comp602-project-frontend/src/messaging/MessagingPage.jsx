@@ -14,6 +14,7 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
     const [conversationName, setConversationName] = useState(null);
     const [dmNames, setDmNames] = useState({});
     const [namesLoaded, setNamesLoaded] = useState(false);
+    const [conversationLoading, setConversationLoading] = useState(false);
     const [lastMessages, setLastMessages] = useState({});
 
     // Unread tracking — seenTimestamps stores the last timestamp the user saw per conversation
@@ -157,11 +158,22 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
 
     useEffect(() => {
         const loadConversation = async () => {
-            if (selectedKey) {
-                try {
-                    const data = await MessagingService.getConversation(selectedKey, userId);
-                    setConversation(data);
-                } catch (error) { console.log('Failed to load conversation: ', error); }
+            if (!selectedKey) {
+                setConversation([]);
+                setConversationLoading(false);
+                return;
+            }
+
+            setConversationLoading(true);
+            setConversation([]);
+
+            try {
+                const data = await MessagingService.getConversation(selectedKey, userId);
+                setConversation(data);
+            } catch (error) {
+                console.log('Failed to load conversation: ', error);
+            } finally {
+                setConversationLoading(false);
             }
         };
         loadConversation();
@@ -358,6 +370,7 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
             <>
                 <DMPage
                     conversation={conversation}
+                    conversationLoading={conversationLoading}
                     conversationName={conversationName}
                     userId={userId}
                     dmNames={dmNames}

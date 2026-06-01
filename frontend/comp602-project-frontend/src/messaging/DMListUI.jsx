@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import OnlineDot from '../components/OnlineStatusDot.jsx';
+import OrangeSpinner from '../components/OrangeSpinner.jsx';
 import BASE_URL from '../config.js';
 
 // Formats a timestamp into a short relative label
@@ -76,7 +77,9 @@ export default function DMListUI({ dms, dmNames, namesLoaded, onSelectDM, lastMe
             <div className="flex flex-col flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-4 pb-25">
                 <AnimatePresence>
                     {!namesLoaded ? (
-                        <motion.p className="text-[#B0A99F] text-center mt-10 text-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>Loading…</motion.p>
+                        <motion.div className="flex justify-center mt-10 w-full" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                            <OrangeSpinner label="Loading messages…" />
+                        </motion.div>
                     ) : dms.length === 0 ? (
                         <motion.div className="flex flex-col items-center justify-center mt-20 gap-3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                             <div className="w-14 h-14 rounded-full bg-white border border-[#E8E4DC] flex items-center justify-center">

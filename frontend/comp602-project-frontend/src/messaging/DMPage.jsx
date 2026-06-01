@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
 import DMPageRenderer from './DMPageRenderer';
 import OnlineDot from '../components/OnlineStatusDot.jsx';
+import OrangeSpinner from '../components/OrangeSpinner.jsx';
 import { useRef, useEffect, useState } from 'react';
 import BASE_URL from '../config.js';
 
-export default function DMPage({conversation, conversationName, userId, dmNames, selectedKey, onSendMessage, onBack, sendSignal, recipientId, startCall, endCall, isGroup, onAddMember, senderNamesMap}) {
+export default function DMPage({conversation, conversationLoading, conversationName, userId, dmNames, selectedKey, onSendMessage, onBack, sendSignal, recipientId, startCall, endCall, isGroup, onAddMember, senderNamesMap}) {
     const [newMessage, setNewMessage] = useState('');
     const shouldAutoScroll = useRef(true);
     const scrollContainerRef = useRef(null);
@@ -144,7 +145,11 @@ export default function DMPage({conversation, conversationName, userId, dmNames,
                 className="flex flex-col gap-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
                 style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '12px 16px', minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', overflowAnchor: 'none' }}
             >
-                {conversation.length === 0 ? (
+                {conversationLoading ? (
+                    <div className="flex flex-1 items-center justify-center py-8">
+                        <OrangeSpinner label="Loading messages…" />
+                    </div>
+                ) : conversation.length === 0 ? (
                     <p className="text-[#B0A99F] text-center mt-4 text-sm">No messages yet</p>
                 ) : (
                     conversation.map((message, index) => (
