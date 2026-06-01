@@ -109,6 +109,12 @@ export async function getGroupMembers(groupId) {                            // r
     const res = await fetch(`${BASE_URL}/groups/${groupId}/members`);
     return res.json();
 }
+
+export async function getGroupCreatedAt(groupId) {                            // epoch ms when the group was created
+    const res = await fetch(`${BASE_URL}/groups/${groupId}/createdAt`);
+    if (!res.ok) throw new Error('Failed to fetch group createdAt');
+    return res.json();
+}
  
 export async function addGroupMember(groupId, userId) {                     // adds a user to an existing group
     await fetch(`${BASE_URL}/groups/${groupId}/addMember`, {

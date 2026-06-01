@@ -26,6 +26,12 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
     });
     const isFirstLoad = useRef(!localStorage.getItem(`seenTimestamps_${userId}`));
 
+    const getConversationSortTime = (key, msgs, groupCreatedAt) => {
+        const messageTime = msgs[key]?.timestamp ? new Date(msgs[key].timestamp).getTime() : 0;
+        const createdTime = groupCreatedAt[key] ?? 0;
+        return Math.max(messageTime, createdTime);
+    };
+
     const [showGroupModal, setShowGroupModal] = useState(false);
     const [groupName, setGroupName] = useState('');
     const [selectedMembers, setSelectedMembers] = useState([]);
@@ -118,6 +124,18 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
             }));
             setLastMessages(lastMsgs);
 
+            const groupCreatedAt = {};
+            await Promise.all(
+                data.filter((key) => key.startsWith('group_')).map(async (key) => {
+                    const groupId = key.split('_')[1];
+                    try {
+                        groupCreatedAt[key] = await MessagingService.getGroupCreatedAt(groupId);
+                    } catch (error) {
+                        console.log('Failed to fetch group createdAt for', key);
+                    }
+                })
+            );
+
             // If you sent the last message, mark it as seen so you don't get a notification for your own message
             const autoSeen = {};
             Object.keys(lastMsgs).forEach(key => {
@@ -137,12 +155,10 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
                 isFirstLoad.current = false;
             }
 
-            // Sort by most recent message
-            const sorted = [...data].sort((a, b) => {
-                const aTime = lastMsgs[a]?.timestamp ? new Date(lastMsgs[a].timestamp).getTime() : 0;
-                const bTime = lastMsgs[b]?.timestamp ? new Date(lastMsgs[b].timestamp).getTime() : 0;
-                return bTime - aTime;
-            });
+            // Sort by most recent activity (messages, or group creation if no messages yet)
+            const sorted = [...data].sort((a, b) =>
+                getConversationSortTime(b, lastMsgs, groupCreatedAt) - getConversationSortTime(a, lastMsgs, groupCreatedAt)
+            );
             setDMs(sorted);
             setNamesLoaded(true);
         } catch (error) { console.log('Failed to load DMs: ', error); }

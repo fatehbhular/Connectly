@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class GroupController {
         Group group = new Group();
         group.setName(name.trim());
         group.setMemberIds(memberIds);
+        group.setCreatedAt(Instant.now());
         Group saved = groupRepository.save(group);
 
         String conversationKey = "group_" + saved.getId();
@@ -87,5 +89,14 @@ public class GroupController {
         Group group = groupRepository.findById(groupId).orElse(null);
         if (group == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         return ResponseEntity.ok(group.getMemberIds());
+    }
+
+    @GetMapping("/{groupId}/createdAt")                                     // epoch millis when the group was created (for DM list sorting)
+    public ResponseEntity<Long> getGroupCreatedAt(@PathVariable int groupId) {
+        Group group = groupRepository.findById(groupId).orElse(null);
+        if (group == null || group.getCreatedAt() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(group.getCreatedAt().toEpochMilli());
     }
 }
