@@ -158,68 +158,6 @@ function SkillsSection({ skillList, skillInput, setSkillInput, onAdd, onRemove, 
       <div
         style={{
           display: "flex",
-          flexWrap: "wrap",
-          alignContent: "flex-start",
-          gap: 4,
-          height: SKILLS_CHIP_HEIGHT,
-          marginBottom: 6,
-          overflow: "hidden",
-        }}
-      >        {skillList.length > 0 ? (
-          skillList.map((skill) => (
-            <span
-              key={skill}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "3px 7px 3px 9px",
-                borderRadius: 16,
-                background: "white",
-                border: "1px solid #F5C4B0",
-                fontSize: 11,
-                fontWeight: 600,
-                color: "#C4785A",
-                height: 22,
-                boxSizing: "border-box",
-              }}
-            >
-              {skill}
-              <button
-                type="button"
-                onClick={() => onRemove(skill)}
-                aria-label={`Remove ${skill}`}
-                style={{
-                  width: 16,
-                  height: 16,
-                  borderRadius: "50%",
-                  background: "#F0EDE6",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "#B0A99F",
-                  fontSize: 12,
-                  lineHeight: 1,
-                  fontFamily: "inherit",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: 0,
-                }}
-              >
-                ×
-              </button>
-            </span>
-          ))
-        ) : (
-          <p style={{ margin: 0, fontSize: 11, color: "#B0A99F", lineHeight: 1.4, padding: "4px 2px" }}>
-            Add skills so others know what you're good at.
-          </p>
-        )}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
           alignItems: "center",
           gap: 6,
           padding: "6px 9px",
@@ -227,6 +165,7 @@ function SkillsSection({ skillList, skillInput, setSkillInput, onAdd, onRemove, 
           border: `1.5px dashed ${atMax ? "#E8E4DC" : "#D4CFCA"}`,
           background: atMax ? "#F0EDE6" : "white",
           opacity: atMax ? 0.6 : 1,
+          marginBottom: 6,
         }}
       >
         <span
@@ -280,7 +219,71 @@ function SkillsSection({ skillList, skillInput, setSkillInput, onAdd, onRemove, 
         >
           {skillCount}/10
         </span>
-      </div>    </div>
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignContent: "flex-start",
+          gap: 4,
+          height: SKILLS_CHIP_HEIGHT,
+          marginTop: 4,
+          overflow: "hidden",
+        }}
+      >
+        {skillList.length > 0 ? (
+          skillList.map((skill) => (
+            <span
+              key={skill}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                padding: "3px 7px 3px 9px",
+                borderRadius: 16,
+                background: "white",
+                border: "1px solid #F5C4B0",
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#C4785A",
+                height: 22,
+                boxSizing: "border-box",
+              }}
+            >
+              {skill}
+              <button
+                type="button"
+                onClick={() => onRemove(skill)}
+                aria-label={`Remove ${skill}`}
+                style={{
+                  width: 16,
+                  height: 16,
+                  borderRadius: "50%",
+                  background: "#F0EDE6",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#B0A99F",
+                  fontSize: 12,
+                  lineHeight: 1,
+                  fontFamily: "inherit",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 0,
+                }}
+              >
+                ×
+              </button>
+            </span>
+          ))
+        ) : (
+          <p style={{ margin: 0, fontSize: 11, color: "#B0A99F", lineHeight: 1.4, padding: "4px 2px" }}>
+            Add skills so others know what you're good at.
+          </p>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -406,24 +409,29 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
         </p>
       )}
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 flex flex-col gap-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <motion.div
-          className="relative rounded-2xl bg-white border border-[#E8E4DC] px-4 pt-3.5 pb-0"
+          className="relative rounded-2xl bg-white border border-[#E8E4DC] px-4 pt-3.5 pb-3.5 shrink-0"
           initial="hidden"
           animate="visible"
           variants={cardVariants}
         >
           <SaveBadge type={statusFeedback?.type} />
-
           <ProfileStrip
             displayName={displayName}
             username={currentUser?.username}
             industry={industry}
             city={city}
           />
+        </motion.div>
 
-          <div style={{ borderTop: "1px solid #E8E4DC", margin: "8px 0 8px" }} />
-
+        <motion.div
+          className="rounded-2xl bg-white border border-[#E8E4DC] px-4 pt-3.5 pb-0 shrink-0"
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+          transition={{ delay: 0.04 }}
+        >
           <div className="flex flex-col gap-1.5">
             <div>
               <FieldLabel>Display name</FieldLabel>
@@ -483,7 +491,8 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
               />
 
               <div style={{ marginTop: 6, paddingBottom: 12 }}>
-                <motion.button                  onClick={handleSave}
+                <motion.button
+                  onClick={handleSave}
                   disabled={saving}
                   whileTap={{ scale: 0.98 }}
                   style={{ ...primaryBtn, opacity: saving ? 0.65 : 1 }}

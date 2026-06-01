@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import BASE_URL from "../config.js";
 import { useModalOverlay } from "../hooks/useModalOverlay";
+import ProfileAnalyticsCard from "./ProfileAnalyticsCard.jsx";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16 },
@@ -614,23 +615,38 @@ export default function SettingsPage({ onSignOut, user, onUserUpdate }) {
         </p>
       </motion.div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-24 flex flex-col gap-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <motion.div
-          className="relative rounded-2xl bg-white border border-[#E8E4DC] px-4 pt-3.5 pb-0"
+          className="relative rounded-2xl bg-white border border-[#E8E4DC] px-4 pt-3.5 pb-3.5 shrink-0"
           initial="hidden"
           animate="visible"
           variants={cardVariants}
         >
           <SaveBadge type={statusFeedback?.type} />
-
           <AccountStrip
             displayName={displayName}
             username={user?.username}
             email={hasEmail ? user.email : null}
           />
+        </motion.div>
 
-          <div style={sectionDivider} />
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+          transition={{ delay: 0.04 }}
+          className="shrink-0"
+        >
+          <ProfileAnalyticsCard userId={user?.userId} />
+        </motion.div>
 
+        <motion.div
+          className="rounded-2xl bg-white border border-[#E8E4DC] px-4 pt-3.5 pb-0 shrink-0"
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+          transition={{ delay: 0.08 }}
+        >
           <div className="flex flex-col gap-1.5">
             <div>
               <FieldLabel>{hasEmail ? "Change email" : "Add email"}</FieldLabel>

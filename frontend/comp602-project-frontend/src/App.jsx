@@ -7,7 +7,6 @@ import ProfilePage from "./profile/ProfilePage";
 import SettingsPage from "./settings/SettingsPage";
 import ConnectionsPage from "./connections/ConnectionsPage";
 import MessagingPage from "./messaging/MessagingPage";
-import AnalyticsPage from "./analytics/AnalyticsPage";
 import NavigationBar from "./components/NavigationBar";
 import UserHeatbeat from "./hooks/UserHearbeat";
 import { useWebSocket } from "./hooks/useWebSocket";
@@ -222,10 +221,6 @@ function App() {
           user={currentUser}
           onUserUpdate={setCurrentUser}
         />
-      )}
-
-      {page === "analytics" && (
-        <AnalyticsPage currentUser={currentUser} />
       )}
 
       {/* Incoming call banner - Rendered via createPortal to sit above everything visually */}
