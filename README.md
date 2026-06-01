@@ -1,4 +1,4 @@
-# Connectly 🌐
+# Connectly 
 > A modern, full-stack social networking web application. Featuring real-time direct communication, intelligent matching algorithm, and analytics to help track your interactions over time - all in one seamless experience. Built as a COMP602 Semester Project at AUT.
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20App-brightgreen?style=for-the-badge&logo=vercel)](https://connectly-pink-six.vercel.app/)
@@ -6,7 +6,7 @@
 [![React](https://img.shields.io/badge/React-18%2B-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 
 ---
-## 📱 Screenshots
+## Screenshots
 
 | | | |
 | :---: | :---: | :---: |
@@ -14,7 +14,7 @@
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 Connectly is architected using a decoupled client-server model, utilizing modern cloud infrastructure for continuous deployment.
 
@@ -30,16 +30,16 @@ Connectly is architected using a decoupled client-server model, utilizing modern
 
 ---
 
-## ✨ Features
+## Features
 
-* 🔒 **Secure Authentication** – User profiles and onboarding configurations.
-* 💬 **Real-Time Context** – Instantaneous direct messaging corridors between users.
-* 📁 **Chat Hub** – Centralized conversation history with a dedicated DM inbox list.
-* 📞 **Voice + Video Calling** - Peer-to-peer voice and video calls between users.
-* 🔐 **Secure Database Hashing** - Passwords and sensitive data protected with industry standard hashing.
-* 📊 **Profile Analytics** – Insights and activity tracking on user profiles.
-* 🤝 **Matching Algorithm** – Smart user matching based on shared interests and connections.
-* ⚡ **Robust REST API** – Modular, scalable Spring Boot endpoints handling messaging payloads.
+* **Secure Authentication** – User profiles and onboarding configurations.
+* **Real-Time Context** – Instantaneous direct messaging corridors between users.
+* **Chat Hub** – Centralized conversation history with a dedicated DM inbox list.
+* **Voice + Video Calling** - Peer-to-peer voice and video calls between users.
+* **Secure Database Hashing** - Passwords and sensitive data protected with industry standard hashing.
+* **Profile Analytics** – Insights and activity tracking on user profiles.
+* **Matching Algorithm** – Smart user matching based on shared interests and connections.
+* **Robust REST API** – Modular, scalable Spring Boot endpoints handling messaging payloads.
 
 ---
 
@@ -47,14 +47,14 @@ Connectly is architected using a decoupled client-server model, utilizing modern
 
 ```text
 connectly/
-├── 🎨 frontend/          # React + Vite Client Application
+├── frontend/          # React + Vite Client Application
 │   ├── src/
 │   │   ├── components/   # Reusable UI elements (Buttons, Chat Bubbles, Sidebars)
 │   │   ├── pages/        # View Containers (Login, Dashboard, Chat)
 │   │   └── assets/       # Static media assets and styling configurations
 │   └── package.json
 │
-└── ☕ backend/           # Spring Boot REST API
+└── backend/           # Spring Boot REST API
     ├── src/main/java/
     │   └── com/connectly/
     │       ├── controller/ # REST API Request Endpoints
@@ -66,7 +66,7 @@ connectly/
 
 ---
 
-## 👥 Team Members
+## Team Members
 
 * **Fateh Bhular** - Product Owner / Fullstack Developer / UI Designer ([GitHub](https://github.com/fatehbhular))
 * **Shawn Lee** - Scrum Master / Fullstack Developer ([GitHub](https://github.com/ShawnLeeyz))
@@ -75,6 +75,6 @@ connectly/
 
 ---
 
-## 📄 License
+## License
 
 This software is developed strictly for educational use case evaluations as an undergraduate group assignment for **COMP602** at the **Auckland University of Technology (AUT)**.
