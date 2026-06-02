@@ -11,6 +11,7 @@ import NavigationBar from "./components/NavigationBar";
 import UserHeatbeat from "./hooks/UserHearbeat";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useVoiceCall } from "./hooks/useVoiceCall";
+import { getDisplayName } from "./services/MessagingService";
 import BASE_URL from "./config.js";
 
 function App() {
@@ -79,6 +80,39 @@ function App() {
 
   // Incoming call state - shown when someone calls the user.
   const [incomingCall, setIncomingCall] = useState(null); // { callerId, offer, isVideo }
+
+  const [callDisplayNames, setCallDisplayNames] = useState({});
+  const callNameCacheRef = useRef({});
+
+  useEffect(() => {
+    const ids = [incomingCall?.callerId, activeRecipientId].filter(Boolean);
+    let cancelled = false;
+
+    ids.forEach((id) => {
+      if (callNameCacheRef.current[id] !== undefined) return;
+
+      getDisplayName(id)
+        .then((name) => {
+          if (cancelled) return;
+          callNameCacheRef.current[id] = name;
+          setCallDisplayNames({ ...callNameCacheRef.current });
+        })
+        .catch(() => {
+          if (cancelled) return;
+          callNameCacheRef.current[id] = `User ${id}`;
+          setCallDisplayNames({ ...callNameCacheRef.current });
+        });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [incomingCall?.callerId, activeRecipientId]);
+
+  const formatCallName = (userId) => {
+    if (!userId) return "";
+    return callDisplayNames[userId] ?? `User ${userId}`;
+  };
 
   // FIX: Ref to always give handleSignal a fresh incomingCall value, avoiding stale closures
   const incomingCallRef = useRef(null);
@@ -260,11 +294,29 @@ function App() {
 
       {/* Incoming call banner - Rendered via createPortal to sit above everything visually */}
       {incomingCall && createPortal(
-        <div className="fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-[#E8E4DC] px-6 py-4 flex items-center justify-between shadow-md">
-          <p className="text-sm font-semibold text-gray-900">
-            {incomingCall.isVideo ? "📹" : "📞"} Incoming {incomingCall.isVideo ? "video" : "voice"} call from user {incomingCall.callerId}
-          </p>
-          <div className="flex gap-3">
+        <div className="fixed top-0 left-0 right-0 z-[9999] bg-white border-b border-[#E8E4DC] px-5 py-4 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 shrink-0 rounded-full bg-[#F0EDE6] border border-[#E8E4DC] flex items-center justify-center">
+              {incomingCall.isVideo ? (
+                <svg className="w-5 h-5 text-[#C4785A]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-[#C4785A]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#C4785A] mb-0.5">
+                Incoming {incomingCall.isVideo ? "video" : "voice"} call
+              </p>
+              <p className="text-sm font-semibold text-[#1a1a1a] truncate">
+                {formatCallName(incomingCall.callerId)}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0 ml-3">
             <button
               type="button"
               onClick={async () => {
@@ -293,7 +345,7 @@ function App() {
                 // 4. Finally, dismiss the banner
                 setIncomingCall(null);
               }}
-              className="px-4 py-2 rounded-full bg-green-500 text-white text-sm font-semibold"
+              className="px-4 py-2 rounded-full bg-[#fb923c] hover:opacity-90 text-white text-sm font-semibold transition-opacity"
             >
               Accept
             </button>
@@ -304,7 +356,7 @@ function App() {
                 pendingIceCandidatesRef.current = [];
                 setIncomingCall(null);
               }}
-              className="px-4 py-2 rounded-full bg-red-500 text-white text-sm font-semibold"
+              className="px-4 py-2 rounded-full bg-[#F0EDE6] text-[#B0A99F] border border-[#E8E4DC] text-sm font-semibold hover:bg-[#E8E4DC] transition-colors"
             >
               Decline
             </button>
@@ -319,11 +371,11 @@ function App() {
         : null
       }
 
+
       {/* Fullscreen Video Call Overlay - Only shown during active video calls */}
       {isCallActive && isVideoCall && (
         createPortal(
           <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center">
-            
             {/* Remote video feed - fills the whole screen */}
             <video
               id="remote-video-player"
@@ -332,23 +384,38 @@ function App() {
               className="w-full h-full object-cover"
             />
 
+            {/* Call info header */}
+            <div
+              className="absolute top-0 left-0 right-0 bg-black pointer-events-none"
+              style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+            >
+              <div className="px-6 py-5">
+                <p className="text-[11px] font-semibold tracking-[0.12em] uppercase text-[#fdba74] mb-0.5">
+                  Live video call
+                </p>
+                <p className="text-lg font-semibold text-white">
+                  {formatCallName(activeRecipientId)}
+                </p>
+              </div>
+            </div>
+
             {/* Local camera preview - picture-in-picture in bottom right corner */}
             <video
               ref={localVideoRef}
               autoPlay
               playsInline
               muted // Always mute local preview to prevent feedback
-              className="absolute bottom-8 right-6 w-32 h-44 object-cover rounded-2xl border-2 border-white shadow-xl"
+              className="absolute bottom-8 right-6 w-32 h-44 object-cover rounded-2xl border-2 border-[#E8E4DC] shadow-xl"
             />
 
-            {/* Hang up button */}
+            {/* End call button — matches voice call popup */}
             <button
               onClick={handleHangUp}
-              className="absolute bottom-8 left-1/2 -translate-x-1/2 p-5 bg-red-600 hover:bg-red-700 transition-colors text-white rounded-full shadow-2xl"
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 w-16 h-16 flex items-center justify-center rounded-full text-white active:scale-95 transition bg-gradient-to-br from-orange-400 to-orange-600 shadow-2xl"
               title="End Call"
             >
-              <svg className="w-7 h-7 transform rotate-135" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.01 21.675c2.396-.142 4.673-1.077 6.554-2.67a1 1 0 00.261-1.214l-2.344-4.343a1 1 0 00-1.31-.411l-2.112 1.056a15.148 15.148 0 01-6.9-6.9l1.056-2.112a1 1 0 00-.411-1.31L6.46 1.43a1 1 0 00-1.214.261C3.653 3.573 2.718 5.85 2.575 8.246c-.22 3.665 1.034 7.288 3.541 10.204 2.916 3.385 6.84 5.438 10.97 5.234z" />
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
             </button>
           </div>,
@@ -359,24 +426,27 @@ function App() {
       {/* Persistent Floating Voice Call Widget - Only shown during active voice calls */}
       {isCallActive && !isVideoCall && (
         createPortal(
-          <div className="fixed bottom-6 right-6 z-[9999] bg-gray-900 text-white px-5 py-4 rounded-2xl shadow-2xl border border-gray-800 flex items-center gap-4 animate-fade-in">
-            <div className="flex flex-col">
-              <span className="text-xs text-green-400 font-bold tracking-wider uppercase animate-pulse">
-                ● Live Voice Call
+          <div
+            className={`fixed right-4 z-[9999] bg-white px-5 py-4 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-[#E8E4DC] flex items-center gap-4 animate-fade-in ${inDM ? "top-16" : "top-24"}`}
+          >
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] text-[#C4785A] font-semibold tracking-[0.12em] uppercase flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#fb923c] animate-pulse shrink-0" />
+                Live voice call
               </span>
-              <span className="text-sm text-gray-300 font-medium">
-                Connected with User {activeRecipientId}
+              <span className="text-sm text-[#1a1a1a] font-medium truncate">
+                {formatCallName(activeRecipientId)}
               </span>
             </div>
             
             <button
               type="button"
               onClick={handleHangUp}
-              className="p-3 bg-red-600 hover:bg-red-700 transition-colors text-white rounded-full flex items-center justify-center shadow-lg"
+              className="w-10 h-10 flex items-center justify-center rounded-full text-white active:scale-95 transition shrink-0 bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg"
               title="End call"
             >
-              <svg className="w-5 h-5 transform rotate-135" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.01 21.675c2.396-.142 4.673-1.077 6.554-2.67a1 1 0 00.261-1.214l-2.344-4.343a1 1 0 00-1.31-.411l-2.112 1.056a15.148 15.148 0 01-6.9-6.9l1.056-2.112a1 1 0 00-.411-1.31L6.46 1.43a1 1 0 00-1.214.261C3.653 3.573 2.718 5.85 2.575 8.246c-.22 3.665 1.034 7.288 3.541 10.204 2.916 3.385 6.84 5.438 10.97 5.234z" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
             </button>
           </div>

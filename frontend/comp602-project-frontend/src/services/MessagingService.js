@@ -112,7 +112,7 @@ export async function getGroupMembers(groupId) {                            // r
 
 export async function getGroupCreatedAt(groupId) {                            // epoch ms when the group was created
     const res = await fetch(`${BASE_URL}/groups/${groupId}/createdAt`);
-    if (!res.ok) throw new Error('Failed to fetch group createdAt');
+    if (!res.ok) return 0;
     return res.json();
 }
  

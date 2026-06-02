@@ -94,9 +94,8 @@ public class GroupController {
     @GetMapping("/{groupId}/createdAt")                                     // epoch millis when the group was created (for DM list sorting)
     public ResponseEntity<Long> getGroupCreatedAt(@PathVariable int groupId) {
         Group group = groupRepository.findById(groupId).orElse(null);
-        if (group == null || group.getCreatedAt() == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        if (group == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        if (group.getCreatedAt() == null) return ResponseEntity.ok(0L);
         return ResponseEntity.ok(group.getCreatedAt().toEpochMilli());
     }
 }

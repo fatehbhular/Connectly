@@ -26,10 +26,17 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
     });
     const isFirstLoad = useRef(!localStorage.getItem(`seenTimestamps_${userId}`));
 
+    const parseMessageTime = (timestamp) => {
+        if (timestamp == null) return 0;
+        const t = new Date(timestamp).getTime();
+        return Number.isNaN(t) ? 0 : t;
+    };
+
     const getConversationSortTime = (key, msgs, groupCreatedAt) => {
-        const messageTime = msgs[key]?.timestamp ? new Date(msgs[key].timestamp).getTime() : 0;
-        const createdTime = groupCreatedAt[key] ?? 0;
-        return Math.max(messageTime, createdTime);
+        const messageTime = parseMessageTime(msgs[key]?.timestamp);
+        if (messageTime > 0) return messageTime;
+        if (key.startsWith('group_')) return groupCreatedAt[key] ?? 0;
+        return 0;
     };
 
     const [showGroupModal, setShowGroupModal] = useState(false);
@@ -128,11 +135,7 @@ export default function MessagingPage({currentUser, onDMOpen, sendSignal, onReci
             await Promise.all(
                 data.filter((key) => key.startsWith('group_')).map(async (key) => {
                     const groupId = key.split('_')[1];
-                    try {
-                        groupCreatedAt[key] = await MessagingService.getGroupCreatedAt(groupId);
-                    } catch (error) {
-                        console.log('Failed to fetch group createdAt for', key);
-                    }
+                    groupCreatedAt[key] = await MessagingService.getGroupCreatedAt(groupId);
                 })
             );
 
