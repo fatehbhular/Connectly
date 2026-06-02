@@ -25,6 +25,7 @@ public class User {
     private String portfolioUrl;
     private String linkedinUrl;
     private String githubUrl;
+    private String instagramUrl;
 
     private List<String> dmKeys;
     private List<Integer> connectionKeys = new ArrayList<>();
@@ -91,6 +92,9 @@ public class User {
 
     public String getGithubUrl() { return githubUrl; }
     public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
+
+    public String getInstagramUrl() { return instagramUrl; }
+    public void setInstagramUrl(String instagramUrl) { this.instagramUrl = instagramUrl; }
 
     public List<String> getDmKeys() { return dmKeys; }
     public void setDmKeys(List<String> dmKeys) { this.dmKeys = dmKeys; }

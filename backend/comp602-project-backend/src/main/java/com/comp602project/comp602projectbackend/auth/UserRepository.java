@@ -40,6 +40,7 @@ public class UserRepository {
         user.setOtpEnabled(row.isOtpEnabled());
         user.setLinkedinUrl(row.getLinkedinUrl());
         user.setGithubUrl(row.getGithubUrl());
+        user.setInstagramUrl(row.getInstagramUrl());
         user.setBlockedUsers(row.getBlockedUsers());
         return user;
     }
@@ -66,6 +67,7 @@ public class UserRepository {
         row.setOtpEnabled(user.isOtpEnabled());
         row.setLinkedinUrl(user.getLinkedinUrl());
         row.setGithubUrl(user.getGithubUrl());
+        row.setInstagramUrl(user.getInstagramUrl());
         row.setBlockedUsers(user.getBlockedUsers());
         return row;
     }

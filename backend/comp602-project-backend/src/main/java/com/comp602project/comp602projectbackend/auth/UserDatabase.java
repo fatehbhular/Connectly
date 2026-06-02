@@ -48,6 +48,7 @@ public class UserDatabase {
     private String portfolioUrl;
     private String linkedinUrl;
     private String githubUrl;
+    private String instagramUrl;
 
     @Column(name = "dm_keys", columnDefinition = "TEXT[]")
     private List<String> dmKeys = new ArrayList<>();
@@ -111,6 +112,9 @@ public class UserDatabase {
 
     public String getGithubUrl() { return githubUrl; }
     public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
+
+    public String getInstagramUrl() { return instagramUrl; }
+    public void setInstagramUrl(String instagramUrl) { this.instagramUrl = instagramUrl; }
 
     public List<String> getDmKeys() { return dmKeys; }
     public void setDmKeys(List<String> dmKeys) { this.dmKeys = dmKeys; }

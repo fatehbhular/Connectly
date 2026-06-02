@@ -19,6 +19,13 @@ function App() {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const persistCurrentUser = useCallback((user) => {
+    setCurrentUser(user);
+    if (user && localStorage.getItem("currentUser") !== null) {
+      localStorage.setItem("currentUser", JSON.stringify(user));
+    }
+  }, []);
+
   const [page, setPage] = useState("profile");
   const [inDM, setInDM] = useState(false);
 
@@ -170,7 +177,7 @@ function App() {
 
   // New user, run them through onboarding before the main app
   if (!currentUser.profileComplete) {
-    return <OnboardingPage currentUser={currentUser} onComplete={setCurrentUser} />;
+    return <OnboardingPage currentUser={currentUser} onComplete={persistCurrentUser} />;
   }
 
   // Shared hang up handler used by both the voice widget and video overlay
@@ -185,9 +192,9 @@ function App() {
   // Otherwise show the main app
   return (
     <div>
-      {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={setCurrentUser} />}
+      {page === "profile" && <ProfilePage currentUser={currentUser} onProfileUpdate={persistCurrentUser} />}
       {page === "connections" && (
-        <ConnectionsPage currentUser={currentUser} onUserUpdate={setCurrentUser} />
+        <ConnectionsPage currentUser={currentUser} onUserUpdate={persistCurrentUser} />
       )}
       {page === "messages" && (
       <MessagingPage
@@ -215,7 +222,7 @@ function App() {
         <SettingsPage
           onSignOut={() => { setCurrentUser(null); setPage("profile"); }}
           user={currentUser}
-          onUserUpdate={setCurrentUser}
+          onUserUpdate={persistCurrentUser}
         />
       )}
 

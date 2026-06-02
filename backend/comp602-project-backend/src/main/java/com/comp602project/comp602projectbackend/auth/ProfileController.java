@@ -31,6 +31,7 @@ public class ProfileController {
         String bio          = body.get("bio");
         String skills       = body.get("skills");
         String email        = body.get("email");
+        String socialUrl    = body.get("socialUrl");
         String linkedinUrl  = body.get("linkedinUrl");
         String githubUrl    = body.get("githubUrl");
         String portfolioUrl = body.get("portfolioUrl");
@@ -45,9 +46,50 @@ public class ProfileController {
                 skillArray[i] = skillArray[i].trim();
             user.setSkills(skillArray);
         }
-        // Links
-        if (linkedinUrl != null) user.setLinkedinUrl(linkedinUrl.trim());
-        if (githubUrl != null) user.setGithubUrl(githubUrl.trim());
+
+        // Social link — one of LinkedIn, GitHub, or Instagram
+        if (socialUrl != null) {
+            if (socialUrl.isBlank()) {
+                user.setLinkedinUrl("");
+                user.setGithubUrl("");
+                user.setInstagramUrl("");
+            } else {
+                SocialUrlValidator.ValidatedSocial validated = SocialUrlValidator.validate(socialUrl);
+                if (validated == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                }
+                user.setLinkedinUrl("");
+                user.setGithubUrl("");
+                user.setInstagramUrl("");
+                switch (validated.platform()) {
+                    case LINKEDIN -> user.setLinkedinUrl(validated.url());
+                    case GITHUB -> user.setGithubUrl(validated.url());
+                    case INSTAGRAM -> user.setInstagramUrl(validated.url());
+                }
+            }
+        } else {
+            // Legacy fields — still validate when non-blank
+            if (linkedinUrl != null) {
+                if (linkedinUrl.isBlank()) user.setLinkedinUrl("");
+                else {
+                    SocialUrlValidator.ValidatedSocial v = SocialUrlValidator.validate(linkedinUrl);
+                    if (v == null || v.platform() != SocialUrlValidator.Platform.LINKEDIN) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                    }
+                    user.setLinkedinUrl(v.url());
+                }
+            }
+            if (githubUrl != null) {
+                if (githubUrl.isBlank()) user.setGithubUrl("");
+                else {
+                    SocialUrlValidator.ValidatedSocial v = SocialUrlValidator.validate(githubUrl);
+                    if (v == null || v.platform() != SocialUrlValidator.Platform.GITHUB) {
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                    }
+                    user.setGithubUrl(v.url());
+                }
+            }
+        }
         if (portfolioUrl != null) user.setPortfolioUrl(portfolioUrl.trim());
 
         if (city != null && !city.isBlank()) {

@@ -2,6 +2,7 @@ import BASE_URL from '../config.js';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import UserCardUI from "./UserCardUI";
+import { getUserSocial } from "../utils/socialUrl.js";
 
 export default function ConnectionsPage({ currentUser, onUserUpdate }) {
   const [queue, setQueue] = useState([]);
@@ -365,6 +366,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
                   latitude={cardUser.latitude}
                   longitude={cardUser.longitude}
                   location={cardUser.location}
+                  social={getUserSocial(cardUser)}
                   currentUser={currentUser}
                   wantsToConnect={wantsToConnect}
                   mutuals={currentItem.mutuals}

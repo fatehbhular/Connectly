@@ -11,7 +11,7 @@ function calcDistance(lat1, lng1, lat2, lng2) {
   return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(0);
 }
 
-function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, location, currentUser, wantsToConnect, mutuals, verified, hasPendingRequest, SwipeLeft, SwipeRight, onBlock }) {
+function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, location, social, currentUser, wantsToConnect, mutuals, verified, hasPendingRequest, SwipeLeft, SwipeRight, onBlock }) {
   const startX = useRef(null);
   const dragXRef = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -225,6 +225,22 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
 
       <h2 className="text-gray-900 font-bold text-xl leading-tight">{user}</h2>
       <p className="text-[#C4785A] text-sm font-semibold tracking-wide mt-0.5">{industry}</p>
+
+      <div className="h-5 mt-1 flex items-center">
+        {social && (
+          <a
+            href={social.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            className="text-[#C4785A] text-xs font-semibold underline underline-offset-2 truncate"
+          >
+            {social.label}
+          </a>
+        )}
+      </div>
 
       {distance && (
         <p className="text-[#B0A99F] text-xs mt-1.5">

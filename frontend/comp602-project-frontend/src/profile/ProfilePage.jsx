@@ -2,6 +2,7 @@ import BASE_URL from "../config.js";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PortfolioSuggestionsModal from "./PortfolioSuggestionsModal.jsx";
+import { getUserSocial, parseSocialUrl, SOCIAL_URL_ERROR } from "../utils/socialUrl.js";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16 },
@@ -175,7 +176,7 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
   const [industry, setIndustry] = useState(currentUser?.industry ?? "");
   const [city, setCity] = useState(currentUser?.location ?? "");
   const [bio, setBio] = useState(currentUser?.bio ?? "");
-  const [socialUrl, setSocialUrl] = useState(currentUser?.linkedinUrl ?? "");
+  const [socialUrl, setSocialUrl] = useState(() => getUserSocial(currentUser)?.url ?? "");
 
   const [skillList, setSkillList] = useState(() => (currentUser?.skills ?? []).filter(Boolean));
   const [skillInput, setSkillInput] = useState("");
@@ -206,6 +207,10 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
       city: currentUser?.location ?? "",
     });
   }, [currentUser?.displayName, currentUser?.industry, currentUser?.location]);
+
+  useEffect(() => {
+    setSocialUrl(getUserSocial(currentUser)?.url ?? "");
+  }, [currentUser?.linkedinUrl, currentUser?.githubUrl, currentUser?.instagramUrl]);
 
   useEffect(() => {
     if (showSuggestions) return;
@@ -250,6 +255,16 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
       setStatusFeedback({ type: "error", message: "Display name, industry, and city are required." });
       return;
     }
+
+    const trimmedSocial = socialUrl.trim();
+    if (trimmedSocial) {
+      const parsed = parseSocialUrl(trimmedSocial);
+      if (!parsed.valid) {
+        setStatusFeedback({ type: "error", message: SOCIAL_URL_ERROR });
+        return;
+      }
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`${BASE_URL}/users/profile`, {
@@ -261,12 +276,15 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
           city: city.trim(),
           bio: bio.trim(),
           skills: skillList.join(", "),
-          linkedinUrl: socialUrl.trim(),
+          socialUrl: trimmedSocial,
         }),
       });
 
       if (res.status === 400) {
-        setStatusFeedback({ type: "error", message: "Could not find that city. Try a different location." });
+        setStatusFeedback({
+          type: "error",
+          message: trimmedSocial ? SOCIAL_URL_ERROR : "Could not find that city. Try a different location.",
+        });
         return;
       }
       if (!res.ok) {
@@ -281,6 +299,7 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
         industry: updated.industry ?? industry.trim(),
         city: updated.location ?? city.trim(),
       });
+      setSocialUrl(getUserSocial(updated)?.url ?? trimmedSocial);
       setStatusFeedback({ type: "success", message: "Profile saved." });
     } catch {
       setStatusFeedback({ type: "error", message: "Could not connect to server." });
@@ -361,7 +380,11 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
               <div>
                 <FieldLabel compact>Socials</FieldLabel>
                 <input type="url" value={socialUrl} onChange={(e) => { setSocialUrl(e.target.value); clearStatus(); }}
-                  onFocus={preventFocusJump} placeholder="Instagram, LinkedIn, any link…" style={compactInputStyle(false)} />
+                  onFocus={preventFocusJump}
+                  placeholder="LinkedIn, GitHub, or Instagram"
+                  style={compactInputStyle(
+                    statusFeedback?.type === "error" && socialUrl.trim() && !parseSocialUrl(socialUrl).valid
+                  )} />
               </div>
             </div>
 
