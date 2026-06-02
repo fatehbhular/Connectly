@@ -49,6 +49,8 @@ public class UserRepository {
         user.setProfileComplete(row.isProfileComplete());
         user.setRequestedUsers(row.getRequestedUsers());
         user.setOtpEnabled(row.isOtpEnabled());
+        row.setLinkedinUrl(user.getLinkedinUrl());
+        row.setGithubUrl(user.getGithubUrl());
         return user;
     }
 
@@ -72,6 +74,8 @@ public class UserRepository {
         row.setProfileComplete(user.isProfileComplete());
         row.setRequestedUsers(user.getRequestedUsers());
         row.setOtpEnabled(user.isOtpEnabled());
+        row.setLinkedinUrl(user.getLinkedinUrl());
+        row.setGithubUrl(user.getGithubUrl());
         return row;
     }
 
