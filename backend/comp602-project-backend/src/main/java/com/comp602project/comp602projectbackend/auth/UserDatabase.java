@@ -102,27 +102,25 @@ public class UserDatabase {
     public String getIndustry() { return industry; }
     public void setIndustry(String industry) {  this.industry = industry; }
 
+
     public String getPortfolioUrl() { return portfolioUrl; }
     public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
 
-    public String getPortfolioUrl() { return portfolioUrl; }
-public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
-
-public String getLinkedinUrl() {
+    public String getLinkedinUrl() {
     return linkedinUrl;
-}
+    }
 
-public void setLinkedinUrl(String linkedinUrl) {
+    public void setLinkedinUrl(String linkedinUrl) {
     this.linkedinUrl = linkedinUrl;
-}
+    }
 
-public String getGithubUrl() {
+    public String getGithubUrl() {
     return githubUrl;
-}
+    }
 
-public void setGithubUrl(String githubUrl) {
+    public void setGithubUrl(String githubUrl) {
     this.githubUrl = githubUrl;
-}
+    }
 
     public List<String> getDmKeys() { return dmKeys; }
     public void setDmKeys(List<String> dmKeys) { this.dmKeys = dmKeys; }
