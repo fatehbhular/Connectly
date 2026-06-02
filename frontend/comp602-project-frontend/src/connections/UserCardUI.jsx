@@ -2,24 +2,23 @@ import { useState, useRef, useEffect } from 'react';
 import OnlineDot from '../components/OnlineStatusDot.jsx';
 import BASE_URL from '../config.js';
 
-// Haversine formula - calculates the distance in km between two GPS coordinates
-// Returns null if either coordinate is missing
 function calcDistance(lat1, lng1, lat2, lng2) {
   if (!lat1 || !lng1 || !lat2 || !lng2) return null;
-  const R = 6371;                                             // Earth's radius in km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(0);
 }
 
-function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, location, currentUser, wantsToConnect, mutuals, verified, hasPendingRequest, SwipeLeft, SwipeRight }) {
+function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, location, currentUser, wantsToConnect, mutuals, verified, hasPendingRequest, SwipeLeft, SwipeRight, onBlock }) {
   const startX = useRef(null);
   const dragXRef = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragX, setDragX] = useState(0);
   const cooldownRef = useRef(false);
   const [isOnline, setIsOnline] = useState(false);
+  const [blockState, setBlockState] = useState('idle'); // 'idle' | 'confirm' | 'blocked'
 
   useEffect(() => {
     if (!userId) return;
@@ -57,14 +56,12 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
       dragXRef.current = delta;
       setDragX(delta);
     }
-
     function onTouchMove(e) {
       if (!isDragging || startX.current === null) return;
       var delta = e.touches[0].clientX - startX.current;
       dragXRef.current = delta;
       setDragX(delta);
     }
-
     function onMouseUp() {
       if (!isDragging) return;
       setIsDragging(false);
@@ -74,12 +71,10 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
       dragXRef.current = 0;
       setDragX(0);
     }
-
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
     document.addEventListener('touchmove', onTouchMove, { passive: true });
     document.addEventListener('touchend', onMouseUp);
-
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
@@ -100,6 +95,21 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
     document.addEventListener('keydown', onKeyPressed);
     return () => document.removeEventListener('keydown', onKeyPressed);
   }, [SwipeLeft, SwipeRight]);
+
+  const handleBlockClick = (e) => {
+    e.stopPropagation();
+    if (blockState === 'idle') {
+      setBlockState('confirm');
+    } else if (blockState === 'confirm') {
+      setBlockState('blocked');
+      onBlock?.(userId);
+    }
+  };
+
+  const handleCancelBlock = (e) => {
+    e.stopPropagation();
+    setBlockState('idle');
+  };
 
   const distance = calcDistance(currentUser?.latitude, currentUser?.longitude, latitude, longitude);
 
@@ -127,42 +137,101 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
         opacity: isDragging ? 1 - Math.abs(dragX) / 300 : 1,
         backgroundColor: bgColor,
         boxShadow,
-        // Lighter, softer orange outline for wants to connect
         outline: (hasPendingRequest || wantsToConnect) ? '2px solid rgba(251,146,60,0.3)' : 'none',
         outlineOffset: '-1px',
+        position: 'relative',
       }}
     >
-      {/* Avatar + online dot — white ring matches DM list style */}
+      {/* Block button — top right */}
+      <div
+        style={{ position: 'absolute', top: 12, right: 12 }}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
+      >
+        {blockState === 'idle' && (
+          <button
+            onClick={handleBlockClick}
+            title="Block user"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 4,
+              color: '#D1CBC4',
+              fontSize: 18,
+              lineHeight: 1,
+            }}
+          >
+            ⊘
+          </button>
+        )}
+
+        {blockState === 'confirm' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 11, color: '#C45A3A', fontWeight: 600 }}>Block?</span>
+            <button
+              onClick={handleBlockClick}
+              style={{
+                background: '#C45A3A',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                padding: '3px 10px',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              Yes
+            </button>
+            <button
+              onClick={handleCancelBlock}
+              style={{
+                background: '#F0EDE6',
+                color: '#888',
+                border: 'none',
+                borderRadius: 8,
+                padding: '3px 10px',
+                fontSize: 11,
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              No
+            </button>
+          </div>
+        )}
+
+        {blockState === 'blocked' && (
+          <span style={{ fontSize: 11, color: '#B0A99F', fontWeight: 600 }}>Blocked</span>
+        )}
+      </div>
+
+      {/* Avatar + online dot */}
       <div className="relative w-14 h-14 mb-4">
         <div
           className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg text-white"
           style={{
-            background: 'linear-gradient(135deg, #fdba74, #fb923c)',      // matches DM list: from-orange-300 to-orange-400
-            boxShadow: '0 0 0 2px white',                                 // white ring border matching DM list aesthetic
+            background: 'linear-gradient(135deg, #fdba74, #fb923c)',
+            boxShadow: '0 0 0 2px white',
           }}
         >
           {user?.[0]?.toUpperCase() || '?'}
         </div>
-        {/* Online dot — same absolute position as DM list */}
         <span className="absolute bottom-0 right-0" style={{ transform: 'scale(1.4)', transformOrigin: 'bottom right' }}>
           <OnlineDot isOnline={isOnline} />
         </span>
       </div>
 
-      {/* Name */}
       <h2 className="text-gray-900 font-bold text-xl leading-tight">{user}</h2>
-
-      {/* Industry */}
       <p className="text-[#C4785A] text-sm font-semibold tracking-wide mt-0.5">{industry}</p>
 
-      {/* Location + distance */}
       {distance && (
         <p className="text-[#B0A99F] text-xs mt-1.5">
           {location} · {distance} km away
         </p>
       )}
 
-      {/* Badges */}
       <div className="flex items-center gap-2 flex-wrap mt-3">
         {wantsToConnect && (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-[#fb923c]">
@@ -181,15 +250,10 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
         )}
       </div>
 
-      {/* Divider */}
       <div className="border-t border-[#E8E4DC] my-4" />
 
-      {/* Bio */}
-      {bio && (
-        <p className="text-gray-700 text-sm leading-relaxed">{bio}</p>
-      )}
+      {bio && <p className="text-gray-700 text-sm leading-relaxed">{bio}</p>}
 
-      {/* Skills */}
       {skills && skills.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-4">
           {skills.map((skill, i) => (
