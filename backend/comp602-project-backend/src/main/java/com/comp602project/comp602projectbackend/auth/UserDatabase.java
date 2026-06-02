@@ -1,10 +1,9 @@
-
 package com.comp602project.comp602projectbackend.auth;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;                                               // standard API used in Java for working with databases using objects instead of raw SQL.
+import jakarta.persistence.*;
 
 /**
  * This class is pretty much the same as the User class, but instead it tells Spring how to map each field to a Supabase column.
@@ -12,12 +11,12 @@ import jakarta.persistence.*;                                               // s
  * When springboot runs for first time, it will do the SQL automatically; CREATE TABLE users
  */
 
-@Entity                                                                     // Tells Spring this class maps to a database table
-@Table(name = "users")                                                      // The table name in Supabase
+@Entity
+@Table(name = "users")
 public class UserDatabase {
 
-    @Id                                                                     // THIS IS THE PRIMARY KEY. it defines the primary key
-    @GeneratedValue(strategy = GenerationType.IDENTITY)                     // This defines how the primary key should be generated auto, this case is increments
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private int userId;
 
@@ -30,14 +29,13 @@ public class UserDatabase {
     @Column(unique = true)
     private String email;
 
-    @Column(columnDefinition = "DOUBLE PRECISION")                          // Postgres type for decimal numbers
+    @Column(columnDefinition = "DOUBLE PRECISION")
     private Double latitude;
 
     @Column(columnDefinition = "DOUBLE PRECISION")
     private Double longitude;
 
     private String location;
-
     private String displayName;
 
     @Column(columnDefinition = "TEXT")
@@ -47,25 +45,28 @@ public class UserDatabase {
     private String[] skills;
 
     private String industry;
-
     private String portfolioUrl;
     private String linkedinUrl;
     private String githubUrl;
 
-    @Column(name = "dm_keys", columnDefinition = "TEXT[]")                  // Each entry is a "1_2_3" key string
+    @Column(name = "dm_keys", columnDefinition = "TEXT[]")
     private List<String> dmKeys = new ArrayList<>();
 
-    @Column(name = "connection_keys", columnDefinition = "INT[]")           // Each entry is just a userId number
+    @Column(name = "connection_keys", columnDefinition = "INT[]")
     private List<Integer> connectionKeys = new ArrayList<>();
 
     @Column(name = "profile_complete")
-    private Boolean profileComplete = false;    
-    
-    @Column(name = "requested_user", columnDefinition = "INT[]")            // Each entry is just a userId number
+    private Boolean profileComplete = false;
+
+    @Column(name = "requested_user", columnDefinition = "INT[]")
     private List<Integer> requestedUsers = new ArrayList<>();
 
     @Column(name = "otp_enabled")
-    private Boolean otpEnabled = false;                                     // Enables the 2 factor authetication for user - Added by Shawn
+    private Boolean otpEnabled = false;
+
+    // Blocked users list
+    @Column(name = "blocked_users", columnDefinition = "INT[]")
+    private List<Integer> blockedUsers = new ArrayList<>();
 
     // SETTERS AND GETTERS
 
@@ -100,27 +101,16 @@ public class UserDatabase {
     public void setSkills(String[] skills) { this.skills = skills; }
 
     public String getIndustry() { return industry; }
-    public void setIndustry(String industry) {  this.industry = industry; }
-
+    public void setIndustry(String industry) { this.industry = industry; }
 
     public String getPortfolioUrl() { return portfolioUrl; }
     public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
 
-    public String getLinkedinUrl() {
-    return linkedinUrl;
-    }
+    public String getLinkedinUrl() { return linkedinUrl; }
+    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
 
-    public void setLinkedinUrl(String linkedinUrl) {
-    this.linkedinUrl = linkedinUrl;
-    }
-
-    public String getGithubUrl() {
-    return githubUrl;
-    }
-
-    public void setGithubUrl(String githubUrl) {
-    this.githubUrl = githubUrl;
-    }
+    public String getGithubUrl() { return githubUrl; }
+    public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
 
     public List<String> getDmKeys() { return dmKeys; }
     public void setDmKeys(List<String> dmKeys) { this.dmKeys = dmKeys; }
@@ -129,11 +119,15 @@ public class UserDatabase {
     public void setConnectionKeys(List<Integer> keys) { this.connectionKeys = keys; }
 
     public Boolean isProfileComplete() { return profileComplete; }
-    public void    setProfileComplete(Boolean complete) { this.profileComplete = complete; }
+    public void setProfileComplete(Boolean complete) { this.profileComplete = complete; }
 
     public List<Integer> getRequestedUsers() { return requestedUsers; }
     public void setRequestedUsers(List<Integer> keys) { this.requestedUsers = keys; }
 
     public Boolean isOtpEnabled() { return otpEnabled; }
-    public void setOtpEnabled(Boolean otpEnabled) { this.otpEnabled = otpEnabled; }          //Set and Get method for OtpEnabled - Added by Shawn
+    public void setOtpEnabled(Boolean otpEnabled) { this.otpEnabled = otpEnabled; }
+
+    // For blocked users
+    public List<Integer> getBlockedUsers() { return blockedUsers; }
+    public void setBlockedUsers(List<Integer> blockedUsers) { this.blockedUsers = blockedUsers; }
 }

@@ -7,32 +7,28 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class User {
 
-    private int userId;                                                         // Private key of users
+    private int userId;
     private String username;
 
     @JsonIgnore
     private String password;
     private String email;
- 
+
     private Double latitude;
     private Double longitude;
-    private String location;                                                    // CITY OWNLY
- 
+    private String location;
+
     private String displayName;
     private String bio;
-    private String[] skills;                                                    // "Java", "React"
+    private String[] skills;
     private String industry;
     private String portfolioUrl;
     private String linkedinUrl;
     private String githubUrl;
- 
-    // (for easy database storing)
-    private List<String> dmKeys;                                                    // "userId_userId_userId..."
-                                                                                // Each Key is one conversation, MAKE SURE THE KEYS ARE ALWAYS SORTED NUMERICALLY
-    private List<Integer> connectionKeys = new ArrayList<>();                   // [12,124,45,325,63]
- 
-    // List of users generated at runtime, not stored in database
-    
+
+    private List<String> dmKeys;
+    private List<Integer> connectionKeys = new ArrayList<>();
+
     @JsonIgnore
     private List<List<User>> dmUsers = new ArrayList<>();
 
@@ -40,20 +36,19 @@ public class User {
     private List<User> connections = new ArrayList<>();
 
     private Boolean profileComplete = false;
+    private List<Integer> requestedUsers = new ArrayList<>();
+    private Boolean otpEnabled = false;
 
-    private List<Integer> requestedUsers = new ArrayList<>(); 
-
-    private Boolean otpEnabled = false;                                        // Added by Shawn
+    // Blocked users list
+    private List<Integer> blockedUsers = new ArrayList<>();
 
     public User() {}
 
-    public User(int userId, String username, String password) {                 // Use this when the user first signs in
+    public User(int userId, String username, String password) {
         this.userId = userId;
         this.username = username;
         this.password = password;
     }
-    
-    // SETTERS AND GETTERS
 
     public int getUserId() { return userId; }
     public void setUserId(int userId) { this.userId = userId; }
@@ -86,28 +81,18 @@ public class User {
     public void setSkills(String[] skills) { this.skills = skills; }
 
     public String getIndustry() { return industry; }
-    public void setIndustry(String industry) {  this.industry = industry; }
+    public void setIndustry(String industry) { this.industry = industry; }
 
     public String getPortfolioUrl() { return portfolioUrl; }
-public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
+    public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
 
-public String getLinkedinUrl() {
-    return linkedinUrl;
-}
+    public String getLinkedinUrl() { return linkedinUrl; }
+    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
 
-public void setLinkedinUrl(String linkedinUrl) {
-    this.linkedinUrl = linkedinUrl;
-}
+    public String getGithubUrl() { return githubUrl; }
+    public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
 
-public String getGithubUrl() {
-    return githubUrl;
-}
-
-public void setGithubUrl(String githubUrl) {
-    this.githubUrl = githubUrl;
-}
-
-public List<String> getDmKeys() { return dmKeys; }
+    public List<String> getDmKeys() { return dmKeys; }
     public void setDmKeys(List<String> dmKeys) { this.dmKeys = dmKeys; }
 
     public List<Integer> getConnectionKeys() { return connectionKeys; }
@@ -120,11 +105,15 @@ public List<String> getDmKeys() { return dmKeys; }
     public void setConnections(List<User> c) { this.connections = c; }
 
     public Boolean isProfileComplete() { return profileComplete; }
-    public void    setProfileComplete(Boolean complete) { this.profileComplete = complete; }
+    public void setProfileComplete(Boolean complete) { this.profileComplete = complete; }
 
     public List<Integer> getRequestedUsers() { return requestedUsers; }
     public void setRequestedUsers(List<Integer> keys) { this.requestedUsers = keys; }
 
-    public Boolean isOtpEnabled() { return otpEnabled; }                                        //Added by Shawn
+    public Boolean isOtpEnabled() { return otpEnabled; }
     public void setOtpEnabled(Boolean otpEnabled) { this.otpEnabled = otpEnabled; }
+
+    // For blocked users
+    public List<Integer> getBlockedUsers() { return blockedUsers; }
+    public void setBlockedUsers(List<Integer> blockedUsers) { this.blockedUsers = blockedUsers; }
 }

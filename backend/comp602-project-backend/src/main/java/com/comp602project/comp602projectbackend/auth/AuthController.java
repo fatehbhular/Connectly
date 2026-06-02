@@ -332,4 +332,20 @@ public class AuthController {
         if (user == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         return ResponseEntity.ok(user.getConnectionKeys());
     }
+
+@PostMapping("/users/block")
+public ResponseEntity<User> blockUser(
+        @RequestHeader("userId") int userId,
+        @RequestBody Map<String, Integer> body) {
+    int targetId = body.get("targetUserId");
+    User updated = userRepository.blockUser(userId, targetId);
+    if (updated == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    return ResponseEntity.ok(updated);
 }
+
+
+
+}
+
+
+
