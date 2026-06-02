@@ -80,6 +80,18 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     setTimeout(() => e.target.removeAttribute('readonly'), 100);
   };
 
+  // ✅ NEW: block handler — calls backend then removes card from queue
+  const handleBlock = async (targetUserId) => {
+    try {
+      await fetch(`${BASE_URL}/users/block`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', userId: currentUser.userId },
+        body: JSON.stringify({ targetUserId }),
+      });
+    } catch (e) { console.log('Failed to block:', e); }
+    advance();
+  };
+
   function SwipeLeft() {
     if (isPending) {
       fetch(`${BASE_URL}/api/connections/request/decline`, {
@@ -176,20 +188,18 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     cursor: 'pointer', fontSize: 14, fontFamily: 'inherit',
   };
 
-  // Avatar matching the card gradient: from-orange-300 to-orange-400
   const modalAvatar = (name) => (
     <div style={{
       width: 46, height: 46, borderRadius: '50%',
-      background: 'linear-gradient(135deg, #fdba74, #fb923c)',            // same as UserCardUI
+      background: 'linear-gradient(135deg, #fdba74, #fb923c)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       color: 'white', fontWeight: 700, fontSize: 19, flexShrink: 0,
-      boxShadow: '0 0 0 2px white',                                       // same white ring as UserCardUI
+      boxShadow: '0 0 0 2px white',
     }}>
       {name?.[0]?.toUpperCase() || '?'}
     </div>
   );
 
-  // Gradient blur backdrop — clear at top, blurs toward bottom
   const gradientBlurBackdrop = {
     position: 'fixed', inset: 0, zIndex: 50,
     backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
@@ -202,7 +212,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
   return (
     <div className="flex flex-col w-full h-dvh bg-[#F0EDE6]" style={{ position: 'relative' }}>
 
-      {/* Header — zIndex 60 stays above gradient blur */}
       <motion.div
         className="flex items-baseline justify-between px-6 pt-6 pb-5"
         initial={{ opacity: 0, y: -10 }}
@@ -232,7 +241,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
         </button>
       </motion.div>
 
-      {/* Filter backdrop + panel */}
       {showFilterPanel && (
         <div onClick={() => setShowFilterPanel(false)} style={{ position: 'absolute', inset: 0, top: 80, zIndex: 30, backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)', background: 'rgba(240,237,230,0.3)' }} />
       )}
@@ -259,7 +267,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
         </div>
       )}
 
-      {/* Active filter tags */}
       {hasActiveFilters && (
         <div style={{ position: 'absolute', top: 80, left: 16, right: 16, zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {activeFilters.skill && <span style={{ background: 'white', color: '#C4785A', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, border: '1px solid #E8E4DC', letterSpacing: '0.04em' }}>Skill: {activeFilters.skill}</span>}
@@ -268,7 +275,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
         </div>
       )}
 
-      {/* ─── Send Intro Modal ─────────────────────────────────────────────────── */}
       {showIntroModal && (
         <>
           <div style={gradientBlurBackdrop} />
@@ -299,7 +305,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
         </>
       )}
 
-      {/* ─── Accept & Reply Modal ─────────────────────────────────────────────── */}
       {showReplyModal && (
         <>
           <div style={gradientBlurBackdrop} />
@@ -321,7 +326,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
               <div>
                 <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#B0A99F', margin: '0 0 8px 0' }}>Their intro</p>
                 <div style={{ background: '#F0EDE6', borderRadius: 14, padding: '13px 15px', border: '1px solid #E8E4DC' }}>
-                  {/* No quotation marks — just the message */}
                   <p style={{ fontSize: 13, color: '#1a1a1a', margin: 0, lineHeight: 1.6, fontStyle: 'italic' }}>{currentItem?.senderMessage}</p>
                 </div>
               </div>
@@ -340,7 +344,6 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
         </>
       )}
 
-      {/* card area */}
       <div className="flex flex-col flex-1 items-center justify-start px-6 pt-10 gap-6">
         <AnimatePresence mode="wait">
           {cardUser ? (
@@ -369,6 +372,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
                   hasPendingRequest={isPending}
                   SwipeLeft={SwipeLeft}
                   SwipeRight={SwipeRight}
+                  onBlock={handleBlock}
                 />
               </div>
               <p className="text-[#B0A99F] text-xs">pass - connect</p>
