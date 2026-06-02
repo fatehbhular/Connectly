@@ -23,8 +23,6 @@ import com.comp602project.comp602projectbackend.auth.User;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.annotation.PostConstruct;
-
 @Service
 public class PortfolioSuggestionService {
 
@@ -43,11 +41,6 @@ public class PortfolioSuggestionService {
 
     @Value("${groq.api.key:}")
     private String groqApiKey;
-
-    @PostConstruct
-    void logGroqConfig() {
-        log.info("Groq portfolio suggestions enabled: {}", groqApiKey != null && !groqApiKey.isBlank());
-    }
 
     public PortfolioSuggestionsResponse suggest(User user) {
         if (groqApiKey == null || groqApiKey.isBlank()) {
