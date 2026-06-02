@@ -82,11 +82,20 @@ public class MatchingAlgorithm {
                 : new ArrayList<>()
         );
 
+        Set<Integer> blockedIds = new HashSet<>(
+            signedInUser.getBlockedUsers() != null
+                ? signedInUser.getBlockedUsers()
+                : new ArrayList<>()
+        );
+
         List<User> result = allUsers.stream()
             .filter(u -> u.getUserId() != signedInUser.getUserId())                 // exclude signed in user from results
             .filter(u -> u.isProfileComplete() != null && u.isProfileComplete())    // remove incomplete profiles
             .filter(u -> !connectedIds.contains(u.getUserId()))                     // remove already connected users
             .filter(u -> !requestedIds.contains(u.getUserId()))                     // remove already request users
+            .filter(u -> !blockedIds.contains(u.getUserId()))                       // remove users the signed in user blocked
+            .filter(u -> u.getBlockedUsers() == null                                // remove users who blocked the signed in user
+                || !u.getBlockedUsers().contains(signedInUser.getUserId()))
             .sorted(Comparator.comparingDouble(
                 (User u) -> scoreUser(signedInUser, u)).reversed())                 // highest score first
             .collect(Collectors.toList());

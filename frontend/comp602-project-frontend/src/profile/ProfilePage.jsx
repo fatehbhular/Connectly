@@ -75,9 +75,22 @@ function SaveBadge({ type }) {
   );
 }
 
-function FieldLabel({ children }) {
+const compactInputStyle = (invalid) => ({
+  ...inputStyle(invalid),
+  padding: "5px 9px",
+  fontSize: 13,
+  borderRadius: 8,
+});
+
+function FieldLabel({ children, compact = false }) {
   return (
-    <label style={{ display: "block", margin: "0 0 3px", fontSize: 11, fontWeight: 500, color: "#B0A99F" }}>
+    <label style={{
+      display: "block",
+      margin: compact ? "0 0 1px" : "0 0 3px",
+      fontSize: compact ? 10 : 11,
+      fontWeight: 500,
+      color: "#B0A99F",
+    }}>
       {children}
     </label>
   );
@@ -320,34 +333,36 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
           initial="hidden" animate="visible" variants={cardVariants} transition={{ delay: 0.04 }}>
           <div className="flex flex-col gap-1.5">
 
-            <div>
-              <FieldLabel>Display name</FieldLabel>
-              <input value={displayName} onChange={(e) => { setDisplayName(e.target.value); clearStatus(); }}
-                onFocus={preventFocusJump} placeholder="How others see you" style={inputStyle(hasError && !displayName.trim())} />
-            </div>
+            <div className="flex flex-col gap-1">
+              <div>
+                <FieldLabel compact>Display name</FieldLabel>
+                <input value={displayName} onChange={(e) => { setDisplayName(e.target.value); clearStatus(); }}
+                  onFocus={preventFocusJump} placeholder="How others see you" style={compactInputStyle(hasError && !displayName.trim())} />
+              </div>
 
-            <div>
-              <FieldLabel>Industry</FieldLabel>
-              <input value={industry} onChange={(e) => { setIndustry(e.target.value); clearStatus(); }}
-                onFocus={preventFocusJump} placeholder="e.g. Software Engineering" style={inputStyle(hasError && !industry.trim())} />
-            </div>
+              <div>
+                <FieldLabel compact>Industry</FieldLabel>
+                <input value={industry} onChange={(e) => { setIndustry(e.target.value); clearStatus(); }}
+                  onFocus={preventFocusJump} placeholder="e.g. Software Engineering" style={compactInputStyle(hasError && !industry.trim())} />
+              </div>
 
-            <div>
-              <FieldLabel>City</FieldLabel>
-              <input value={city} onChange={(e) => { setCity(e.target.value); clearStatus(); }}
-                onFocus={preventFocusJump} placeholder="e.g. Auckland" style={inputStyle(hasError && !city.trim())} />
-            </div>
+              <div>
+                <FieldLabel compact>City</FieldLabel>
+                <input value={city} onChange={(e) => { setCity(e.target.value); clearStatus(); }}
+                  onFocus={preventFocusJump} placeholder="e.g. Auckland" style={compactInputStyle(hasError && !city.trim())} />
+              </div>
 
-            <div>
-              <FieldLabel>Bio</FieldLabel>
-              <input type="text" value={bio} onChange={(e) => { setBio(e.target.value); clearStatus(); }}
-                onFocus={preventFocusJump} placeholder="Tell people about yourself…" style={inputStyle(false)} />
-            </div>
+              <div>
+                <FieldLabel compact>Bio</FieldLabel>
+                <input type="text" value={bio} onChange={(e) => { setBio(e.target.value); clearStatus(); }}
+                  onFocus={preventFocusJump} placeholder="Tell people about yourself…" style={compactInputStyle(false)} />
+              </div>
 
-            <div>
-              <FieldLabel>Socials</FieldLabel>
-              <input type="url" value={socialUrl} onChange={(e) => { setSocialUrl(e.target.value); clearStatus(); }}
-                onFocus={preventFocusJump} placeholder="Instagram, LinkedIn, any link…" style={inputStyle(false)} />
+              <div>
+                <FieldLabel compact>Socials</FieldLabel>
+                <input type="url" value={socialUrl} onChange={(e) => { setSocialUrl(e.target.value); clearStatus(); }}
+                  onFocus={preventFocusJump} placeholder="Instagram, LinkedIn, any link…" style={compactInputStyle(false)} />
+              </div>
             </div>
 
             <div>
