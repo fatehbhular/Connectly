@@ -4,15 +4,32 @@ const GITHUB_RESERVED = new Set([
   "sponsors", "customer-stories", "security", "team", "enterprise",
 ]);
 
+const PLATFORM_LABELS = {
+  linkedin: "LinkedIn profile",
+  github: "GitHub profile",
+  instagram: "Instagram profile",
+};
+
+/** Read the user's saved social link and derive display label from the URL. */
 export function getUserSocial(user) {
   if (!user) return null;
-  const linkedin = user.linkedinUrl?.trim();
-  if (linkedin) return { url: linkedin, platform: "linkedin", label: "LinkedIn profile" };
-  const github = user.githubUrl?.trim();
-  if (github) return { url: github, platform: "github", label: "GitHub profile" };
-  const instagram = user.instagramUrl?.trim();
-  if (instagram) return { url: instagram, platform: "instagram", label: "Instagram profile" };
-  return null;
+
+  const url = (
+    user.socialUrl
+    || user.linkedinUrl
+    || user.githubUrl
+    || user.instagramUrl
+    || ""
+  ).trim();
+
+  if (!url) return null;
+
+  const parsed = parseSocialUrl(url);
+  if (parsed.valid && !parsed.empty) {
+    return { url: parsed.url, platform: parsed.platform, label: parsed.label };
+  }
+
+  return { url, platform: null, label: "Profile link" };
 }
 
 export function parseSocialUrl(raw) {
@@ -39,9 +56,8 @@ export function parseSocialUrl(raw) {
   if (host === "linkedin.com") {
     const match = path.match(/^\/(in|company)\/([^/?#]+)/i);
     if (match) {
-      const slug = match[2];
-      const url = `https://www.linkedin.com/${match[1].toLowerCase()}/${slug}`;
-      return { valid: true, url, platform: "linkedin", label: "LinkedIn profile" };
+      const url = `https://www.linkedin.com/${match[1].toLowerCase()}/${match[2]}`;
+      return { valid: true, url, platform: "linkedin", label: PLATFORM_LABELS.linkedin };
     }
     return { valid: false };
   }
@@ -49,7 +65,7 @@ export function parseSocialUrl(raw) {
   if (host === "github.com") {
     const match = path.match(/^\/([A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?)(?:\/|$)/);
     if (match && !GITHUB_RESERVED.has(match[1].toLowerCase())) {
-      return { valid: true, url: `https://github.com/${match[1]}`, platform: "github", label: "GitHub profile" };
+      return { valid: true, url: `https://github.com/${match[1]}`, platform: "github", label: PLATFORM_LABELS.github };
     }
     return { valid: false };
   }
@@ -58,7 +74,7 @@ export function parseSocialUrl(raw) {
     const match = path.match(/^\/([A-Za-z0-9._]{1,30})\/?$/);
     const blocked = new Set(["p", "reel", "reels", "stories", "explore", "accounts", "direct"]);
     if (match && !blocked.has(match[1].toLowerCase())) {
-      return { valid: true, url: `https://instagram.com/${match[1]}`, platform: "instagram", label: "Instagram profile" };
+      return { valid: true, url: `https://instagram.com/${match[1]}`, platform: "instagram", label: PLATFORM_LABELS.instagram };
     }
     return { valid: false };
   }

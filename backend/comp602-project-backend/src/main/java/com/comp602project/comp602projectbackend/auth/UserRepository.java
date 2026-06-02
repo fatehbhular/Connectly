@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -17,6 +19,32 @@ public class UserRepository {
 
     @Autowired
     private UserJpaRepository db;
+
+    @Autowired
+    private JdbcTemplate jdbc;
+
+    /** Copy any existing per-platform links into the single social_url column once. */
+    @PostConstruct
+    public void migrateLegacySocialUrls() {
+        try {
+            jdbc.update("""
+                UPDATE users
+                SET social_url = COALESCE(
+                    NULLIF(TRIM(linkedin_url), ''),
+                    NULLIF(TRIM(github_url), ''),
+                    NULLIF(TRIM(instagram_url), '')
+                )
+                WHERE (social_url IS NULL OR TRIM(social_url) = '')
+                  AND (
+                    (linkedin_url IS NOT NULL AND TRIM(linkedin_url) <> '')
+                    OR (github_url IS NOT NULL AND TRIM(github_url) <> '')
+                    OR (instagram_url IS NOT NULL AND TRIM(instagram_url) <> '')
+                  )
+                """);
+        } catch (Exception ignored) {
+            // Legacy columns may not exist on fresh databases.
+        }
+    }
 
     private User toUser(UserDatabase row) {
         if (row == null) return null;
@@ -38,9 +66,7 @@ public class UserRepository {
         user.setProfileComplete(row.isProfileComplete());
         user.setRequestedUsers(row.getRequestedUsers());
         user.setOtpEnabled(row.isOtpEnabled());
-        user.setLinkedinUrl(row.getLinkedinUrl());
-        user.setGithubUrl(row.getGithubUrl());
-        user.setInstagramUrl(row.getInstagramUrl());
+        user.setSocialUrl(row.getSocialUrl());
         user.setBlockedUsers(row.getBlockedUsers());
         return user;
     }
@@ -65,9 +91,7 @@ public class UserRepository {
         row.setProfileComplete(user.isProfileComplete());
         row.setRequestedUsers(user.getRequestedUsers());
         row.setOtpEnabled(user.isOtpEnabled());
-        row.setLinkedinUrl(user.getLinkedinUrl());
-        row.setGithubUrl(user.getGithubUrl());
-        row.setInstagramUrl(user.getInstagramUrl());
+        row.setSocialUrl(user.getSocialUrl());
         row.setBlockedUsers(user.getBlockedUsers());
         return row;
     }

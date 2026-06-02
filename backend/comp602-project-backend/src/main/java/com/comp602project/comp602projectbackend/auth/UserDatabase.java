@@ -46,9 +46,9 @@ public class UserDatabase {
 
     private String industry;
     private String portfolioUrl;
-    private String linkedinUrl;
-    private String githubUrl;
-    private String instagramUrl;
+
+    @Column(name = "social_url")
+    private String socialUrl;
 
     @Column(name = "dm_keys", columnDefinition = "TEXT[]")
     private List<String> dmKeys = new ArrayList<>();
@@ -107,14 +107,8 @@ public class UserDatabase {
     public String getPortfolioUrl() { return portfolioUrl; }
     public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
 
-    public String getLinkedinUrl() { return linkedinUrl; }
-    public void setLinkedinUrl(String linkedinUrl) { this.linkedinUrl = linkedinUrl; }
-
-    public String getGithubUrl() { return githubUrl; }
-    public void setGithubUrl(String githubUrl) { this.githubUrl = githubUrl; }
-
-    public String getInstagramUrl() { return instagramUrl; }
-    public void setInstagramUrl(String instagramUrl) { this.instagramUrl = instagramUrl; }
+    public String getSocialUrl() { return socialUrl; }
+    public void setSocialUrl(String socialUrl) { this.socialUrl = socialUrl; }
 
     public List<String> getDmKeys() { return dmKeys; }
     public void setDmKeys(List<String> dmKeys) { this.dmKeys = dmKeys; }

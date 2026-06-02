@@ -48,6 +48,14 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
 
   useEffect(() => { loadQueue(); }, [currentUser]);
 
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") loadQueue(activeFilters);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [currentUser?.userId, activeFilters]);
+
   const handleApplyFilters = () => {
     const filters = {};
     if (skillInput.trim()) filters.skill = skillInput.trim();

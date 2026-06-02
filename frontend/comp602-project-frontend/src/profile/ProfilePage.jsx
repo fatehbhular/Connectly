@@ -200,17 +200,41 @@ export default function ProfilePage({ currentUser, onProfileUpdate }) {
     setTimeout(() => el.removeAttribute("readonly"), 100);
   };
 
-  useEffect(() => {
+  const applyProfileToForm = (user) => {
+    setDisplayName(user?.displayName ?? "");
+    setIndustry(user?.industry ?? "");
+    setCity(user?.location ?? "");
+    setBio(user?.bio ?? "");
+    setSocialUrl(getUserSocial(user)?.url ?? "");
+    setSkillList((user?.skills ?? []).filter(Boolean));
     setSavedStrip({
-      displayName: currentUser?.displayName ?? "",
-      industry: currentUser?.industry ?? "",
-      city: currentUser?.location ?? "",
+      displayName: user?.displayName ?? "",
+      industry: user?.industry ?? "",
+      city: user?.location ?? "",
     });
-  }, [currentUser?.displayName, currentUser?.industry, currentUser?.location]);
+  };
 
   useEffect(() => {
-    setSocialUrl(getUserSocial(currentUser)?.url ?? "");
-  }, [currentUser?.linkedinUrl, currentUser?.githubUrl, currentUser?.instagramUrl]);
+    if (!currentUser?.userId) return;
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/users/profile`, {
+          headers: { userId: currentUser.userId },
+        });
+        if (!res.ok || cancelled) return;
+        const fresh = await res.json();
+        onProfileUpdate(fresh);
+        applyProfileToForm(fresh);
+      } catch {
+        // Offline — keep whatever is already in the form.
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [currentUser?.userId]);
 
   useEffect(() => {
     if (showSuggestions) return;

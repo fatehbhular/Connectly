@@ -11,6 +11,7 @@ import NavigationBar from "./components/NavigationBar";
 import UserHeatbeat from "./hooks/UserHearbeat";
 import { useWebSocket } from "./hooks/useWebSocket";
 import { useVoiceCall } from "./hooks/useVoiceCall";
+import BASE_URL from "./config.js";
 
 function App() {
   // Save the current user if the user chooses "remember me"
@@ -25,6 +26,37 @@ function App() {
       localStorage.setItem("currentUser", JSON.stringify(user));
     }
   }, []);
+
+  // Keep session in sync with the server (e.g. social link saved on another device).
+  useEffect(() => {
+    if (!currentUser?.userId) return;
+
+    let cancelled = false;
+
+    const syncProfile = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/users/profile`, {
+          headers: { userId: currentUser.userId },
+        });
+        if (!res.ok || cancelled) return;
+        persistCurrentUser(await res.json());
+      } catch {
+        // Offline — keep the cached session.
+      }
+    };
+
+    syncProfile();
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") syncProfile();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [currentUser?.userId, persistCurrentUser]);
 
   const [page, setPage] = useState("profile");
   const [inDM, setInDM] = useState(false);
@@ -172,7 +204,7 @@ function App() {
 
   // If nobody is logged in, show the login page
   if (!currentUser) {
-    return <LoginPage onLogin={(user) => setCurrentUser(user)} />;
+    return <LoginPage onLogin={persistCurrentUser} />;
   }
 
   // New user, run them through onboarding before the main app
