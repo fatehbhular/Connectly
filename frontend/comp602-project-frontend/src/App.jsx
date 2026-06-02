@@ -411,7 +411,7 @@ function App() {
             {/* End call button — matches voice call popup */}
             <button
               onClick={handleHangUp}
-              className="absolute bottom-8 left-1/2 -translate-x-1/2 w-16 h-16 flex items-center justify-center rounded-full text-white active:scale-95 transition bg-gradient-to-br from-orange-400 to-orange-600 shadow-2xl"
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 w-16 h-16 flex items-center justify-center rounded-full text-white active:scale-95 transition bg-red-600 hover:bg-red-700 shadow-2xl"
               title="End Call"
             >
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" aria-hidden="true">
@@ -442,7 +442,7 @@ function App() {
             <button
               type="button"
               onClick={handleHangUp}
-              className="w-10 h-10 flex items-center justify-center rounded-full text-white active:scale-95 transition shrink-0 bg-gradient-to-br from-orange-400 to-orange-600 shadow-lg"
+              className="w-10 h-10 flex items-center justify-center rounded-full text-white active:scale-95 transition shrink-0 bg-red-600 hover:bg-red-700 shadow-lg"
               title="End call"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="1.8" aria-hidden="true">
