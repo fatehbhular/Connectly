@@ -49,7 +49,7 @@ public class MessagingController {
     }
 
     /**
-     * Returns a list of conversations belonging to the user.
+     * Returns a list of conversations belonging to the user — both DMs and group chats.
      * 
      * Flow:
      * 1. Pulls the userId from request header to identify who is asking.
@@ -123,6 +123,29 @@ public class MessagingController {
             recipients.add(recipient);
 
             messagingService.sendMessage(sender, recipients, content, timestamp);
+
+            return ResponseEntity.ok(Map.of("status", "ok"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Sends a message to a group conversation.
+     *
+     * @param senderId -> ID of the user sending the message -> pulled from request header.
+     * @param payload -> JSON body containing groupId, content, and timestamp.
+     * @return {@link ResponseEntity} confirming success, or an error message on failure.
+     */
+    @PostMapping("/send-group")                                             // called when a user sends a message in a group chat
+    public ResponseEntity<?> sendGroupMessage(@RequestHeader("userId") Integer senderId, @RequestBody Map<String, Object> payload) {
+        try {
+            int groupId = Integer.parseInt(payload.get("groupId").toString());
+            String content = (String) payload.get("content");
+            Long timestampMillis = ((Number) payload.get("timestamp")).longValue();
+            Instant timestamp = Instant.ofEpochMilli(timestampMillis);
+
+            messagingService.sendGroupMessage(senderId, groupId, content, timestamp);
 
             return ResponseEntity.ok(Map.of("status", "ok"));
         } catch (Exception e) {

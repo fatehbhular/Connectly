@@ -3,19 +3,16 @@ import { motion } from 'framer-motion';
 /**
  * Renders a single message bubble.
  * 
- * Display's differently based on whether the message was 'sent' or 'received'.
- * - Send: aligned to the right side, shows user's name
- * - Receive: aligned to the left side, shows receipient's name
- * 
- * Intro messages (flagged with isIntro = true) are shown with a label above the bubble
- * so both users can identify the original connection request messages.
- * 
- * @param {object} message - message object containing senderId, content, and isIntro
- * @param {number} userId - ID of the signed-in user
- * @param {string} senderName - display name of the receipient
+ * Sent messages align right, received align left.
+ * Intro messages are labelled above the bubble.
+ * In group chats, senderNamesMap provides per-sender names.
  */
-export default function DMPageRenderer({message, userId, senderName}) {
+export default function DMPageRenderer({message, userId, senderName, senderNamesMap}) {
     const isSent = message.senderId === parseInt(userId);
+
+    const displaySenderName = !isSent
+        ? (senderNamesMap?.[message.senderId] || senderName)
+        : 'You';
 
     return (
         <motion.div
@@ -24,19 +21,20 @@ export default function DMPageRenderer({message, userId, senderName}) {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         >
-            {/* Connection intro label - shown above the bubble for the first two messages in a conversation */}
+            {/* Connection intro label */}
             {message.isIntro && (
                 <span style={{ fontSize: '11px', color: '#C4785A', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px', paddingLeft: '4px' }}>
                     Connection intro
                 </span>
             )}
 
-            <span className="text-xs text-gray-400 mb-1">{isSent ? 'You' : senderName}</span>
+            <span className="text-xs text-gray-400 mb-1">{displaySenderName}</span>
+
             <motion.div
                 className={`px-4 py-2 rounded-2xl text-white text-sm break-words max-w-[70vw] w-fit ${
-                    isSent 
-                    ? 'bg-gradient-to-br from-orange-400 to-orange-600 rounded-br-sm' 
-                    : 'bg-gradient-to-br from-orange-400 to-orange-500 rounded-bl-sm'
+                    isSent
+                        ? 'bg-gradient-to-br from-orange-400 to-orange-600 rounded-br-sm'    // sent — original darker orange
+                        : 'bg-gradient-to-br from-orange-300 to-orange-400 rounded-bl-sm'    // received — lighter pfp orange
                 }`}
                 style={message.isIntro ? { outline: '1px solid rgba(255,255,255,0.4)', outlineOffset: '-1px' } : {}}
                 whileTap={{ scale: 0.95 }}

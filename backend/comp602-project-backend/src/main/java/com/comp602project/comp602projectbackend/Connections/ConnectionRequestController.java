@@ -42,7 +42,8 @@ public class ConnectionRequestController {
         int receiverId = (int) body.get("receiverId");
         String message = (String) body.get("message");
 
-        if (requestRepository.existsBySenderIdAndReceiverId(senderId, receiverId)) {    // dont create duplicate requests
+        if (requestRepository.existsBySenderIdAndReceiverId(senderId, receiverId) ||
+            requestRepository.existsBySenderIdAndReceiverId(receiverId, senderId)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
 

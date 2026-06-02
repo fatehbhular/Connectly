@@ -22,6 +22,15 @@ const STEPS = [                                                                 
         autoCapitalize: "none",
     },
     {
+        field: "emailOtp",
+        title: "Verify your email.",
+        subtitle: "Enter the 6-character code sent to your email.",
+        type: "otp",
+        placeholder: "Enter code",
+        required: true,
+        autoCapitalize: "characters",
+    },
+    {
         field: "industry",
         title: "What do you do?",
         subtitle: "Your profession or field of work.",
@@ -61,7 +70,7 @@ export default function OnboardingPage({ currentUser, onComplete }) {
     const [step, setStep] = useState(0);
     const [animKey, setAnimKey] = useState(0);
     const [slideDir, setSlideDir] = useState("forward");
-    const [values, setValues] = useState({ displayName: "", email: "", industry: "", city: "", skills: [], bio: "" });
+    const [values, setValues] = useState({ displayName: "", email: "", emailOtp: "", industry: "", city: "", skills: [], bio: "" });
     const [skillInput, setSkillInput] = useState("");                               // Controlled input for the skills tag field
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -94,7 +103,54 @@ export default function OnboardingPage({ currentUser, onComplete }) {
             return;
         }
 
-        if (step === 3) {                                                           // Validate city against Nominatim before proceeding
+        if (step === 1) {
+        setLoading(true);
+        try {
+            const res = await fetch(`${BASE_URL}/auth/send-verification`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: values.email })
+            });
+            if (res.status === 409) {
+                setError("This email is already in taken. Select a new one.");
+                setLoading(false);
+                return;
+            }
+            if (!res.ok) {
+                setError("Could not send verification code. Please try again.");
+                setLoading(false);
+                return;
+            }
+        } catch {
+            setError("Could not send verification code. Please try again.");
+            setLoading(false);
+            return;
+        }
+        setLoading(false);
+    }
+
+        if (step === 2) {                                                           // Verify the OTP code before proceeding
+            setLoading(true);
+            try {
+                const res = await fetch(`${BASE_URL}/auth/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: values.email, code: values.emailOtp.toUpperCase(), context: 'email_verify' })
+                });
+                if (!res.ok) {
+                    setError("Invalid or expired code. Please try again.");
+                    setLoading(false);
+                    return;
+                }
+            } catch {
+                setError("Could not verify code. Please try again.");
+                setLoading(false);
+                return;
+            }
+            setLoading(false);
+        }
+
+        if (step === 4) {                                                           // Validate city against Nominatim before proceeding
             setLoading(true);
             try {
                 const res = await fetch(
@@ -124,6 +180,22 @@ export default function OnboardingPage({ currentUser, onComplete }) {
     const handleSkip = () => {                                                      // Skip optional steps or finish on the last step
         if (isLast) { handleSubmit(); return; }
         goTo(step + 1, "forward");
+    };
+
+    const handleResendCode = async () => {                                          // Resend OTP if the user didn't receive it or it expired
+        setError(null);
+        setLoading(true);
+        try {
+            await fetch(`${BASE_URL}/auth/send-verification`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: values.email })
+            });
+            setError("Code resent. Check your email.");
+        } catch {
+            setError("Could not resend code. Please try again.");
+        }
+        setLoading(false);
     };
 
     const handleSubmit = async () => {                                              // Submit all collected values to the profile endpoint
@@ -178,6 +250,30 @@ export default function OnboardingPage({ currentUser, onComplete }) {
                         />
                     )}
 
+                    {current.type === "otp" && (                                    /* OTP verification input - uppercase, 6 char max */
+                        <div className="flex flex-col gap-3">
+                            <input
+                                className={`ob-input${error ? " ob-input--error" : ""}`}
+                                type="text"
+                                placeholder={current.placeholder}
+                                value={values[current.field]}
+                                autoCapitalize="characters"
+                                autoCorrect="off"
+                                maxLength={6}
+                                onChange={e => { setValues(v => ({ ...v, [current.field]: e.target.value.toUpperCase() })); setError(null); }}
+                                onKeyDown={e => e.key === "Enter" && handleNext()}
+                            />
+                            <button
+                                className="ob-skip"
+                                style={{ position: 'static', transform: 'none', alignSelf: 'flex-start' }}
+                                onClick={handleResendCode}
+                                disabled={loading}
+                            >
+                                Resend code
+                            </button>
+                        </div>
+                    )}
+
                     {current.type === "textarea" && (
                         <textarea
                             className="ob-input ob-textarea"
@@ -224,7 +320,7 @@ export default function OnboardingPage({ currentUser, onComplete }) {
                         <button className="ob-back-btn" onClick={handleBack} disabled={loading}>Back</button>
                     )}
                     <button className="ob-next-btn" onClick={handleNext} disabled={loading}>
-                        {loading ? "Setting up..." : isLast ? "Get Started" : "Continue"}
+                        {loading ? "Please wait..." : isLast ? "Get Started" : "Continue"}
                     </button>
                 </div>
 

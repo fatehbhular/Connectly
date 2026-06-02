@@ -24,4 +24,7 @@ public interface OtpTokenJpaRepository extends JpaRepository<OtpToken, Long>{
     @Transactional
     void deleteByEmail(String email);
 
+    //Find row where email matches, used to check if code is expired or not
+    Optional<OtpToken> findByEmail(String email);
+
 }

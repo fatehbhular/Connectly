@@ -14,12 +14,12 @@ function calcDistance(lat1, lng1, lat2, lng2) {
 }
 
 function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, location, currentUser, wantsToConnect, mutuals, verified, hasPendingRequest, SwipeLeft, SwipeRight }) {
-  const startX = useRef(null);       // stores where the mouse was when the drag started
-  const dragXRef = useRef(0);        // stores how far the mouse has moved - useRef so it doesn't cause re-renders
-  const [isDragging, setIsDragging] = useState(false);  // true while the mouse is held down
-  const [dragX, setDragX] = useState(0);                // how far the card has been dragged - useState so the card visually moves
-  const cooldownRef = useRef(false); // prevents arrow keys from firing too fast
-  const [isOnline, setIsOnline] = useState(false);      // fetch presence for this card's user
+  const startX = useRef(null);
+  const dragXRef = useRef(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragX, setDragX] = useState(0);
+  const cooldownRef = useRef(false);
+  const [isOnline, setIsOnline] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -35,31 +35,27 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
     fetchPresence();
   }, [userId]);
 
-  // Fires when the left mouse button is pressed down on the card
   function onMouseDown(e) {
-    if (e.button !== 0) return;      // only respond to left click
+    if (e.button !== 0) return;
     e.stopPropagation();
-    startX.current = e.clientX;      // record where the drag started
+    startX.current = e.clientX;
     dragXRef.current = 0;
     setIsDragging(true);
   }
 
-  // Fires when the user touches the card on mobile
   function onTouchStart(e) {
-    e.stopPropagation();             // prevent nav bar from receiving the touch
+    e.stopPropagation();
     startX.current = e.touches[0].clientX;
     dragXRef.current = 0;
     setIsDragging(true);
   }
 
-  // This useEffect adds and removes mouse listeners while dragging
-  // It re-runs whenever isDragging changes
   useEffect(() => {
     function onMouseMove(e) {
       if (!isDragging || startX.current === null) return;
-      var delta = e.clientX - startX.current;  // how far we've moved from the start
-      dragXRef.current = delta;                // store in ref for use in onMouseUp
-      setDragX(delta);                         // store in state to visually move the card
+      var delta = e.clientX - startX.current;
+      dragXRef.current = delta;
+      setDragX(delta);
     }
 
     function onTouchMove(e) {
@@ -73,10 +69,10 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
       if (!isDragging) return;
       setIsDragging(false);
       startX.current = null;
-      if (dragXRef.current > 150) SwipeRight?.();        // dragged far enough right - connect
-      else if (dragXRef.current < -150) SwipeLeft?.();   // dragged far enough left - pass
+      if (dragXRef.current > 150) SwipeRight?.();
+      else if (dragXRef.current < -150) SwipeLeft?.();
       dragXRef.current = 0;
-      setDragX(0);                             // snap card back to center
+      setDragX(0);
     }
 
     document.addEventListener('mousemove', onMouseMove);
@@ -84,7 +80,6 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
     document.addEventListener('touchmove', onTouchMove, { passive: true });
     document.addEventListener('touchend', onMouseUp);
 
-    // cleanup - remove listeners when this effect re-runs or component unmounts
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
@@ -93,39 +88,27 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
     };
   }, [isDragging]);
 
-  // This useEffect adds keyboard support - left/right arrow keys trigger swipes
-  // Re-runs whenever SwipeLeft or SwipeRight changes
   useEffect(() => {
     function onKeyPressed(e) {
-      if (e.repeat) return;              // ignore held-down keys
-      if (cooldownRef.current) return;   // ignore if still in cooldown
-      if (e.key === 'ArrowRight') {
-        setDragX(50);
-        SwipeRight?.();
-      }
-      else if (e.key === 'ArrowLeft'){
-        setDragX(-50);
-        SwipeLeft?.();
-      }
+      if (e.repeat) return;
+      if (cooldownRef.current) return;
+      if (e.key === 'ArrowRight') { setDragX(50); SwipeRight?.(); }
+      else if (e.key === 'ArrowLeft') { setDragX(-50); SwipeLeft?.(); }
       cooldownRef.current = true;
-      setTimeout(() => { cooldownRef.current = false; setDragX(0)}, 200);  // 200ms cooldown between key presses
+      setTimeout(() => { cooldownRef.current = false; setDragX(0); }, 200);
     }
     document.addEventListener('keydown', onKeyPressed);
     return () => document.removeEventListener('keydown', onKeyPressed);
   }, [SwipeLeft, SwipeRight]);
 
-  // Calculate distance between the signed in user and the card's user
   const distance = calcDistance(currentUser?.latitude, currentUser?.longitude, latitude, longitude);
 
-  // Card border glows green when dragging right, red when dragging left
-  // Card background tints subtly - Math.min clamps opacity so it never goes above 0.08
   const bgColor = dragX > 50
     ? `rgba(0, 180, 100, ${Math.min(dragX / 150, 0.08)})`
     : dragX < -50
       ? `rgba(220, 50, 50, ${Math.min(-dragX / 150, 0.08)})`
       : 'white';
 
-  // Ring outline intensifies as the drag distance increases, capped at 0.5 opacity
   const boxShadow = dragX > 50
     ? `0 0 0 2px rgba(0,180,100,${Math.min(dragX / 150, 0.5)})`
     : dragX < -50
@@ -134,68 +117,69 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
 
   return (
     <div
-      className="w-80 rounded-2xl bg-white border border-[#E8E4DC] px-8 py-16 select-none min-h-[520px]"
+      className="w-80 rounded-2xl bg-white border border-[#E8E4DC] px-8 py-10 select-none min-h-[520px]"
       onMouseDown={onMouseDown}
       onTouchStart={onTouchStart}
       style={{
-        transform: `translateX(${dragX}px) rotate(${dragX * 0.005}deg)`,  // moves and slightly rotates the card as you drag
-        transition: isDragging ? 'none' : 'transform 0.2s ease',           // smooth snap back when released, no transition while dragging
+        transform: `translateX(${dragX}px) rotate(${dragX * 0.005}deg)`,
+        transition: isDragging ? 'none' : 'transform 0.2s ease',
         cursor: isDragging ? 'grabbing' : 'grab',
-        opacity: isDragging ? 1 - Math.abs(dragX) / 300 : 1,              // card fades slightly as you drag further
+        opacity: isDragging ? 1 - Math.abs(dragX) / 300 : 1,
         backgroundColor: bgColor,
         boxShadow,
-        outline: (hasPendingRequest || wantsToConnect) ? '2px solid #f97040' : 'none', // orange border for users who want to connect
+        // Lighter, softer orange outline for wants to connect
+        outline: (hasPendingRequest || wantsToConnect) ? '2px solid rgba(251,146,60,0.3)' : 'none',
         outlineOffset: '-1px',
       }}
     >
-      {/* Badges row - wants to connect, verified, and mutuals all sit inline */}
-      <div className="flex items-center gap-2 flex-wrap mb-4">
-
-        {/* Wants to connect badge */}
-        {wantsToConnect && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FDF3EE] border border-[#F0CBB8] text-[#C4785A] text-xs font-semibold tracking-wide">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#C4785A] inline-block" />
-            Wants to connect
-          </div>
-        )}
-
-        {/* Verified badge - placeholder until the feature is built */}
-        {verified && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A] text-xs font-semibold tracking-wide">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] inline-block" />
-            Verified
-          </div>
-        )}
-
-        {/* Mutuals badge - same style as wants to connect but blue */}
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] text-[#3B82F6] text-xs font-semibold tracking-wide">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] inline-block" />
-          {mutuals} mutual{mutuals !== 1 ? 's' : ''}
-        </div>
-
-      </div>
-
-      {/* Avatar - initials circle matching the DM list style */}
-      <div className="relative w-12 h-12 mb-4">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold text-sm text-white bg-gradient-to-br from-orange-300 to-orange-400">
+      {/* Avatar + online dot — white ring matches DM list style */}
+      <div className="relative w-14 h-14 mb-4">
+        <div
+          className="w-14 h-14 rounded-full flex items-center justify-center font-bold text-lg text-white"
+          style={{
+            background: 'linear-gradient(135deg, #fdba74, #fb923c)',      // matches DM list: from-orange-300 to-orange-400
+            boxShadow: '0 0 0 2px white',                                 // white ring border matching DM list aesthetic
+          }}
+        >
           {user?.[0]?.toUpperCase() || '?'}
         </div>
-        {/* Online dot pinned to bottom-right */}
-        <span className="absolute bottom-0 right-0">
+        {/* Online dot — same absolute position as DM list */}
+        <span className="absolute bottom-0 right-0" style={{ transform: 'scale(1.4)', transformOrigin: 'bottom right' }}>
           <OnlineDot isOnline={isOnline} />
         </span>
       </div>
 
-      {/* Name + industry */}
+      {/* Name */}
       <h2 className="text-gray-900 font-bold text-xl leading-tight">{user}</h2>
+
+      {/* Industry */}
       <p className="text-[#C4785A] text-sm font-semibold tracking-wide mt-0.5">{industry}</p>
 
-      {/* Location + distance - only shown if distance can be calculated */}
+      {/* Location + distance */}
       {distance && (
-        <p className="text-[#B0A99F] text-xs mt-2">
+        <p className="text-[#B0A99F] text-xs mt-1.5">
           {location} · {distance} km away
         </p>
       )}
+
+      {/* Badges */}
+      <div className="flex items-center gap-2 flex-wrap mt-3">
+        {wantsToConnect && (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-white bg-[#fb923c]">
+            ✦ Wants to connect
+          </span>
+        )}
+        {verified && (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#F0FDF4] border border-[#BBF7D0] text-[#16A34A]">
+            ✓ Verified
+          </span>
+        )}
+        {mutuals > 0 && (
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#EFF6FF] border border-[#BFDBFE] text-[#3B82F6]">
+            {mutuals} mutual{mutuals !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
 
       {/* Divider */}
       <div className="border-t border-[#E8E4DC] my-4" />
@@ -205,14 +189,11 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
         <p className="text-gray-700 text-sm leading-relaxed">{bio}</p>
       )}
 
-      {/* Skills - only shown if user has skills */}
+      {/* Skills */}
       {skills && skills.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-4">
           {skills.map((skill, i) => (
-            <span
-              key={i}
-              className="px-2.5 py-1 rounded-full bg-[#F0EDE6] border border-[#E8E4DC] text-[#B0A99F] text-xs font-medium"
-            >
+            <span key={i} className="px-2.5 py-1 rounded-full bg-[#F0EDE6] border border-[#E8E4DC] text-[#B0A99F] text-xs font-medium">
               {skill}
             </span>
           ))}

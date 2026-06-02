@@ -98,28 +98,6 @@ export default function NavigationBar({ setPage, currentPage }) {
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
                 </svg>
             </motion.button>
-
-            {/** Analytics */}
-            <motion.button
-                onClick={() => setPage('analytics')}
-                className="flex flex-col items-center px-4 py-1 rounded-xl relative bg-transparent border-none"
-                whileTap={{ scale: 0.9 }}
-                animate={{ scale: currentPage === 'analytics' ? 1.2 : 0.95 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-            >
-                {currentPage === 'analytics' && (
-                    <motion.div layoutId="nav-indicator" className="absolute inset-0 bg-orange-50 rounded-xl" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />
-                )}
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke={currentPage === 'analytics' ? "#f97040" : "#fb923c"}
-                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                    className="relative z-10">
-                    <path d="M4 19h16" />
-                    <path d="M7 16V8" />
-                    <path d="M12 16V5" />
-                    <path d="M17 16v-3" />
-                </svg>
-            </motion.button>
         </div>
     );
 }
