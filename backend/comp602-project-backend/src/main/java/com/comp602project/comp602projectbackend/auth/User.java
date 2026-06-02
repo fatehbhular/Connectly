@@ -23,6 +23,8 @@ public class User {
     private String[] skills;                                                    // "Java", "React"
     private String industry;
     private String portfolioUrl;
+    private String linkedinUrl;
+    private String githubUrl;
  
     // (for easy database storing)
     private List<String> dmKeys;                                                    // "userId_userId_userId..."
@@ -87,9 +89,25 @@ public class User {
     public void setIndustry(String industry) {  this.industry = industry; }
 
     public String getPortfolioUrl() { return portfolioUrl; }
-    public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
+public void setPortfolioUrl(String portfolioUrl) { this.portfolioUrl = portfolioUrl; }
 
-    public List<String> getDmKeys() { return dmKeys; }
+public String getLinkedinUrl() {
+    return linkedinUrl;
+}
+
+public void setLinkedinUrl(String linkedinUrl) {
+    this.linkedinUrl = linkedinUrl;
+}
+
+public String getGithubUrl() {
+    return githubUrl;
+}
+
+public void setGithubUrl(String githubUrl) {
+    this.githubUrl = githubUrl;
+}
+
+public List<String> getDmKeys() { return dmKeys; }
     public void setDmKeys(List<String> dmKeys) { this.dmKeys = dmKeys; }
 
     public List<Integer> getConnectionKeys() { return connectionKeys; }
