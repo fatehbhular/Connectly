@@ -4,6 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import UserCardUI from "./UserCardUI";
 import { getUserSocial } from "../utils/socialUrl.js";
 
+const queueAnchorKey = (userId) => `connectQueueAnchor:${userId}`;
+
+const queueItemKey = (item) => {
+  if (!item) return null;
+  if (item.type === 'pending') return `pending-${item.requestId}`;
+  return String(item.userId);
+};
+
 export default function ConnectionsPage({ currentUser, onUserUpdate }) {
   const [queue, setQueue] = useState([]);
   const [showIntroModal, setShowIntroModal] = useState(false);
@@ -24,7 +32,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     return currentUser.connectionKeys.filter(id => user.connectionKeys.includes(id)).length;
   };
 
-  const loadQueue = async (filters = {}) => {
+  const loadQueue = async (filters = {}, { resetAnchor = false } = {}) => {
     const pendingRes = await fetch(`${BASE_URL}/api/connections/requests/pending`, {
       headers: { 'userId': currentUser.userId }
     });
@@ -43,18 +51,26 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     const usersData = await usersRes.json();
     const normalItems = usersData.map(u => ({ ...u, type: 'normal', mutuals: getMutualCount(u) }));
 
-    setQueue([...pendingItems, ...normalItems]);
+    let merged = [...pendingItems, ...normalItems];
+    const anchorStorageKey = queueAnchorKey(currentUser.userId);
+
+    if (resetAnchor) {
+      sessionStorage.removeItem(anchorStorageKey);
+    } else {
+      const anchor = sessionStorage.getItem(anchorStorageKey);
+      if (anchor) {
+        const idx = merged.findIndex(item => queueItemKey(item) === anchor);
+        if (idx > 0) merged = merged.slice(idx);
+        else if (idx === -1) sessionStorage.removeItem(anchorStorageKey);
+      }
+    }
+
+    setQueue(merged);
   };
 
-  useEffect(() => { loadQueue(); }, [currentUser]);
-
   useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === "visible") loadQueue(activeFilters);
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [currentUser?.userId, activeFilters]);
+    if (currentUser?.userId) loadQueue();
+  }, [currentUser?.userId]);
 
   const handleApplyFilters = () => {
     const filters = {};
@@ -63,7 +79,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     if (locationInput.trim()) filters.location = locationInput.trim();
     setActiveFilters(filters);
     setShowFilterPanel(false);
-    loadQueue(filters);
+    loadQueue(filters, { resetAnchor: true });
   };
 
   const handleClearFilters = () => {
@@ -72,7 +88,7 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
     setLocationInput('');
     setActiveFilters({});
     setShowFilterPanel(false);
-    loadQueue({});
+    loadQueue({}, { resetAnchor: true });
   };
 
   const hasActiveFilters = Object.keys(activeFilters).length > 0;
@@ -81,6 +97,14 @@ export default function ConnectionsPage({ currentUser, onUserUpdate }) {
   const isPending = currentItem?.type === 'pending';
   const cardUser = isPending ? currentItem?.sender : currentItem;
   const wantsToConnect = isPending || (!isPending && currentItem?.requestedUsers?.includes(currentUser.userId));
+
+  useEffect(() => {
+    if (!currentUser?.userId) return;
+    const anchorStorageKey = queueAnchorKey(currentUser.userId);
+    const key = queueItemKey(currentItem);
+    if (key) sessionStorage.setItem(anchorStorageKey, key);
+    else sessionStorage.removeItem(anchorStorageKey);
+  }, [currentItem, currentUser?.userId]);
 
   const advance = () => setQueue(prev => prev.slice(1));
 

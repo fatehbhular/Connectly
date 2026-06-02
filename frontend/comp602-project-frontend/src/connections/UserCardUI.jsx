@@ -226,21 +226,19 @@ function UserCardUI({ user, userId, industry, bio, skills, latitude, longitude, 
       <h2 className="text-gray-900 font-bold text-xl leading-tight">{user}</h2>
       <p className="text-[#C4785A] text-sm font-semibold tracking-wide mt-0.5">{industry}</p>
 
-      <div className="h-5 mt-1 flex items-center">
-        {social && (
-          <a
-            href={social.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            className="text-[#C4785A] text-xs font-semibold underline underline-offset-2 truncate"
-          >
-            {social.label}
-          </a>
-        )}
-      </div>
+      {social && (
+        <a
+          href={social.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          className="text-[#C4785A] text-xs font-semibold underline underline-offset-2 truncate mt-1 block"
+        >
+          {social.label}
+        </a>
+      )}
 
       {distance && (
         <p className="text-[#B0A99F] text-xs mt-1.5">
